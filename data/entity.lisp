@@ -70,40 +70,45 @@
                     :primary (synth :pretty primary)
                     :fields (synth-all :pretty fields)))
   (:entity (package) (java-unit name
-                              (java-package (symb package '|.model|))
-                              (java-import '|javax.persistence| '|Column| '|Entity| '|Id| '|Table| '|ManyToOne| '|OneToMany| '|OneToOne| '|ManyToMany| '|NamedQueries| '|NamedQuery|)
-                              ;; (java-import '|java.util| '|List|)
-                              (java-with-annotations 
-                               (list 
-                                (java-annotation '|SuppressWarnings| (java-const "unused"))
-                                (java-annotation '|Entity|)
-                                (java-annotation '|Table| (java-object :|name| (java-const (mkstr name))))
-                                (aif (get-queries this)
-                                     (java-annotation '|NamedQueries| 
-                                                     (apply #'java-array (synth-all :annotation it)))))
-                               (java-class name
-                                         :public t
-                                         :fields (append*
-                                                  (synth :entity (primary-key primary))
-                                                  (synth-all :entity fields)
-                                                  (synth-all :source (get-sources this))
-                                                  (synth-all :target (get-targets this)))
-                                         :methods (append (synth :accessors primary)
-                                                          (apply #'append (synth-all :accessors fields)))))))
+                                (java-package (symb package '|.model|))
+                                (java-import '|javax.persistence| '|Column| '|Entity| '|Id| '|Table| '|ManyToOne| '|OneToMany| '|OneToOne| '|ManyToMany| '|NamedQueries| '|NamedQuery|)
+                                ;; (java-import '|java.util| '|List|)
+                                (java-with-annotations 
+                                 (list 
+                                  (java-annotation '|SuppressWarnings| (java-const "unused"))
+                                  (java-annotation '|Entity|)
+                                  (java-annotation '|Table| (java-object :|name| (java-const (mkstr name))))
+                                  (aif (get-queries this)
+                                       (java-annotation '|NamedQueries| 
+                                                        (apply #'java-array (synth-all :annotation it)))))
+                                 (java-class name
+                                             :public t
+                                             :fields (append*
+                                                      (synth :entity (primary-key primary))
+                                                      (synth-all :entity fields)
+                                                      (synth-all :source (get-sources this))
+                                                      (synth-all :target (get-targets this)))
+                                             :methods (append (synth :accessors primary)
+                                                              (apply #'append (synth-all :accessors fields)))))))
   (:eao-interface () (java-interface (symb name "-EAO")
-                                   :public t
-                                   :methods (list (java-method (doc:textify (lower-camel (symb "ADD-" name))) 
-                                                             (remove nil (append (synth-all :paramdecl fields)
-                                                                                 (synth-all :target-paramdecl (get-sources this))
-                                                                                 (synth-all :source-paramdecl (get-targets this))))
-                                                             (java-object-type name)) 
-                                                  (java-method (doc:textify (lower-camel (symb "CANCEL-" name)))
-                                                             (list (synth :paramdecl primary)) 
-                                                             (java-object-type name)))))
+                                     :public t
+                                     :methods (list (java-method (doc:textify (lower-camel (symb "ADD-" name))) 
+                                                                 (remove nil (append (synth-all :paramdecl fields)
+                                                                                     (synth-all :target-paramdecl (get-sources this))
+                                                                                     (synth-all :source-paramdecl (get-targets this))))
+                                                                 (java-object-type name)) 
+                                                    (java-method (doc:textify (lower-camel (symb "CANCEL-" name)))
+                                                                 (list (synth :paramdecl primary)) 
+                                                                 (java-object-type name)))))
   (:ddl () (doc:vcat (doc:text "CREATE TABLE ~a" name)
                      (doc:parens (doc:nest 4 (apply #'doc:punctuate (doc:comma) t (synth-all :ddl (remove nil (append* (primary-key primary) fields
                                                                                                                        (synth-all :target-foreign-key (get-sources this))
-                                                                                                                       (synth-all :source-foreign-key (get-targets this))))))) :newline t))))
+                                                                                                                       (synth-all :source-foreign-key (get-targets this))))))) :newline t)))
+  (:schema () (acons (synth :name primary) primary 
+                     (reduce (lambda (acc field) (acons (synth :name field) field acc))
+                             fields
+                             :initial-value nil))))
+
 
 (defun stuff (annotations name type)
   (java-concat (java-with-annotations annotations

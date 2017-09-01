@@ -77,7 +77,7 @@
            :java-null :java-nil 
            :java-try :java-catch% :java-catch
            :java-switch :java-case :java-break
-           :java-if
+           :java-if :java-for :java-foreach
            :java-+ :java-- :java-* :java-/
            :java-or :java-and :java-not
            :java-true :java-false
@@ -125,7 +125,8 @@
            :defent :defrel :deformat :defquery
            :query :relation :product :project :restrict :equijoin :with-queries 
            :named-query
-           :*entities* :*relationships* :*formats* :*queries*))
+           :defdao :dao-query
+           :*entities* :*relationships* :*formats* :*queries* :*daos*))
 
 (defpackage :validator
   (:use :cl :lol :utils :grammar :java)

@@ -17,22 +17,19 @@
 
 (defent indicator-entity
     (entity 'indicator 
-                 :primary (attribute 'indicator-id (atype :integer))
-                 :fields (list (attribute 'name (atype :string :size 20) "Nome dell'indicatore")
-                               (attribute 'source-code (atype :string :size 200)
-                                               "Codice sorgente scritto dall'utente")
-                               (attribute 'object-code (atype :string :size 200) 
-                                               "Codice oggetto prodotto dal compilatore")
-                               (attribute 'start-date (atype :string :size 8)
-                                               "Data inizio validita"))))
+            :primary (attribute 'indicator-id (atype :integer))
+            :fields (list (attribute 'name (atype :string :size 20) "Nome dell'indicatore")
+                          (attribute 'source-code (atype :string :size 200) "Codice sorgente scritto dall'utente")
+                          (attribute 'object-code (atype :string :size 200) "Codice oggetto prodotto dal compilatore")
+                          (attribute 'start-date (atype :string :size 8) "Data inizio validita"))))
 
 (defent parameter-entity
     (entity 'parameter
-                 :primary (attribute 'parameter-id (atype :integer))
-                 :fields (list (attribute 'name (atype :string :size 20) 
-                                               "Name del parametro")
-                               (attribute 'value (atype :string :size 20) 
-                                               "Valore del parametro"))))
+            :primary (attribute 'parameter-id (atype :integer))
+            :fields (list (attribute 'name (atype :string :size 20) 
+                                     "Name del parametro")
+                          (attribute 'value (atype :string :size 20) 
+                                     "Valore del parametro"))))
 
 (defrel indicator-parameters
     (relationship 'parameters-indicator indicator-entity parameter-entity :one-to-many))
@@ -82,17 +79,23 @@
 ;;                       ;; parameters-collection
 ;;                       ))
 (defquery indicator-by-name (name) indicator-entity
-  (with-queries ((inds (relation 'indicators))
-                      (pars (relation 'parameters)))
-    (project (restrict (product inds pars)
-                                 (expr:+and+ 
-                                  (expr:+equal+ (expr:attr inds 'id)
-                                                (expr:attr pars 'id))
-                                  (expr:+equal+ (expr:attr inds 'name)
-                                                name))))))
+          (with-queries ((inds (relation indicator-entity))
+                         (pars (relation parameter-entity)))
+            (project (restrict (product inds pars)
+                               (expr:+and+ 
+                                (expr:+equal+ (expr:attr inds 'id)
+                                              (expr:attr pars 'id))
+                                (expr:+equal+ (expr:attr inds 'name)
+                                              name)))
+                     'indicator-id 'name)))
 (defquery all-indicators () indicator-entity
-  (with-queries ((inds (relation 'indicators)))
-    (project inds)))
+          (with-queries ((inds (relation indicator-entity)))
+            inds))
+
+
+(defdao indicator-dao indicator-entity 
+  (dao-query all-indicators)
+  (dao-query indicator-by-name))
 
 ;; (server:defresource indicators-collection
 ;;     (server:rest-collection 
@@ -165,6 +168,7 @@
        ;; (basedir "D:/Dati/Profili/m026980/workspace/backgen/src/main/java/it/bancaditalia/backgen/")
        (basedir "D:/giusv/temp/backgen/")
        (app-entities (loop for value being the hash-values of *entities* collect value))
+       (app-daos (loop for value being the hash-values of *daos* collect value))
        (app-formats (loop for value being the hash-values of *formats* collect value))
        ;; (app-services (loop for value being the hash-values of server:*services* collect value))
        ) 
@@ -178,7 +182,13 @@
               (pprint filename)
               (write-file filename
                           (synth :string (synth :doc (synth :java (synth :entity entity package)))))))
-          app-entities) 
+          app-entities)
+  (mapcar (lambda (dao) 
+            (let ((filename (mkstr basedir "dao/" (upper-camel (synth :name dao)) ".java"))) 
+              (pprint filename)
+              (write-file filename
+                          (synth :string (synth :doc (synth :java (synth :dao dao package)))))))
+          app-daos) 
   (mapcar (lambda (format) 
             (let ((filename (mkstr basedir "vo/" (upper-camel (symb (synth :name format) '|-V-O|)) ".java"))) 
               (pprint filename)

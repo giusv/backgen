@@ -1,0 +1,18 @@
+(in-package :latex)
+
+(defprim plain (text)
+  (:pretty () (list name (list :attributes (synth-plist :pretty (rest-key args)) :body (synth-all :pretty (rest-plain args)))))
+  (:doc () (labels ((stringify (item)
+                         (if (or (numberp item) (stringp item) (keywordp item) (symbolp item))
+                             item
+                             (synth :string item)))
+                       (open-tag (as) (doc:text "<~a~{ ~a=\"~a\"~}>" (string-downcase name) (mapcar #'stringify as)))
+                       (close-tag () (doc:text "</~a>" (string-downcase name)))
+                       (open-close-tag (as) (doc:text "<~a~{ ~a=\"~a\"~}/>" (string-downcase name) (mapcar #'stringify as))))
+                (let ((attributes (rest-key args)) 
+                      (body (apply #'append* (rest-plain args))))
+                  (if (null body)
+                      (open-close-tag attributes)
+                      (doc:vcat (open-tag attributes)
+                                (doc:nest 4 (apply #'doc:vcat (synth-all :doc body)))
+                                (close-tag)))))))

@@ -25,7 +25,9 @@
                         :serial t
                         :components ((:file "json")
                                      (:file "jsonschema")
-                                     (:file "entity")))
+                                     (:file "entity")
+                                     (:file "dao")))
+               
                
                (:module "server"
                         :serial t

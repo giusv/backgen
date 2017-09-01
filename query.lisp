@@ -7,13 +7,13 @@
 
 (defprim query (name value)
   (:pretty () (list 'query (list :name name :value value)))
-  (:schema () (synth :attributes value))
+  (:schema () (synth :schema value))
   (:sql () (doc:hcat+ (doc:parens (synth :sql value)) (doc:text "~a" name))))
 
-(defprim relation (name)
-  (:pretty () (list 'relation (list :name name)))
-  (:schema () (synth :attributes name))
-  (:sql () (doc:text "~a" name)))
+(defprim relation (entity)
+  (:pretty () (list 'relation (list :entity (synth :pretty entity))))
+  (:schema () (synth :schema entity))
+  (:sql () (doc:textify (synth :name entity))))
 
 (defprim product (&rest queries) 
   (:pretty () (list 'product (list :queries (synth-all :pretty queries))))
@@ -22,14 +22,17 @@
 
 (defprim project (query &rest attributes) 
   (:pretty () (list 'project (list :attributes attributes :query (synth :pretty query))))
-  (:schema () attributes)
+  (:schema () (let ((schema (synth :schema query))) 
+                (reduce (lambda (acc att) (cons (assoc att schema) acc)) 
+                        attributes
+                        :initial-value nil)))
   (:sql () (doc:hcat+
-                      (doc:text "SELECT")
-                      (if attributes 
-                          (apply #'punctuate (doc:comma) nil (synth-all :sql attributes))
-                          (doc:text "*"))
-                      (doc:text "FROM")
-                      (synth :sql query))))
+            (doc:text "SELECT")
+            (if attributes 
+                (apply #'doc:punctuate (doc:comma) nil (mapcar #'doc:textify (mapcar #'car (synth :schema this))))
+                (doc:text "*"))
+            (doc:text "FROM")
+            (synth :sql query))))
 (defprim restrict (query expression) 
   (:pretty () (list 'restrict (list :expression (synth :pretty expression) :query (synth :pretty query))))
   (:schema () (synth :schema query))
@@ -53,12 +56,14 @@
 ;;                                     (expr:+true+))
 ;;                           'id 'name))))
 
-(defprim named-query (name entity template)
+(defprim named-query (name args entity template)
   (:pretty () (list 'named-query (list :name name :entity (synth :pretty entity)
+                                       :args (synth-all :pretty args)
                                        :template (synth :pretty template))))
   (:annotation () (java-annotation '|NamedQuery|
-                                  (java-object :|name| (java-const (mkstr name))
-                                             :|query| (java-const (synth :string (synth :sql template)))))))
+                                   (java-object :|name| (java-const (mkstr name))
+                                                :|query| (java-const (synth :string (synth :sql template))))))
+  (:schema () (synth :schema template)))
 
 (defprim named-query-instance (name entity &rest args)
   (:pretty () (list 'named-query (list :name name :entity entity :args (synth-plist :pretty args))))
@@ -79,7 +84,7 @@
           ;;   (let ,(mapcar #`(,a1 (expr:param ',a1)) args)
           ;;     (named-query ',name ,body)))
           (defparameter ,name 
-            (named-query ',name ,entity
+            (named-query ',name (list ,@(mapcar #`',a1 args)) ,entity
                          (let ,(mapcar #`(,a1 (expr:param ',a1)) args)
                            ,body)))
           

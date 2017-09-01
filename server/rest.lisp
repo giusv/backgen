@@ -21,7 +21,7 @@
                                  (java-import (symb package '|.ejb|) '|*|)
                                  (java-import (symb package '|.jto|) '|*|)
                                  (java-with-annotations 
-                                  (list (java-annotation2 '|Path| (java-const (synth :string (synth :url url)))))
+                                  (list (java-annotation '|Path| (java-const (synth :string (synth :url url)))))
                                   (java-class name :public t
                                             :methods (apply #'append (synth-all :jax-methods resources name url))))))
   (:bean-class (package) (let ((bean-name (symb name "-BEAN")))
@@ -34,12 +34,12 @@
                                     (java-import '|java.util| '|List|)
                                     (java-import '|java.util| '|Arrays|)
                                     (java-with-annotations 
-                                     (list (java-annotation2 '|Stateless|))
+                                     (list (java-annotation '|Stateless|))
                                      (java-class bean-name 
                                                :public t
                                                ;; :interfaces (list (symb name "-BEAN"))
                                                ;; :constructor (java-constructor name nil)
-                                               :fields (list (java-with-annotations (list (java-annotation2 '|PersistenceContext|))
+                                               :fields (list (java-with-annotations (list (java-annotation '|PersistenceContext|))
                                                                                   (java-statement (java-pair 'entity-manager (java-type 'entity-manager) :private t))))
                                                :methods (apply #'append (synth-all :bean-methods resources url))))))))
 
@@ -87,7 +87,7 @@
 
 (defun parlist (type pars)
   (mapcar (lambda (par)
-            (java-with-annotations (list (java-annotation2 type (java-const (synth :string (doc:text "~a" (lower-camel par))))))
+            (java-with-annotations (list (java-annotation type (java-const (synth :string (doc:text "~a" (lower-camel par))))))
                                  (java-pair (lower-camel par) (java-type 'String)) :newline nil)) 
           pars))
 
@@ -107,10 +107,10 @@
   (:pretty () (list 'rest-get (list :queries (synth-all :pretty queries) :action (synth :pretty action) :mtypes mtypes)))
   (:jax-method (bean path chunk) 
                (java-with-annotations
-                (list (java-annotation2 '|GET|)
-                      (java-annotation2 '|Path| (java-const (synth :string (synth :url path))))
+                (list (java-annotation '|GET|)
+                      (java-annotation '|Path| (java-const (synth :string (synth :url path))))
                       (if mtypes 
-                          (java-annotation2 '|Produces| 
+                          (java-annotation '|Produces| 
                                           (apply #'java-array (mapcar 
                                                              (lambda (type) (java-const (mkstr type))) 
                                                              mtypes)))))
@@ -150,10 +150,10 @@
   (:pretty () (list 'rest-post (list :format format :action (synth :pretty action) :mtypes mtypes)))
   (:jax-method (bean path chunk) 
                (java-with-annotations 
-                (list (java-annotation2 '|POST|)
-                      (java-annotation2 '|Path| (java-const (synth :string (synth :url path))))
+                (list (java-annotation '|POST|)
+                      (java-annotation '|Path| (java-const (synth :string (synth :url path))))
                       (if mtypes 
-                          (java-annotation2 '|Consumes|  
+                          (java-annotation '|Consumes|  
                                           (apply #'java-array (mapcar 
                                                              (lambda (type) (java-const (mkstr type))) 
                                                              mtypes)))))
@@ -186,10 +186,10 @@
 (defprim rest-put (format action &key (mtypes (list '|application/json|)))
   (:pretty () (list 'rest-put (list :format format :action (synth :pretty action) :mtypes mtypes)))
   (:jax-method (bean path chunk)
-               (java-with-annotations (list (java-annotation2 '|PUT|)
-                                          (java-annotation2 '|Path| (java-const (synth :string (synth :url path))))
+               (java-with-annotations (list (java-annotation '|PUT|)
+                                          (java-annotation '|Path| (java-const (synth :string (synth :url path))))
                                           (if mtypes 
-                                              (java-annotation2 '|Consumes|  
+                                              (java-annotation '|Consumes|  
                                                               (apply #'java-array (mapcar 
                                                                                  (lambda (type) (java-const (mkstr type))) 
                                                                                  mtypes)))))

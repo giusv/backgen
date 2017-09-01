@@ -328,6 +328,33 @@
                                  (semi))
                 (hcat (text "return") (semi)))))
 
+(defprim java-for (index start end body)
+  (:pretty () (list 'java-for (list :index index
+                                    :start (synth :pretty start)
+                                    :end (synth :pretty end)
+                                    :body (synth :pretty body))))
+  (:java () (vcat (hcat+ (text "for") (parens (hcat (text "~a=" (lower-camel index)) (synth :java start) (semi)
+                                                    (text "~a<" (lower-camel index)) (synth :java end) (semi)
+                                                    (text "~a++" (lower-camel index)))))
+                  (braces
+                   (nest 4 (synth :java body))
+                   :newline t))))
+
+(defprim java-foreach (obj type list body)
+  (:pretty () (list 'java-foreach (list :index index
+                                        :obj (synth :pretty obj)
+                                        :type (synth :pretty type)
+                                        :list (synth :pretty list)
+                                        :body (synth :pretty body))))
+  (:java () (vcat (hcat+ (text "for") (parens (hcat+ (synth :java type)
+                                                     (synth :java obj) 
+                                                     (colon)
+                                                     (synth :java list))))
+                  (braces
+                   (nest 4 (synth :java body))
+                   :newline t))))
+
+
 (defprim java-if (expression success &optional failure)
   (:pretty () (list 'java-if (list :expression expression :success success :failure failure))) 
   (:java () (vcat (hcat (text "if") 
