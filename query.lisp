@@ -33,6 +33,7 @@
                 (doc:text "*"))
             (doc:text "FROM")
             (synth :sql query))))
+
 (defprim restrict (query expression) 
   (:pretty () (list 'restrict (list :expression (synth :pretty expression) :query (synth :pretty query))))
   (:schema () (synth :schema query))

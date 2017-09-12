@@ -62,7 +62,9 @@
 (defpackage :expr
   (:use :cl :lol :utils :grammar)
   (:export :const :attr :variab :value :param
-           :+true+ :+false+ :+and+ :+or+ :+not+ :+equal+ :+less-than+ :+greater-than+ :+null+))
+           :+true+ :+false+ :+and+ :+or+ :+not+ :+equal+ :+less-than+ :+greater-than+ :+null+
+           :cat
+           ))
 
 
 (defpackage :java
@@ -89,8 +91,36 @@
            :backward-chain :multi :forward-chain :queried
            :url))
 
+(defpackage :data
+  (:use :cl :lol :utils :parser :grammar :java :html) 
+  (:export :with-data :with-data%
+           :remote
+           :rand
+           :jnull :jbool :jnumber :jstring :jobject :jarray
+           :jsbool :jsnumber :jsstring :jsprop :jsobject :jsarray
+           :filter :ident :prop :elem :comp
+           :atype :attribute :primary-key :entity :relationship
+           :defent :defrel :deformat :defquery
+           :query :relation :product :project :restrict :equijoin :with-queries 
+           :named-query
+           :defdao :dao-query
+           :*entities* :*relationships* :*formats* :*queries* :*daos*))
+
+
+(defpackage :type
+  (:use :cl :lol :utils :parser :grammar :java) 
+  (:export :integer-type
+           :string-type
+           :entity-type
+           :format-type
+           :collection-type
+           :parametric-type
+           :function-type))
+
+
+
 (defpackage :server
-  (:use :cl :lol :utils :grammar :java)
+  (:use :cl :lol :utils :grammar :type :java)
   (:export :defresource
            :*resources*
            :defservice
@@ -110,30 +140,21 @@
            :find-entity% :find-entity
            :create-transfer% :create-transfer
            :mu% :mu :mapcomm% :mapcomm :fork
-           :respond))
+           :respond
+           :bl-let% :bl-let
+           :bl-create-entity% :bl-create-entity
+           :bl-lambda% :bl-lambda
+           :bl-arg :bl-call
+           :bl-get
+           :bl-variab
+           :bl-cat))
 
-
-(defpackage :data
-  (:use :cl :lol :utils :parser :grammar :java :html) 
-  (:export :with-data :with-data%
-           :remote
-           :rand
-           :jnull :jbool :jnumber :jstring :jobject :jarray
-           :jsbool :jsnumber :jsstring :jsprop :jsobject :jsarray
-           :filter :ident :prop :elem :comp
-           :atype :attribute :primary-key :entity :relationship
-           :defent :defrel :deformat :defquery
-           :query :relation :product :project :restrict :equijoin :with-queries 
-           :named-query
-           :defdao :dao-query
-           :*entities* :*relationships* :*formats* :*queries* :*daos*))
-
-(defpackage :validator
-  (:use :cl :lol :utils :grammar :java)
-  (:export :required))
+;; (defpackage :validator
+;;   (:use :cl :lol :utils :grammar :java)
+;;   (:export :required))
 
 
 
 (defpackage :backgen
-  (:use :cl :lol :utils :doc :grammar :java :data))
+  (:use :cl :lol :utils :doc :grammar :java :type :data))
 

@@ -50,8 +50,8 @@
                                                                 (java-concat (java-statement (java-pair 'temp et :init (java-new et))) 
                                                                              (mapcar (lambda (att index) 
                                                                                        (java-statement (java-chain (java-dynamic 'temp)
-                                                                                                                   (java-call (symb 'set "-" (car att))
-                                                                                                                              (java-element 'row index)))))
+                                                                                                                   (java-call (symb 'set "-" (car att)) 
+                                                                                                                              (java-element 'row index :as (synth :java-type (synth :type (cdr att))))))))
                                                                                      attributes
                                                                                      (loop for i from 0 to (length attributes) collect (java-const i)))
                                                                              (java-statement (java-chain (java-dynamic 'results)

@@ -1,32 +1,35 @@
 (in-package :data)
 
-(defprim atype (name &key (size 0 size-supplied-p) (nullable t))
-  (:pretty () (list 'atype (list :name name :size size :nullable nullable))) 
-  (:ddl () (doc:hcat (case name
-                       (:string (doc:text "VARCHAR2"))
-                       (:integer (doc:text "INTEGER")))
-                     (if size-supplied-p (doc:parens (doc:text "~a" size)))
-                     (if (not nullable) (doc:text " NOT NULL"))))
-  (:entity () (case name
-                       (:string (java-primitive-type 'string))
-                       (:integer (java-primitive-type 'integer)))))
+;; (defprim atype (name &key (size 0 size-supplied-p) (nullable t))
+;;   (:pretty () (list 'atype (list :name name :size size :nullable nullable))) 
+;;   (:ddl () (doc:hcat (case name
+;;                        (:string (doc:text "VARCHAR2"))
+;;                        (:integer (doc:text "INTEGER")))
+;;                      (if size-supplied-p (doc:parens (doc:text "~a" size)))
+;;                      (if (not nullable) (doc:text " NOT NULL"))))
+;;   (:entity () (case name
+;;                 (:string (java-primitive-type 'string))
+;;                 (:integer (java-primitive-type 'integer))))
+;;   (:type () (case name
+;;                 (:string (string-type size))
+;;                 (:integer (integer-type)))))
 
-(defprim attribute (name type &optional desc)
-  (:pretty () (list 'attribute (list :name name :type (synth :pretty type) :desc desc))) 
+(defprim attribute (name type &key (nullable t) desc)
+  (:pretty () (list 'attribute (list :name name :type (synth :pretty type) :nullable nullable :desc desc))) 
   (:entity (&rest annotations) (java-with-annotations 
                                 (cons (java-annotation '|Column| (java-object :|name| (java-const (mkstr name))))
                                       annotations)
-                                (java-statement (java-pair name (synth :entity type) :private t))
+                                (java-statement (java-pair name (synth :java-type type) :private t))
                                 :newline t))
-  (:accessors () (list (java-method (doc:text "get~a" (upper-camel name)) nil (synth :entity type)
+  (:accessors () (list (java-method (doc:text "get~a" (upper-camel name)) nil (synth :java-type type)
                                   (java-return (java-dynamic name)))
-                       (java-method (doc:text "set~a" (upper-camel name)) (list (java-pair name (synth :entity type))) (java-primitive-type 'void)
+                       (java-method (doc:text "set~a" (upper-camel name)) (list (java-pair name (synth :java-type type))) (java-primitive-type 'void)
                                   (java-statement (java-assign (java-chain (java-dynamic 'this) 
                                                         (java-dynamic name))
                                               (java-dynamic name))))))
-  (:paramdecl () (java-pair name (synth :entity type)))
+  (:paramdecl () (java-pair name (synth :java-type type)))
   (:ddl () (doc:hcat (doc:text "~20a" name)
-                     (synth :ddl type))))
+                     (loa :ddl type))))
 
 (defprim primary-key (attribute)
   (:pretty () (list 'primary-key (list :attribute (synth :pretty attribute)))) 
@@ -34,7 +37,6 @@
   (:accessors () (synth :accessors attribute))
   (:paramdecl () (synth :paramdecl attribute))
   (:ddl () (doc:hcat (synth :ddl attribute) (doc:text " NOT NULL PRIMARY KEY"))))
-
 (defprim foreign-key (attribute reference)
   (:pretty () (list 'foreign-key (list :attribute (synth :pretty attribute) :reference (synth :pretty reference)))) 
   (:ddl () (let ((new-attribute (attribute (symb (synth :name reference) "_" (synth :name attribute)) (synth :type attribute)))) 
@@ -64,6 +66,7 @@
        ;; (pprint (synth :name entity))
        ;; (pprint (eq (synth :name (synth :entity q)) (synth :name entity)))
      collect (if (eq (synth :name (synth :entity q)) (synth :name entity)) q)))
+
 (defprim entity (name &key desc primary fields)
   (:pretty () (list 'entity :name name
                     :desc desc
@@ -90,16 +93,19 @@
                                                       (synth-all :target (get-targets this)))
                                              :methods (append (synth :accessors primary)
                                                               (apply #'append (synth-all :accessors fields)))))))
-  (:eao-interface () (java-interface (symb name "-EAO")
-                                     :public t
-                                     :methods (list (java-method (doc:textify (lower-camel (symb "ADD-" name))) 
-                                                                 (remove nil (append (synth-all :paramdecl fields)
-                                                                                     (synth-all :target-paramdecl (get-sources this))
-                                                                                     (synth-all :source-paramdecl (get-targets this))))
-                                                                 (java-object-type name)) 
-                                                    (java-method (doc:textify (lower-camel (symb "CANCEL-" name)))
-                                                                 (list (synth :paramdecl primary)) 
-                                                                 (java-object-type name)))))
+  (:type () (entity-type this))
+  ;; (:java-type () (java-object-type name))
+
+  ;; (:eao-interface () (java-interface (symb name "-EAO")
+  ;;                                    :public t
+  ;;                                    :methods (list (java-method (doc:textify (lower-camel (symb "ADD-" name))) 
+  ;;                                                                (remove nil (append (synth-all :paramdecl fields)
+  ;;                                                                                    (synth-all :target-paramdecl (get-sources this))
+  ;;                                                                                    (synth-all :source-paramdecl (get-targets this))))
+  ;;                                                                (java-object-type name)) 
+  ;;                                                   (java-method (doc:textify (lower-camel (symb "CANCEL-" name)))
+  ;;                                                                (list (synth :paramdecl primary)) 
+  ;;                                                                (java-object-type name)))))
   (:ddl () (doc:vcat (doc:text "CREATE TABLE ~a" name)
                      (doc:parens (doc:nest 4 (apply #'doc:punctuate (doc:comma) t (synth-all :ddl (remove nil (append* (primary-key primary) fields
                                                                                                                        (synth-all :target-foreign-key (get-sources this))

@@ -3,33 +3,31 @@
 
 (deformat parameter-format  "Formato JSON del valore di un parametro relativo a un indicatore"
     (jsobject 'parameter
-              (jsprop 'parameter-id "Identificativo univoco del parametro" (jsstring))
-              (jsprop 'name "Nome" (jsstring))
-              (jsprop 'value "Valore" (jsstring))))
+              (jsprop :parameter-id "Identificativo univoco del parametro" (jsstring))
+              (jsprop :name "Nome" (jsstring))
+              (jsprop :value "Valore" (jsstring))))
 
 (deformat indicator-format "Formato JSON di un indicatore dinamico"
     (jsobject 'parameter
-              (jsprop 'indicator-id "Identificativo univoco dell'indicatore" (jsstring))
-              (jsprop 'source "Codice sorgente" (jsstring))
-              (jsprop 'start-date "Data inizio" (jsstring))
-              (jsprop 'parameters "parametri " (jsarray parameter-format))))
+              (jsprop :indicator-id "Identificativo univoco dell'indicatore" (jsstring))
+              (jsprop :source "Codice sorgente" (jsstring))
+              (jsprop :start-date "Data inizio" (jsstring))
+              (jsprop :parameters "parametri " (jsarray parameter-format))))
 
 
 (defent indicator-entity
     (entity 'indicator 
-            :primary (attribute 'indicator-id (atype :integer))
-            :fields (list (attribute 'name (atype :string :size 20) "Nome dell'indicatore")
-                          (attribute 'source-code (atype :string :size 200) "Codice sorgente scritto dall'utente")
-                          (attribute 'object-code (atype :string :size 200) "Codice oggetto prodotto dal compilatore")
-                          (attribute 'start-date (atype :string :size 8) "Data inizio validita"))))
+            :primary (attribute :indicator-id (string-type 20))
+            :fields (list (attribute :name (string-type 20) :desc "Nome dell'indicatore")
+                          (attribute :source-code (string-type 200) :desc "Codice sorgente scritto dall'utente")
+                          (attribute :object-code (string-type 200) :desc "Codice oggetto prodotto dal compilatore")
+                          (attribute :start-date (string-type 8) :desc "Data inizio validita"))))
 
 (defent parameter-entity
     (entity 'parameter
-            :primary (attribute 'parameter-id (atype :integer))
-            :fields (list (attribute 'name (atype :string :size 20) 
-                                     "Name del parametro")
-                          (attribute 'value (atype :string :size 20) 
-                                     "Valore del parametro"))))
+            :primary (attribute :parameter-id (integer-type))
+            :fields (list (attribute :name (string-type 20) :desc "Name del parametro")
+                          (attribute :value (string-type 20) :desc "Valore del parametro"))))
 
 (defrel indicator-parameters
     (relationship 'parameters-indicator indicator-entity parameter-entity :one-to-many))
@@ -211,6 +209,27 @@
   ;;         app-services)
   )
 
+(let ((test (server:bl-let ((entity1 (server:bl-create-entity indicator-entity 
+                                                              :indicator-id (expr:const 1)))
+                            (entity2 (server:bl-let ((entity3 (server:bl-create-entity indicator-entity 
+                                                                                       :indicator-id (expr:const 2)))
+                                                     (entity4 entity3)) 
+                                       entity4))
+                            (name (server:bl-get :indicator-id entity2))
+                            ;; (all-inds (server:bl-call (all-indicators)))
+                            ;; (all-ind-ids (server:bl-map (mu (ind) (bl-get :id ind))
+                            ;;                             all-inds))
+                            (name-test (server:bl-call (server:bl-lambda ((x (string-type 20))
+                                                                          (y (string-type 20)))
+                                                                         (server:bl-cat x (server:bl-call (server:bl-lambda ((x (string-type 20))
+                                                                                                                             (y (string-type 20)))
+                                                                                                                            (server:bl-cat x y))
+                                                                                                          name name)))
+                                                       name name))) 
+              name-test))
+      ;; (test (server:bl-create-entity indicator-entity (list :indicator-id (expr:const 1))))
+      )
+  (pprint (synth :string (synth :doc (synth :java (synth :logic test (lambda (x) (java-return x))))))))
 
 
 ;; (defun to-string (x)

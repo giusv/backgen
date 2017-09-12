@@ -273,10 +273,12 @@
   (:pretty () (list 'java-enum (list :name name))) 
   (:java () (text "~a" (string-upcase (upper-camel name "_")))))
 
-(defprim java-element (array index)
+(defprim java-element (array index &key as)
   (:pretty () (list 'java-element (list :array array :index (synth :pretty index)))) 
-  (:java () (hcat (text "~a" (lower-camel array))
-                      (brackets (synth :java index)))))
+  (:java () (if as
+                (hcat+ (parens (synth :java as)) #1=(hcat (text "~a" (lower-camel array))
+                                                          (brackets (synth :java index))))
+                #1#)))
 
 (defprim java-chain (&rest args)
   (:pretty () (list 'java-chain (list :calls (synth-all :pretty (apply #'append* (rest-plain args)))
@@ -311,10 +313,12 @@
 (defprim java-arrow (parameters expression)
   (:pretty () (list 'java-arrow (list :parameters (synth-all :pretty parameters) 
                                     :expression (synth :pretty expression)))) 
-  (:java () (hcat (parens (apply #'punctuate (comma) nil (synth-all :java parameters)))
-                  (text " -> ") 
-                  (braces (nest 4 (synth :java expression))
-                          :newline t))))
+  (:java () (parens (hcat (apply #'punctuate (text " -> ") t 
+                                 (mapcar (lambda (param) (parens param))
+                                         (synth-all :java parameters)))
+                          (text " -> ") 
+                          (braces (nest 4 (synth :java expression))
+                                  :newline t)))))
 
 
 (defprim java-unit (name &rest elements)

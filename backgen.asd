@@ -18,7 +18,9 @@
                                      ;; (:file "sql")
                                      ))
                (:file "expression")
-               (:file "validator") 
+               (:file "type")
+               ;; (:file "validator")
+               
                ;; (:file "url")
                (:file "query") 
                (:module "data"
@@ -29,8 +31,9 @@
                                      (:file "dao")))
                
                
+               ;; (:file "type")
                (:module "server"
                         :serial t
                         :components ((:file "rest")
-                                     (:file "actions")))
+                                     (:file "logic")))
                (:file "backgen")))
