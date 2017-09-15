@@ -36,4 +36,5 @@
                         :serial t
                         :components ((:file "rest")
                                      (:file "logic")))
+               (:file "latex")
                (:file "backgen")))

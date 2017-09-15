@@ -119,8 +119,18 @@
 
 
 
+
+(defpackage :latex
+  (:use :cl :lol :utils :doc :grammar)
+  (:export :line :normal :section
+           :item :itemize :enumerate :description% :description
+           :document
+           :paragraph
+           :sequence
+           :table :row))
+
 (defpackage :server
-  (:use :cl :lol :utils :grammar :type :java)
+  (:use :cl :lol :utils :grammar :type :java :latex)
   (:export :defresource
            :*resources*
            :defservice
@@ -157,4 +167,5 @@
 
 (defpackage :backgen
   (:use :cl :lol :utils :doc :grammar :java :type :data))
+
 

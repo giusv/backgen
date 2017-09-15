@@ -1,33 +1,23 @@
 (in-package :server)
 
-
 (defprim bl-binding (name expr)
   (:pretty () (list 'bl-binding (list :name name :expr (synth :pretty expr))))
   (:logic (cont &rest args) 
-          (apply cont (synth :logic expr (lambda (x) (java-statement (java-pair name (synth :java-type (synth :type expr)) :init x)))) args)))
-
+          (apply cont (synth :logic expr (lambda (x) (java-statement (java-pair name (synth :java-type (synth :type expr)) :init x)))) args))
+  (:latex (cont &rest args) (apply cont (paragraph (line (normal "Si assegna a ~a il risultato della seguente espressione:" name))
+                                                   (synth :latex expr #'identity)))))
 
 (defprim bl-let% (bindings expr)
   (:pretty () (list 'bl-let (list :bindings (synth-all :pretty bindings) :expr (synth :pretty expr))))
   (:logic (cont &rest args) 
           (java-concat (synth-all :logic bindings #'identity)
-                       (apply #'synth :logic expr cont args))
-          ;; (let* ((lhs-names (mapcar #'car bindings))
-          ;;        (lhs-types (synth-all :type (mapcar #'cadr bindings)))
-          ;;        (logics (mapcar (lambda (lhs type rhs) 
-          ;;                          (synth :logic rhs (lambda (x) (java-statement (java-pair lhs type :init x)))))
-          ;;                        lhs-names
-          ;;                        lhs-types
-          ;;                        (mapcar #'cadr bindings))))
-          ;;   (java-concat (synth-all :logic bindings #'identity) (synth :logic expr cont args)))
-          )
-  (:type () (synth :type expr)))
-
+                       (apply #'synth :logic expr cont args)))
+  (:type () (synth :type expr))
+  (:latex (cont &rest args) (apply cont (append (synth-all :latex bindings #'identity) args))))
 (defmacro bl-let (bindings &body expr)
   `(let* ,(mapcar #`(,(car a1) (bl-variab ',(car a1) (synth :type ,(cadr a1)))) bindings)
      (bl-let% (list ,@(mapcar (lambda (binding) `(bl-binding ',(car binding) ,(cadr binding)))
                                       bindings)) ,@expr)))
-
 
 (defprim bl-create-entity% (entity bindings)
   (:pretty () (list 'create-entity (list :entity entity :bindings (synth-plist :pretty bindings)))) 
@@ -45,7 +35,8 @@
              (java-statement (java-chain (java-dynamic 'entity-manager)
                                          (java-call 'persist new-entity)))
              (apply cont new-entity args))))
-  (:type () (entity-type entity)))
+  (:type () (entity-type entity))
+  (:latex (cont &rest args) (apply cont (normal "Creazione dell'entità ~a" (synth :name entity)) args)))
 
 (defmacro bl-create-entity (entity &rest bindings)
   `(bl-create-entity% ,entity (list ,@bindings)))
@@ -56,7 +47,8 @@
           (let ((logic (java-chain :as (synth :java-type (synth :type this))
                                    (java-dynamic (synth :name object)) (java-call (symb 'get "-" place)))))
             (apply cont logic args)))
-  (:type () (synth :property-type (synth :type object) place)))
+  (:type () (synth :property-type (synth :type object) place))
+  (:latex (cont &rest args) (apply cont (normal "l'estrazione del campo ~a dall'oggetto ~a" place (synth :name object)))))
 
 (defprim bl-arg (name type)
   (:pretty () (list 'bl-arg (list :name name :type (synth :pretty type)))))
@@ -68,7 +60,8 @@
                                                              (synth :java-type (synth :type arg))))
                                                 inputs)
                                         (synth :logic expr (lambda (x) (java-return x)))))
-  (:type () (function-type (synth :type expr) (synth-all :type inputs))))
+  (:type () (function-type (synth :type expr) (synth-all :type inputs)))
+  (:latex (cont &rest args) (apply cont (synth :latex expr #'identity) args)))
 
 (defmacro bl-lambda (inputs expr)
   `(let* ,(mapcar #`(,(car a1) (bl-variab (gensym (mkstr ',(car a1))) ,(cadr a1))) inputs) 
@@ -80,8 +73,11 @@
   (:logic (cont &rest args) (apply cont (java-chain (java-call 'map (synth :logic function)) 
                                                     :as (synth :type this))
                                    args))
-  (:type () (collection-type (synth :type function))))
-
+  (:type () (collection-type (synth :type function)))
+  (:latex (cont &rest args) (apply cont 
+                                   (sequence 
+                                    (normal "per ogni elemento della collezione ~a viene effettuata la seguente operazione:" name)
+                                    (synth :latex function #'identity)))))
 (defprim bl-variab (name type)
   (:pretty () (list 'bl-variab (list :name name)))
   (:logic (cont &rest args) (apply cont (java-dynamic name) args)))
@@ -101,8 +97,11 @@
                  args))
   (:type () (if (every #'closure-equal (synth-all :type inputs) (synth :arg-types (synth :type function)))
                 (synth :return-type (synth :type function))
-                (error "type mismatch"))))
-
+                (error "type mismatch")))
+  (:latex (cont &rest args) (apply cont 
+                                   (sequence 
+                                    (normal "per ogni elemento della collezione ~a viene effettuata la seguente operazione:" name)
+                                    (synth :latex function #'identity)))))
 (defprim bl-cat (&rest exps)
   (:pretty () (list 'bl-cat (:exps (synth-all :pretty exps)))) 
   (:logic (cont &rest args) (apply cont (reduce #'java-+ (synth-all :logic exps #'identity)) args))
