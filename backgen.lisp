@@ -33,49 +33,13 @@
     (relationship 'parameters-indicator indicator-entity parameter-entity :one-to-many))
 
 
-;; (server:defresource indicator-item
-;;     (server:rest-item 'indicator ((indicator (url:path-parameter 'indicator :integer))) 
-;;                       (list 
-;;                        (server:rest-get () 
-;;                                         (server:concat
-;;                                          (inst (server:find-entity indicator-entity indicator))
-;;                                          (ret (server:with-fields ((name name)
-;;                                                                    (code source-code)
-;;                                                                    (start-date start-date)
-;;                                                                    (parameters parameter-list)) inst
-;;                                                 (server:create-transfer indicator-format 
-;;                                                                         :name name
-;;                                                                         :source-code code
-;;                                                                         :start-date start-date
-;;                                                                         :parameters (server:mapcomm 
-;;                                                                                     (server:mu parameter
-;;                                                                                                (server:with-fields ((parameter-name name) (parameter-value value)) parameter
-;;                                                                                                  (server:create-transfer parameter-format 
-;;                                                                                                   :name parameter-name
-;;                                                                                                   :value parameter-value)))
-;;                                                                                     parameters)))) 
-;;                                          ((server:respond :ok ret))))
-;;                        (server:rest-put indicator-format 
-;;                                         (server:concat
-;;                                          ((server:with-fields ((name name)
-;;                                                                (code source-code)
-;;                                                                (start-date start-date)
-;;                                                                (parameters parameters)) indicator-format
-;;                                             (server:update-entity indicator-entity indicator
-;;                                                                   :name name
-;;                                                                   :source-code code
-;;                                                                   :start-date start-date
-;;                                                                   :parameter-list (server:mapcomm 
-;;                                                                               (server:mu parameter
-;;                                                                                          (server:with-fields ((parameter-name name) (parameter-value value)) parameter
-;;                                                                                            (server:create-entity 
-;;                                                                                             parameter-entity
-;;                                                                                             :name parameter-name
-;;                                                                                             :value parameter-value)))
-;;                                                                               parameters))))
-;;                                          ((server:respond :no-content)))))
-;;                       ;; parameters-collection
-;;                       ))
+(server:defresource indicator-item
+    (server:rest-item 'indicator ((indicator (url:path-parameter 'indicator :integer))) 
+                      (list 
+                       (server:rest-get () 
+                                        )
+                       (server:rest-put indicator-format))))
+
 (defquery indicator-by-name (name) indicator-entity
           (with-queries ((inds (relation indicator-entity))
                          (pars (relation parameter-entity)))
@@ -209,27 +173,28 @@
   ;;         app-services)
   )
 
-(let ((test (server:bl-let ((entity1 (server:bl-create-entity indicator-entity 
-                                                              :indicator-id (expr:const 1)))
-                            (entity2 (server:bl-let ((entity3 (server:bl-create-entity indicator-entity 
-                                                                                       :indicator-id (expr:const 2)))
-                                                     (entity4 entity3)) 
-                                       entity4))
-                            (name (server:bl-get :indicator-id entity2))
-                            ;; (all-inds (server:bl-call (all-indicators)))
-                            ;; (all-ind-ids (server:bl-map (mu (ind) (bl-get :id ind))
-                            ;;                             all-inds))
-                            (name-test (server:bl-call (server:bl-lambda ((x (string-type 20))
-                                                                          (y (string-type 20)))
-                                                                         (server:bl-cat x (server:bl-call (server:bl-lambda ((x (string-type 20))
-                                                                                                                             (y (string-type 20)))
-                                                                                                                            (server:bl-cat x y))
-                                                                                                          name name)))
-                                                       name name))) 
-              name-test))
-      ;; (test (server:bl-create-entity indicator-entity (list :indicator-id (expr:const 1))))
-      )
-  (pprint (synth :string (synth :doc (synth :java (synth :logic test (lambda (x) (java-return x))))))))
+
+;; (let ((test (server:bl-let ((entity1 (server:bl-create-entity indicator-entity 
+;;                                                               :indicator-id (expr:const 1)))
+;;                             (entity2 (server:bl-let ((entity3 (server:bl-create-entity indicator-entity 
+;;                                                                                        :indicator-id (expr:const 2)))
+;;                                                      (entity4 entity3)) 
+;;                                        entity4))
+;;                             (name (server:bl-get :indicator-id entity2))
+;;                             ;; (all-inds (server:bl-call (all-indicators)))
+;;                             ;; (all-ind-ids (server:bl-map (mu (ind) (bl-get :id ind))
+;;                             ;;                             all-inds))
+;;                             (name-test (server:bl-call (server:bl-lambda ((x (string-type 20))
+;;                                                                           (y (string-type 20)))
+;;                                                                          (server:bl-cat x (server:bl-call (server:bl-lambda ((x (string-type 20))
+;;                                                                                                                              (y (string-type 20)))
+;;                                                                                                                             (server:bl-cat x y))
+;;                                                                                                           name name)))
+;;                                                        name name))) 
+;;               name-test))
+;;       ;; (test (server:bl-create-entity indicator-entity (list :indicator-id (expr:const 1))))
+;;       )
+;;   (pprint (synth :string (synth :doc (synth :java (synth :logic test (lambda (x) (java-return x))))))))
 
 
 ;; (defun to-string (x)

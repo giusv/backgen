@@ -36,7 +36,7 @@
                                          (java-call 'persist new-entity)))
              (apply cont new-entity args))))
   (:type () (entity-type entity))
-  (:latex (cont &rest args) (apply cont (normal "Creazione dell'entità ~a" (synth :name entity)) args)))
+  (:latex (cont &rest args) (apply cont (normal "Creazione dell'entita ~a" (synth :name entity)) args)))
 
 (defmacro bl-create-entity (entity &rest bindings)
   `(bl-create-entity% ,entity (list ,@bindings)))
@@ -99,7 +99,7 @@
                 (synth :return-type (synth :type function))
                 (error "type mismatch")))
   (:latex (cont &rest args) (apply cont 
-                                   (sequence 
+                                   (seq 
                                     (normal "per ogni elemento della collezione ~a viene effettuata la seguente operazione:" name)
                                     (synth :latex function #'identity)))))
 (defprim bl-cat (&rest exps)

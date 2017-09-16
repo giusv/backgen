@@ -14,8 +14,8 @@
   (:doc () (hcat (apply #'vcat (synth-all :doc contents)) 
                  (text "\\\\"))))
 
-(defprim sequence (&rest elements)
-  (:pretty () (list 'sequence (list :elements (synth-all :pretty elements))))
+(defprim seq (&rest elements)
+  (:pretty () (list 'seq (list :elements (synth-all :pretty elements))))
   (:doc () (apply #'vcat (synth-all :doc elements))))
 
 (defprim section (title &rest contents)

@@ -126,7 +126,7 @@
            :item :itemize :enumerate :description% :description
            :document
            :paragraph
-           :sequence
+           :seq
            :table :row))
 
 (defpackage :server

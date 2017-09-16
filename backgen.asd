@@ -11,7 +11,7 @@
                (:file "parser")
                (:file "grammar")
                (:file "doc")
-               (:file "html")
+               ;; (:file "html")
                (:module "lang"
                         :serial t
                         :components ((:file "java")
@@ -35,6 +35,7 @@
                (:module "server"
                         :serial t
                         :components ((:file "rest")
+                                     (:file "ejb")
                                      (:file "logic")))
                (:file "latex")
                (:file "backgen")))
