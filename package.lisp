@@ -157,6 +157,8 @@
            :bl-lambda% :bl-lambda
            :bl-arg :bl-call
            :bl-get
+           :bl-unless% :bl-unless
+           :bl-condition
            :bl-variab
            :bl-cat
            :stateless-ejb

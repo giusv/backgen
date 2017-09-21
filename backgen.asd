@@ -35,7 +35,8 @@
                
                (:module "server"
                         :serial t
-                        :components ((:file "rest")
+                        :components ((:file "error")
+                                     (:file "rest")
                                      (:file "ejb")
                                      (:file "logic")))
                (:file "latex")

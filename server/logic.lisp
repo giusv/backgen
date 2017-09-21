@@ -110,3 +110,27 @@
 ;;   `(let ((result (gensym (symbol-name (symb (synth :name ,collection))))))
 ;;      (values (mapcomm% ,command result ,collection) (bl-variab result))))
 
+(defprim bl-condition (test expr)
+  (:pretty () (list 'bl-condition (list :test (synth :pretty test) :expr (synth :pretty expr))))
+  (:implementation (cont &rest args) 
+                   (apply cont (java-if (synth :implementation test #'identity)
+                                          (java-throw (synth :implementation expr (lambda (e)
+                                                                                    (java-new (synth :type e)
+                                                                                              (synth :implementation e #'identity))))))
+                          args))
+  (:type () (synth :type expr)))
+
+(defprim bl-unless% (conditions expr)
+  (:pretty () (list 'bl-unless (list :conditions (synth-all :pretty conditions) :expr (synth :pretty expr))))
+  (:implementation (cont &rest args)
+                   (reduce (lambda (condition acc) 
+                             (java-if (synth :implementation (synth :test condition) #'identity)
+                                      (java-throw (synth :implementation (synth :expr condition) 
+                                                         (lambda (e)
+                                                           (java-new (synth :java-type (synth :type (synth :expr condition)))
+                                                                     e))))
+                                      acc))
+                           conditions
+                           :from-end t
+                           :initial-value (apply #'synth :implementation expr cont args)))
+  (:type () (synth :type expr)))

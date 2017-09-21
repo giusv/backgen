@@ -48,8 +48,13 @@
                                                                                                                                                          (y (string-type 20)))
                                                                                                                                                         (server:bl-cat x y))
                                                                                                                                       name name)))
-                                                                                   name name))) 
-                                          name-test)))))
+                                                                                   name name))
+                                                        (cond-test (server:bl-unless% (list (server:bl-condition entity1 entity2)
+                                                                                            (server:bl-condition entity2 name))
+                                                                                      name-test))) 
+                                          (server:bl-unless% (list (server:bl-condition entity1 entity2)
+                                                                   (server:bl-condition entity2 name))
+                                                            cond-test))))))
 
 (server:defservice server (server:rest-service 'indicator-service (url:void) indicator-item))
 
