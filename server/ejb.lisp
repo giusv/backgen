@@ -31,7 +31,18 @@
                                                                                            (java-statement (java-pair (synth :name dao) (java-object-type (synth :name dao)) :private t))))
                                                                   daos))
                                             :methods (synth-all :implementation methods)))))))
+;; (defprim ejb-parameter (name type)
+;;   (:pretty () (list 'ejb-parameter (list :name name :type (synth :pretty type))))
+;;   (:implementation () (java-pair name type)))
 
-(defprim ejb-method (name)
-  (:pretty () (list 'ejb-method (list :name name)))
-  )
+(defprim ejb-method (name parameters logic)
+  (:pretty () (list 'ejb-method (list :name name :parameters (synth-all :pretty parameters) :logic (synth :pretty logic))))
+  (:implementation () (java-method (doc:textify (lower-camel name))
+                                   parameters
+                                   (synth :java-type (synth :type logic))
+                                   (synth :implementation logic (lambda (x) (java-return x))))))
+
+(defun generate-ejb (service)
+  (stateless-ejb (symb (synth :name service) "-E-J-B")
+                 :daos nil
+                 :methods (apply #'append (synth-all :ejb-methods (synth :resources service) (synth :url service)))))

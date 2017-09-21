@@ -58,8 +58,9 @@
 ;;                           'id 'name))))
 
 (defprim named-query (name args entity template)
-  (:pretty () (list 'named-query (list :name name :entity (synth :pretty entity)
-                                       :args (synth-all :pretty args)
+  (:pretty () (list 'named-query (list :name name 
+                                       :entity (synth :pretty entity)
+                                       :args args
                                        :template (synth :pretty template))))
   (:annotation () (java-annotation '|NamedQuery|
                                    (java-object :|name| (java-const (mkstr name))
@@ -67,7 +68,7 @@
   (:schema () (synth :schema template)))
 
 (defprim named-query-instance (name entity &rest args)
-  (:pretty () (list 'named-query (list :name name :entity entity :args (synth-plist :pretty args))))
+  (:pretty () (list 'named-query (list :name name :entity (synth :pretty entity) :args (synth-plist :pretty args))))
   (:type () (java-array-type (java-object-type (synth :name entity))))
   (:call () (java-chain (java-call 'create-named-query (java-const (mkstr name)))
                       (synth-plist-merge 

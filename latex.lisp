@@ -64,14 +64,14 @@
           (text "\\maketitle")
           (synth-all :doc contents))))
   
-(synth :output (document 'title 'author
-                         (section 'section
-                                  (paragraph (normal "hello ")
-                                             (normal "world!"))
-                                  (table (row (normal "name") (normal "surname") (normal "address"))
-                                         (row (normal "a") (normal "b") (normal "b"))
-                                         (row (normal "c") (normal "d")))
-                                  (itemize (normal "a")
-                                           (normal "b"))
-                                  (description (a . (normal "a"))
-                                               (b . (normal "b"))))) 0)
+;; (synth :output (document 'title 'author
+;;                          (section 'section
+;;                                   (paragraph (normal "hello ")
+;;                                              (normal "world!"))
+;;                                   (table (row (normal "name") (normal "surname") (normal "address"))
+;;                                          (row (normal "a") (normal "b") (normal "b"))
+;;                                          (row (normal "c") (normal "d")))
+;;                                   (itemize (normal "a")
+;;                                            (normal "b"))
+;;                                   (description (a . (normal "a"))
+;;                                                (b . (normal "b"))))) 0)

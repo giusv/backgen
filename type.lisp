@@ -13,8 +13,9 @@
   (:property-type (prop) (let ((primary (synth :primary entity))
                                (fields (synth :fields entity))
                                (name (synth :name entity)))
-                           (pprint (mapcar (lambda (att) (synth :name att))
-                                           (cons primary fields))) 
+                           ;; (pprint (mapcar (lambda (att) (synth :name att))
+                           ;;                 (cons primary fields)))
+                           
                            (aif (car (remove-if-not (lambda (att) (eq prop (synth :name att)))
                                                     (cons primary fields)))
                                 (synth :type it)

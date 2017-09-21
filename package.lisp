@@ -104,6 +104,7 @@
            :query :relation :product :project :restrict :equijoin :with-queries 
            :named-query
            :defdao :dao-query
+           :generate-dao
            :*entities* :*relationships* :*formats* :*queries* :*daos*))
 
 
@@ -157,7 +158,11 @@
            :bl-arg :bl-call
            :bl-get
            :bl-variab
-           :bl-cat))
+           :bl-cat
+           :stateless-ejb
+           :ejb-method
+           ;; :ejb-parameter
+           :generate-ejb))
 
 ;; (defpackage :validator
 ;;   (:use :cl :lol :utils :grammar :java)

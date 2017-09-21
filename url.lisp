@@ -23,41 +23,42 @@
 ;;   (:last () (error "no last elements in expression chunks")))
 
 (defprim path-parameter (name type &key validators)
-  (:pretty () (list 'path-parameter (list :name name :type type :validators (synth-all :pretty validators))))
-  (:type () (doc:text "path"))
+  (:pretty () (list 'path-parameter (list :name name :type (synth :pretty type) :validators (synth-all :pretty validators))))
+  ;; (:type () (doc:text "path"))
   (:declaration (&optional full) 
-                (let ((pair (java-pair (symb (lower-camel name) "-ID") (java-type type)))) 
+                (let ((pair (java-pair (symb (lower-camel name) "-ID") (synth :java-type type)))) 
                   (if full
-                      (java-with-annotations (cons (java-annotation2 '|PathParam| (java-object :|value| (java-const (lower-camel name))))
+                      (java-with-annotations (cons (java-annotation '|PathParam| (java-object :|value| (java-const (lower-camel name))))
                                                  (synth-all :annotation validators))
                                            pair
                                            :newline nil)
                       pair)))
-  (:call () (lang:java-dynamic (symb (lower-camel name) "-ID")))
-  (:req () (html:taglist 
-            (html:span-color (string-downcase name))
-            (doc:text "(parametro path)")))
+  (:call () (java:java-dynamic (symb (lower-camel name) "-ID")))
+  ;; (:req () (html:taglist 
+  ;;           (html:span-color (string-downcase name))
+  ;;           (doc:text "(parametro path)")))
   (:url () (dynamic-chunk name type :validators validators)))
 
 (defprim query-parameter (name type &key validators default)
-  (:pretty () (list 'quey-parameter (list :name name :type type :default (synth :pretty default) :validators (synth-all :pretty validators))))
+  (:pretty () (list 'query-parameter (list :name name :type (synth :pretty type) :default (synth :pretty default) :validators (synth-all :pretty validators))))
   (:url () (doc:hcat (doc:text "~a" (string-downcase name)) 
                      (if value 
                          (doc:hcat (equals) (synth :url value))
                          (empty))))
-  (:req () (html:taglist 
-            (html:span-color (string-downcase name))
-            (doc:text "(parametro query)")))
+  ;; (:req () (html:taglist 
+  ;;           (html:span-color (string-downcase name))
+  ;;           (doc:text "(parametro query)")))
   (:declaration (&optional full) 
-                (let ((pair (java-pair (lower-camel name) (java-type type)))) 
+                (let ((pair (java-pair (lower-camel name) (synth :java-type type)))) 
                   (if full
-                      (java-with-annotations (cons (java-annotation2 '|QueryParam| (java-object :|value| (java-const (lower-camel name))))
+                      (java-with-annotations (cons (java-annotation '|QueryParam| (java-object :|value| (java-const (lower-camel name))))
                                                  (synth-all :annotation validators))
                                            pair
                                            :newline nil)
                       pair)))
-  (:call () (lang:java-dynamic name))
-  (:type () (doc:text "query")))
+  (:call () (java:java-dynamic name))
+  ;; (:type () (doc:text "query"))
+  )
 
 ;; (defprim login-parameter (name)
 ;;   (:req () (html:taglist 

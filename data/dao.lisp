@@ -1,9 +1,13 @@
 (in-package :data)
 
 (defparameter *daos* (make-hash-table))
-(defmacro defdao (name entity &rest methods)
-  `(progn (defparameter ,name (dao ,entity ,@methods)) 
-         (setf (gethash ',name *daos*) ,name)))
+(defun defdao (name entity &rest methods)
+  (progn (defparameter name (apply #'dao entity methods)) 
+         (setf (gethash name *daos*) name)
+         name))
+
+
+
 
 (defprim dao (entity &rest methods)
   (:pretty () (list 'dao (list :methods (synth-all :pretty methods))))
@@ -62,6 +66,7 @@
                         )))
 
 
+
 (defprim dao-insert ()
   (:pretty () (list 'dao-insert)))
 
@@ -71,5 +76,9 @@
 (defprim dao-find ()
   (:pretty () (list 'dao-find)))
 
+;; (defun generate-dao (entity)
+;;   (apply #'defdao (synth :name entity) entity 
+;;          (mapcar #'dao-query (get-queries entity))))
 
-
+(defun generate-dao (entity)
+  (apply #'dao entity (mapcar #'dao-query (get-queries entity))))

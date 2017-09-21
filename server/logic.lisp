@@ -2,16 +2,16 @@
 
 (defprim bl-binding (name expr)
   (:pretty () (list 'bl-binding (list :name name :expr (synth :pretty expr))))
-  (:logic (cont &rest args) 
-          (apply cont (synth :logic expr (lambda (x) (java-statement (java-pair name (synth :java-type (synth :type expr)) :init x)))) args))
+  (:implementation (cont &rest args) 
+          (apply cont (synth :implementation expr (lambda (x) (java-statement (java-pair name (synth :java-type (synth :type expr)) :init x)))) args))
   (:latex (cont &rest args) (apply cont (paragraph (line (normal "Si assegna a ~a il risultato della seguente espressione:" name))
                                                    (synth :latex expr #'identity)))))
 
 (defprim bl-let% (bindings expr)
   (:pretty () (list 'bl-let (list :bindings (synth-all :pretty bindings) :expr (synth :pretty expr))))
-  (:logic (cont &rest args) 
-          (java-concat (synth-all :logic bindings #'identity)
-                       (apply #'synth :logic expr cont args)))
+  (:implementation (cont &rest args) 
+          (java-concat (synth-all :implementation bindings #'identity)
+                       (apply #'synth :implementation expr cont args)))
   (:type () (synth :type expr))
   (:latex (cont &rest args) (apply cont (append (synth-all :latex bindings #'identity) args))))
 (defmacro bl-let (bindings &body expr)
@@ -21,7 +21,7 @@
 
 (defprim bl-create-entity% (entity bindings)
   (:pretty () (list 'create-entity (list :entity entity :bindings (synth-plist :pretty bindings)))) 
-  (:logic (cont &rest args) 
+  (:implementation (cont &rest args) 
           (let* ((new-entity-name (gensym (symbol-name (synth :name entity)))) 
                  (new-entity (java-dynamic new-entity-name)))
             (java-concat
@@ -30,7 +30,7 @@
              (synth-plist-merge
               (lambda (binding)
                 (java-statement (java-chain new-entity
-                                            (java-call (symb "SET-" (car binding)) (synth :logic (cadr binding) #'identity)))))
+                                            (java-call (symb "SET-" (car binding)) (synth :implementation (cadr binding) #'identity)))))
               bindings)
              (java-statement (java-chain (java-dynamic 'entity-manager)
                                          (java-call 'persist new-entity)))
@@ -43,7 +43,7 @@
 
 (defprim bl-get (place object)
   (:pretty () (list 'bl-get (list :place place :object (synth :pretty object))))
-  (:logic (cont &rest args) 
+  (:implementation (cont &rest args) 
           (let ((logic (java-chain :as (synth :java-type (synth :type this))
                                    (java-dynamic (synth :name object)) (java-call (symb 'get "-" place)))))
             (apply cont logic args)))
@@ -55,11 +55,11 @@
 
 (defprim bl-lambda% (inputs expr)
   (:pretty () (list 'bl-lambda (list :inputs (synth-all :pretty inputs) :expr (synth :pretty expr))))
-  (:logic (cont &rest args) (java-arrow (mapcar (lambda (arg)
+  (:implementation (cont &rest args) (java-arrow (mapcar (lambda (arg)
                                                   (java-pair (synth :name arg)
                                                              (synth :java-type (synth :type arg))))
                                                 inputs)
-                                        (synth :logic expr (lambda (x) (java-return x)))))
+                                        (synth :implementation expr (lambda (x) (java-return x)))))
   (:type () (function-type (synth :type expr) (synth-all :type inputs)))
   (:latex (cont &rest args) (apply cont (synth :latex expr #'identity) args)))
 
@@ -70,7 +70,7 @@
 (defprim bl-map% (function collection)
   (:pretty () (list 'bl-map (list :function (synth :pretty function) :collection (synth :pretty collection))))
   
-  (:logic (cont &rest args) (apply cont (java-chain (java-call 'map (synth :logic function)) 
+  (:implementation (cont &rest args) (apply cont (java-chain (java-call 'map (synth :implementation function)) 
                                                     :as (synth :type this))
                                    args))
   (:type () (collection-type (synth :type function)))
@@ -80,18 +80,18 @@
                                     (synth :latex function #'identity)))))
 (defprim bl-variab (name type)
   (:pretty () (list 'bl-variab (list :name name)))
-  (:logic (cont &rest args) (apply cont (java-dynamic name) args)))
+  (:implementation (cont &rest args) (apply cont (java-dynamic name) args)))
 
 (defun closure-equal (x y)
   (equal (synth :pretty x) (synth :pretty y)))
 
 (defprim bl-call (function &rest inputs)
   (:pretty () (list 'bl-call (list :function (synth :pretty function) :inputs (synth-all :pretty inputs))))
-  (:logic (cont &rest args) 
+  (:implementation (cont &rest args) 
           (apply cont 
-                 (java-chain (java-chain (synth :logic function #'identity) :as (synth :java-type (synth :type function)))
+                 (java-chain (java-chain (synth :implementation function #'identity) :as (synth :java-type (synth :type function)))
                              (mapcar (lambda (input)
-                                       (java-call 'apply (synth :logic input #'identity)))
+                                       (java-call 'apply (synth :implementation input #'identity)))
                                      inputs)
                              :as (synth :java-type (synth :type this)))
                  args))
@@ -104,8 +104,9 @@
                                     (synth :latex function #'identity)))))
 (defprim bl-cat (&rest exps)
   (:pretty () (list 'bl-cat (:exps (synth-all :pretty exps)))) 
-  (:logic (cont &rest args) (apply cont (reduce #'java-+ (synth-all :logic exps #'identity)) args))
+  (:implementation (cont &rest args) (apply cont (reduce #'java-+ (synth-all :implementation exps #'identity)) args))
   (:type () (string-type 20)))
 ;; (defmacro mapcomm (command collection)
 ;;   `(let ((result (gensym (symbol-name (symb (synth :name ,collection))))))
 ;;      (values (mapcomm% ,command result ,collection) (bl-variab result))))
+

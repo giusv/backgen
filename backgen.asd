@@ -11,7 +11,7 @@
                (:file "parser")
                (:file "grammar")
                (:file "doc")
-               ;; (:file "html")
+               (:file "html")
                (:module "lang"
                         :serial t
                         :components ((:file "java")
@@ -21,21 +21,23 @@
                (:file "type")
                ;; (:file "validator")
                
-               ;; (:file "url")
+               (:file "url")
                (:file "query") 
                (:module "data"
                         :serial t
                         :components ((:file "json")
                                      (:file "jsonschema")
                                      (:file "entity")
-                                     (:file "dao")))
+                                     (:file "dao")
+                                     ))
                
                
-               ;; (:file "type")
+               
                (:module "server"
                         :serial t
                         :components ((:file "rest")
                                      (:file "ejb")
                                      (:file "logic")))
                (:file "latex")
-               (:file "backgen")))
+               (:file "backgen")
+               ))

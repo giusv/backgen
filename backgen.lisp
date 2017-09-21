@@ -1,4 +1,3 @@
-;;;; backgen.lisp
 (in-package :backgen)
 
 (deformat parameter-format  "Formato JSON del valore di un parametro relativo a un indicatore"
@@ -13,7 +12,6 @@
               (jsprop :source "Codice sorgente" (jsstring))
               (jsprop :start-date "Data inizio" (jsstring))
               (jsprop :parameters "parametri " (jsarray parameter-format))))
-
 
 (defent indicator-entity
     (entity 'indicator 
@@ -34,11 +32,26 @@
 
 
 (server:defresource indicator-item
-    (server:rest-item 'indicator ((indicator (url:path-parameter 'indicator :integer))) 
+    (server:rest-item 'indicator ((indicator (url:path-parameter 'indicator (integer-type)))) 
                       (list 
-                       (server:rest-get () 
-                                        )
-                       (server:rest-put indicator-format))))
+                       (server:rest-get ()
+                                        (server:bl-let ((entity1 (server:bl-create-entity indicator-entity 
+                                                                                          :indicator-id (expr:const 1)))
+                                                        (entity2 (server:bl-let ((entity3 (server:bl-create-entity indicator-entity 
+                                                                                                                   :indicator-id (expr:const 2)))
+                                                                                 (entity4 entity3)) 
+                                                                   entity4))
+                                                        (name (server:bl-get :indicator-id entity2))
+                                                        (name-test (server:bl-call (server:bl-lambda ((x (string-type 20))
+                                                                                                      (y (string-type 20)))
+                                                                                                     (server:bl-cat x (server:bl-call (server:bl-lambda ((x (string-type 20))
+                                                                                                                                                         (y (string-type 20)))
+                                                                                                                                                        (server:bl-cat x y))
+                                                                                                                                      name name)))
+                                                                                   name name))) 
+                                          name-test)))))
+
+(server:defservice server (server:rest-service 'indicator-service (url:void) indicator-item))
 
 (defquery indicator-by-name (name) indicator-entity
           (with-queries ((inds (relation indicator-entity))
@@ -53,11 +66,6 @@
 (defquery all-indicators () indicator-entity
           (with-queries ((inds (relation indicator-entity)))
             inds))
-
-
-(defdao indicator-dao indicator-entity 
-  (dao-query all-indicators)
-  (dao-query indicator-by-name))
 
 ;; (server:defresource indicators-collection
 ;;     (server:rest-collection 
@@ -126,14 +134,20 @@
 ;; (server:defservice server (server:rest-service 'indicator-service (url:void) indicators-collection))
 
 
+
+
+
+;; (pprint (synth :pretty (generate-dao indicator-entity)))
+
 (let* ((package '|it.bancaditalia.backgen|)
        ;; (basedir "D:/Dati/Profili/m026980/workspace/backgen/src/main/java/it/bancaditalia/backgen/")
        (basedir "D:/giusv/temp/backgen/")
        (app-entities (loop for value being the hash-values of *entities* collect value))
-       (app-daos (loop for value being the hash-values of *daos* collect value))
+       (app-daos (mapcar #'generate-dao app-entities)) 
        (app-formats (loop for value being the hash-values of *formats* collect value))
-       ;; (app-services (loop for value being the hash-values of server:*services* collect value))
-       ) 
+       (app-services (loop for value being the hash-values of server:*services* collect value))
+       (app-ejbs (mapcar #'server:generate-ejb app-services)))
+ 
   ;; (process (mkstr basedir (string-downcase (synth :name app-module)) ".module.ts") app-module)
   ;; (process (mkstr basedir (string-downcase (synth :name app)) ".component.ts") app )
   ;; (mapcar (lambda (component) 
@@ -150,7 +164,13 @@
               (pprint filename)
               (write-file filename
                           (synth :string (synth :doc (synth :java (synth :dao dao package)))))))
-          app-daos) 
+          app-daos)
+  (mapcar (lambda (ejb) 
+            (let ((filename (mkstr basedir "ejb/" (upper-camel (synth :name ejb)) ".java"))) 
+              (pprint filename)
+              (write-file filename
+                          (synth :string (synth :doc (synth :java (synth :ejb ejb package)))))))
+          app-ejbs) 
   (mapcar (lambda (format) 
             (let ((filename (mkstr basedir "vo/" (upper-camel (symb (synth :name format) '|-V-O|)) ".java"))) 
               (pprint filename)
@@ -158,13 +178,14 @@
                           (synth :string (synth :doc (synth :req format)))
                           ;; (synth :string (synth :doc (synth :java (synth :req format))))
                           )))
-          app-formats) 
-  ;; (mapcar (lambda (service) 
-  ;;           (let ((filename (mkstr basedir "service/" (upper-camel (synth :name service)) ".java"))) 
-  ;;             (pprint filename)
-  ;;             (write-file filename
-  ;;                         (synth :string (synth :doc (synth :java (synth :jax-class service package)))))))
-  ;;         app-services)
+          app-formats)
+  
+  (mapcar (lambda (service) 
+            (let ((filename (mkstr basedir "service/" (upper-camel (synth :name service)) ".java"))) 
+              (pprint filename)
+              (write-file filename
+                          (synth :string (synth :doc (synth :java (synth :implementation service package)))))))
+          app-services)
   ;; (mapcar (lambda (service) 
   ;;           (let ((filename (mkstr basedir "ejb/" (upper-camel (symb (synth :name service) '|-Bean|)) ".java"))) 
   ;;             (pprint filename)
