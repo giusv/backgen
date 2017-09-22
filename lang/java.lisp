@@ -19,9 +19,6 @@
                             (hcat (text " = ") (synth :java init))
                             (empty)))))
 
-
-
-
 (defprim java-const (lit)
   (:pretty () (list 'java-const (list :lit lit))) 
   (:java () (cond ((stringp lit) (double-quotes (text "~a" lit)))
@@ -53,7 +50,7 @@
 
 (defmacro java-catch (exceptions body)
   `(let* ((,(car exceptions) ',(car exceptions))) 
-     (java-catch% (list ,@(cdr exceptions)) ,(car exceptions) ,body)))
+     (java-catch% ,@(cdr exceptions) ,(car exceptions) ,body)))
 
 (defprim java-primitive-type (name)
   (:pretty () (list 'java-primitive-type (list :name name))) 
@@ -152,7 +149,7 @@
                                     :parent parent 
                                     :fields (synth-all :pretty fields) 
                                     :constructor (synth :pretty constructor)
-                                    :methods (synth-all :pretty methods)))) 
+                                    :methods (synth-al :pretty methods)))) 
   (:java () (vcat (hcat 
                    (if public (text "public ") (empty)) 
                    (text "class ~a" (upper-camel name))
@@ -185,6 +182,16 @@
 ;;   (:doc () (apply #'doc:vcat (synth-all :doc (apply #'append* tags)))))
 
 
+(defun java-field-with-accessors (annotations name type)
+  (java-concat (java-with-annotations annotations
+                                      (java-statement (java-pair name type :private t)))
+               (java-method (doc:text "get~a" (upper-camel name)) nil type
+                            (java-return (java-dynamic name)))
+               (java-method (doc:text "set~a" (upper-camel name))
+                            (list (java-pair name type)) (java-primitive-type 'void)
+                            (java-statement (java-assign (java-chain (java-dynamic 'this) 
+                                                                     (java-dynamic name))
+                                                         (java-dynamic name))))))
 
 (defprim java-statement (expression)
   (:pretty () (list 'java-statement (list :expression expression))) 

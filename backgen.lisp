@@ -30,6 +30,8 @@
 (defrel indicator-parameters
     (relationship 'parameters-indicator indicator-entity parameter-entity :one-to-many))
 
+(server:deferror bad-request "error")
+(server:deferror parse-indicator-error "error" :parent bad-request)
 
 (server:defresource indicator-item
     (server:rest-item 'indicator ((indicator (url:path-parameter 'indicator (integer-type)))) 
@@ -49,11 +51,11 @@
                                                                                                                                                         (server:bl-cat x y))
                                                                                                                                       name name)))
                                                                                    name name))
-                                                        (cond-test (server:bl-unless% (list (server:bl-condition entity1 entity2)
-                                                                                            (server:bl-condition entity2 name))
+                                                        (cond-test (server:bl-unless% (list (server:bl-condition entity1 parse-indicator-error)
+                                                                                            (server:bl-condition entity2 parse-indicator-error))
                                                                                       name-test))) 
-                                          (server:bl-unless% (list (server:bl-condition entity1 entity2)
-                                                                   (server:bl-condition entity2 name))
+                                          (server:bl-unless% (list (server:bl-condition entity1 parse-indicator-error)
+                                                                   (server:bl-condition entity2 parse-indicator-error))
                                                             cond-test))))))
 
 (server:defservice server (server:rest-service 'indicator-service (url:void) indicator-item))
@@ -151,7 +153,9 @@
        (app-daos (mapcar #'generate-dao app-entities)) 
        (app-formats (loop for value being the hash-values of *formats* collect value))
        (app-services (loop for value being the hash-values of server:*services* collect value))
-       (app-ejbs (mapcar #'server:generate-ejb app-services)))
+       (app-errors (loop for value being the hash-values of server:*errors* collect value))
+       (app-ejbs (mapcar #'server:generate-ejb app-services))
+       )
  
   ;; (process (mkstr basedir (string-downcase (synth :name app-module)) ".module.ts") app-module)
   ;; (process (mkstr basedir (string-downcase (synth :name app)) ".component.ts") app )
@@ -175,7 +179,13 @@
               (pprint filename)
               (write-file filename
                           (synth :string (synth :doc (synth :java (synth :ejb ejb package)))))))
-          app-ejbs) 
+          app-ejbs)
+  (mapcar (lambda (error) 
+            (let ((filename (mkstr basedir "error/" (upper-camel (synth :name error)) ".java"))) 
+              (pprint filename)
+              (write-file filename
+                          (synth :string (synth :doc (synth :java (synth :implementation error package)))))))
+          app-errors) 
   (mapcar (lambda (format) 
             (let ((filename (mkstr basedir "vo/" (upper-camel (symb (synth :name format) '|-V-O|)) ".java"))) 
               (pprint filename)

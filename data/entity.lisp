@@ -116,17 +116,8 @@
                              :initial-value nil))))
 
 
-(defun stuff (annotations name type)
-  (java-concat (java-with-annotations annotations
-                                (java-statement (java-pair name type :private t)))
-           (java-method (doc:text "get~a" (upper-camel name)) 
-                      nil type
-                      (java-return (java-dynamic name)))
-           (java-method (doc:text "set~a" (upper-camel name))
-                      (list (java-pair name type)) (java-primitive-type 'void)
-                      (java-statement (java-assign (java-chain (java-dynamic 'this) 
-                                                         (java-dynamic name))
-                                               (java-dynamic name))))))
+
+
 (defprim relationship (name owner subordinate cardinality &optional (participation t))
   (:pretty () (list 'relationship (list :name name
                                         :owner (synth :pretty owner)
@@ -134,33 +125,33 @@
                                         :cardinality cardinality
                                         :participation participation)))
   (:source () (case cardinality
-                (:one-to-one (stuff (list (java-annotation '|OneToOne|)) 
+                (:one-to-one (java-field-with-accessors (list (java-annotation '|OneToOne|)) 
                                     (synth :name subordinate)
                                     (java-object-type (synth :name subordinate))))
-                (:many-to-one (stuff (list (java-annotation '|ManyToOne|)) 
+                (:many-to-one (java-field-with-accessors (list (java-annotation '|ManyToOne|)) 
                                      (synth :name subordinate)
                                      (java-object-type (synth :name subordinate))))
-                (:one-to-many (stuff (list (java-annotation '|OneToMany|
+                (:one-to-many (java-field-with-accessors (list (java-annotation '|OneToMany|
                                                            (java-object :|mappedBy| (java-const (mkstr (lower-camel (synth :name owner)))))))
                                      (symb (synth :name subordinate) "-LIST")
                                      (java-array-type (java-object-type (synth :name subordinate)))))
-                (:many-to-many (stuff (list (java-annotation '|ManyToMany|))
+                (:many-to-many (java-field-with-accessors (list (java-annotation '|ManyToMany|))
                                       (symb (synth :name subordinate) "-LIST")
                                       (java-array-type (java-object-type (synth :name subordinate))))))) 
   (:target () (case cardinality
                 (:one-to-one (if participation 
-                                 (stuff (list (java-annotation '|OneToOne|
+                                 (java-field-with-accessors (list (java-annotation '|OneToOne|
                                                               (java-object  :|mappedBy| (java-const (mkstr (lower-camel (synth :name owner))))
                                                                           :|optional| (java-const (mkstr '|false|))))) 
                                         (synth :name owner) (java-object-type (synth :name owner)))))
-                (:many-to-one (stuff 
+                (:many-to-one (java-field-with-accessors 
                                (list (java-annotation '|OneToMany|
                                                     (java-object :|mappedBy| (java-const (mkstr (lower-camel (synth :name owner))))))) 
                                (symb (synth :name owner) "-LIST") (java-array-type (java-object-type (synth :name owner)))))
-                (:one-to-many (stuff 
+                (:one-to-many (java-field-with-accessors 
                                (list (java-annotation '|ManyToOne|)) 
                                (synth :name owner) (java-object-type (synth :name owner))))
-                (:many-to-many (stuff 
+                (:many-to-many (java-field-with-accessors 
                                 (list (java-annotation '|ManyToMany|
                                                       (java-object :|mappedBy| (java-const (mkstr (lower-camel (symb (synth :name subordinate) "-LIST"))))))) 
                                 (symb (synth :name owner) "-LIST") (java-array-type (java-object-type (synth :name owner)))))))

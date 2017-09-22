@@ -83,7 +83,8 @@
            :java-+ :java-- :java-* :java-/
            :java-or :java-and :java-not
            :java-true :java-false
-           :java-equal :java-greater-than :java-less-than))
+           :java-equal :java-greater-than :java-less-than
+           :java-field-with-accessors))
 
 (defpackage :url
   (:use :cl :lol :utils :parser :grammar :doc :java)
@@ -136,6 +137,8 @@
            :*resources*
            :defservice
            :*services*
+           :deferror
+           :*errors*
            :rest-service 
            :rest-collection
            :rest-singleton

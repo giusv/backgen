@@ -4,6 +4,7 @@
   (:pretty () (list 'bl-binding (list :name name :expr (synth :pretty expr))))
   (:implementation (cont &rest args) 
           (apply cont (synth :implementation expr (lambda (x) (java-statement (java-pair name (synth :java-type (synth :type expr)) :init x)))) args))
+  (:errors () (synth :errors expr))
   (:latex (cont &rest args) (apply cont (paragraph (line (normal "Si assegna a ~a il risultato della seguente espressione:" name))
                                                    (synth :latex expr #'identity)))))
 
@@ -12,6 +13,7 @@
   (:implementation (cont &rest args) 
           (java-concat (synth-all :implementation bindings #'identity)
                        (apply #'synth :implementation expr cont args)))
+  (:errors () (apply #'append (synth :errors expr) (synth-all :errors bindings)))
   (:type () (synth :type expr))
   (:latex (cont &rest args) (apply cont (append (synth-all :latex bindings #'identity) args))))
 (defmacro bl-let (bindings &body expr)
@@ -35,6 +37,7 @@
              (java-statement (java-chain (java-dynamic 'entity-manager)
                                          (java-call 'persist new-entity)))
              (apply cont new-entity args))))
+  (:errors () nil)
   (:type () (entity-type entity))
   (:latex (cont &rest args) (apply cont (normal "Creazione dell'entita ~a" (synth :name entity)) args)))
 
@@ -47,6 +50,7 @@
           (let ((logic (java-chain :as (synth :java-type (synth :type this))
                                    (java-dynamic (synth :name object)) (java-call (symb 'get "-" place)))))
             (apply cont logic args)))
+  (:errors () nil)
   (:type () (synth :property-type (synth :type object) place))
   (:latex (cont &rest args) (apply cont (normal "l'estrazione del campo ~a dall'oggetto ~a" place (synth :name object)))))
 
@@ -60,6 +64,7 @@
                                                              (synth :java-type (synth :type arg))))
                                                 inputs)
                                         (synth :implementation expr (lambda (x) (java-return x)))))
+  (:errors () (synth :errors expr))
   (:type () (function-type (synth :type expr) (synth-all :type inputs)))
   (:latex (cont &rest args) (apply cont (synth :latex expr #'identity) args)))
 
@@ -74,13 +79,15 @@
                                                     :as (synth :type this))
                                    args))
   (:type () (collection-type (synth :type function)))
+  (:errors () (synth :errors function))
   (:latex (cont &rest args) (apply cont 
                                    (sequence 
                                     (normal "per ogni elemento della collezione ~a viene effettuata la seguente operazione:" name)
                                     (synth :latex function #'identity)))))
 (defprim bl-variab (name type)
   (:pretty () (list 'bl-variab (list :name name)))
-  (:implementation (cont &rest args) (apply cont (java-dynamic name) args)))
+  (:implementation (cont &rest args) (apply cont (java-dynamic name) args))
+  (:errors () nil))
 
 (defun closure-equal (x y)
   (equal (synth :pretty x) (synth :pretty y)))
@@ -98,6 +105,7 @@
   (:type () (if (every #'closure-equal (synth-all :type inputs) (synth :arg-types (synth :type function)))
                 (synth :return-type (synth :type function))
                 (error "type mismatch")))
+  (:errors () (synth :errors function))
   (:latex (cont &rest args) (apply cont 
                                    (seq 
                                     (normal "per ogni elemento della collezione ~a viene effettuata la seguente operazione:" name)
@@ -105,19 +113,22 @@
 (defprim bl-cat (&rest exps)
   (:pretty () (list 'bl-cat (:exps (synth-all :pretty exps)))) 
   (:implementation (cont &rest args) (apply cont (reduce #'java-+ (synth-all :implementation exps #'identity)) args))
+  (:errors () nil)
   (:type () (string-type 20)))
+
 ;; (defmacro mapcomm (command collection)
 ;;   `(let ((result (gensym (symbol-name (symb (synth :name ,collection))))))
 ;;      (values (mapcomm% ,command result ,collection) (bl-variab result))))
 
 (defprim bl-condition (test expr)
   (:pretty () (list 'bl-condition (list :test (synth :pretty test) :expr (synth :pretty expr))))
-  (:implementation (cont &rest args) 
-                   (apply cont (java-if (synth :implementation test #'identity)
-                                          (java-throw (synth :implementation expr (lambda (e)
-                                                                                    (java-new (synth :type e)
-                                                                                              (synth :implementation e #'identity))))))
-                          args))
+  ;; (:implementation (cont &rest args) 
+  ;;                  (apply cont (java-if (synth :implementation test #'identity)
+  ;;                                         (java-throw (synth :implementation expr (lambda (e)
+  ;;                                                                                   (java-new (synth :type e)
+  ;;                                                                                             (synth :implementation e #'identity))))))
+  ;;                         args))
+  (:errors () (list expr))
   (:type () (synth :type expr)))
 
 (defprim bl-unless% (conditions expr)
@@ -125,12 +136,10 @@
   (:implementation (cont &rest args)
                    (reduce (lambda (condition acc) 
                              (java-if (synth :implementation (synth :test condition) #'identity)
-                                      (java-throw (synth :implementation (synth :expr condition) 
-                                                         (lambda (e)
-                                                           (java-new (synth :java-type (synth :type (synth :expr condition)))
-                                                                     e))))
+                                      (java-throw (java-new (synth :type (synth :expr condition))))
                                       acc))
                            conditions
                            :from-end t
                            :initial-value (apply #'synth :implementation expr cont args)))
+  (:errors () (apply #'append (synth :errors expr) (synth-all :errors conditions)))
   (:type () (synth :type expr)))
