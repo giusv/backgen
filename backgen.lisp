@@ -30,8 +30,7 @@
 (defrel indicator-parameters
     (relationship 'parameters-indicator indicator-entity parameter-entity :one-to-many))
 
-(server:deferror bad-request "error")
-(server:deferror parse-indicator-error "error" :parent bad-request)
+(server:deferror parse-indicator-error (server:bl-bad-request-error))
 
 (server:defresource indicator-item
     (server:rest-item 'indicator ((indicator (url:path-parameter 'indicator (integer-type)))) 
@@ -51,11 +50,11 @@
                                                                                                                                                         (server:bl-cat x y))
                                                                                                                                       name name)))
                                                                                    name name))
-                                                        (cond-test (server:bl-unless% (list (server:bl-condition entity1 parse-indicator-error)
-                                                                                            (server:bl-condition entity2 parse-indicator-error))
+                                                        (cond-test (server:bl-unless% (list (server:bl-condition entity1 (parse-indicator-error (server:bl-cat (expr:const 1))))
+                                                                                            (server:bl-condition entity2 (parse-indicator-error nil)))
                                                                                       name-test))) 
-                                          (server:bl-unless% (list (server:bl-condition entity1 parse-indicator-error)
-                                                                   (server:bl-condition entity2 parse-indicator-error))
+                                          (server:bl-unless% (list (server:bl-condition entity1 (parse-indicator-error nil))
+                                                                   (server:bl-condition entity2 (parse-indicator-error nil)))
                                                             cond-test))))))
 
 (server:defservice server (server:rest-service 'indicator-service (url:void) indicator-item))

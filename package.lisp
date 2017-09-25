@@ -1,5 +1,5 @@
 ;;;; package.lisp 
-;; (push #p"d:/giusv/lisp/backgen/" asdf:*central-registry*)
+;; (push #p"d:/giusv/lisp/nextent/" asdf:*central-registry*)
 
 (defpackage :lol
   (:use :cl)
@@ -164,6 +164,7 @@
            :bl-condition
            :bl-variab
            :bl-cat
+           :bl-error :bl-error-instance :bl-bad-request-error
            :stateless-ejb
            :ejb-method
            ;; :ejb-parameter

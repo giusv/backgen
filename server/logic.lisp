@@ -136,7 +136,8 @@
   (:implementation (cont &rest args)
                    (reduce (lambda (condition acc) 
                              (java-if (synth :implementation (synth :test condition) #'identity)
-                                      (java-throw (java-new (synth :type (synth :expr condition))))
+                                      (java-throw (java-new (synth :type (synth :expr condition))
+                                                            (synth :implementation (synth :message (synth :expr condition)) #'identity)))
                                       acc))
                            conditions
                            :from-end t
