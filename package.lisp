@@ -92,8 +92,20 @@
            :backward-chain :multi :forward-chain :queried
            :url))
 
+(defpackage :type
+  (:use :cl :lol :utils :parser :grammar :java) 
+  (:export :integer-type
+           :string-type
+           :entity-type
+           :transfer-type
+           :format-type
+           :collection-type
+           :parametric-type
+           :function-type))
+
+
 (defpackage :data
-  (:use :cl :lol :utils :parser :grammar :java :html) 
+  (:use :cl :lol :utils :parser :grammar :java :html :type) 
   (:export :with-data :with-data%
            :remote
            :rand
@@ -106,18 +118,8 @@
            :named-query
            :defdao :dao-query
            :generate-dao
+           :dto
            :*entities* :*relationships* :*formats* :*queries* :*daos*))
-
-
-(defpackage :type
-  (:use :cl :lol :utils :parser :grammar :java) 
-  (:export :integer-type
-           :string-type
-           :entity-type
-           :format-type
-           :collection-type
-           :parametric-type
-           :function-type))
 
 
 
@@ -148,7 +150,7 @@
            :rest-put :rest-delete
            :with-fields
            :concat% :concat
-           :empty :create-entity% :create-entity
+           :empty :create-entity% :create-entity 
            :update-entity% :update-entity
            :exec-query% :exec-query
            :find-entity% :find-entity
@@ -156,7 +158,7 @@
            :mu% :mu :mapcomm% :mapcomm :fork
            :respond
            :bl-let% :bl-let
-           :bl-create-entity% :bl-create-entity
+           :bl-create-entity% :bl-create-entity :bl-find-entity :bl-delete-entity
            :bl-lambda% :bl-lambda
            :bl-arg :bl-call
            :bl-get

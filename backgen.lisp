@@ -38,24 +38,28 @@
                        (server:rest-get ()
                                         (server:bl-let ((entity1 (server:bl-create-entity indicator-entity 
                                                                                           :indicator-id (expr:const 1)))
-                                                        (entity2 (server:bl-let ((entity3 (server:bl-create-entity indicator-entity 
-                                                                                                                   :indicator-id (expr:const 2)))
-                                                                                 (entity4 entity3)) 
-                                                                   entity4))
-                                                        (name (server:bl-get :indicator-id entity2))
-                                                        (name-test (server:bl-call (server:bl-lambda ((x (string-type 20))
-                                                                                                      (y (string-type 20)))
-                                                                                                     (server:bl-cat x (server:bl-call (server:bl-lambda ((x (string-type 20))
-                                                                                                                                                         (y (string-type 20)))
-                                                                                                                                                        (server:bl-cat x y))
-                                                                                                                                      name name)))
-                                                                                   name name))
+                                                        (id (server:bl-let ((entity3 (server:bl-create-entity indicator-entity 
+                                                                                                              :indicator-id (expr:const 2)))
+                                                                            (entity4 entity3)) 
+                                                              entity4))
+                                                        (ent (server:bl-find-entity indicator-entity (expr:const 2))
+                                                             (entity4 entity3) 
+                                                             entity4)
+                                                        ;; (name (server:bl-get :indicator-id id))
+                                                        ;; (entity10 (server:bl-find-entity (expr:const 1)))
+                                                        (id-test (server:bl-call (server:bl-lambda ((x (integer-type))
+                                                                                                    (y (integer-type)))
+                                                                                                   (server:bl-cat x (server:bl-call (server:bl-lambda ((x (integer-type))
+                                                                                                                                                       (y (integer-type)))
+                                                                                                                                                      (server:bl-cat x y))
+                                                                                                                                    id id)))
+                                                                                 id id))
                                                         (cond-test (server:bl-unless% (list (server:bl-condition entity1 (parse-indicator-error (server:bl-cat (expr:const 1))))
-                                                                                            (server:bl-condition entity2 (parse-indicator-error nil)))
-                                                                                      name-test))) 
+                                                                                            (server:bl-condition id (parse-indicator-error nil)))
+                                                                                      id-test))) 
                                           (server:bl-unless% (list (server:bl-condition entity1 (parse-indicator-error nil))
-                                                                   (server:bl-condition entity2 (parse-indicator-error nil)))
-                                                            cond-test))))))
+                                                                   (server:bl-condition id (parse-indicator-error nil)))
+                                                             ent))))))
 
 (server:defservice server (server:rest-service 'indicator-service (url:void) indicator-item))
 
@@ -69,48 +73,52 @@
                                 (expr:+equal+ (expr:attr inds 'name)
                                               name)))
                      'indicator-id 'name)))
+
 (defquery all-indicators () indicator-entity
           (with-queries ((inds (relation indicator-entity)))
             inds))
 
-;; (server:defresource indicators-collection
-;;     (server:rest-collection 
-;;      'indicators
-;;      (list 
-;;       (server:rest-get 
-;;        () 
-;;        (server:concat
-;;         (indicator-list (server:exec-query (all-indicators)))
-;;         (ret (server:mapcomm 
-;;               (server:mu indicator
-;;                          (server:with-fields ((name name)
-;;                                               (code source-code)
-;;                                               (start-date start-date)
-;;                                               (parameters parameter-list)) indicator
-;;                            (server:create-transfer indicator-format 
-;;                                                    :name name
-;;                                                    :source-code code
-;;                                                    :start-date start-date
-;;                                                    :parameters (server:mapcomm 
-;;                                                                 (server:mu parameter
-;;                                                                            (server:with-fields ((parameter-name name) (parameter-value value)) parameter
-;;                                                                              (server:create-transfer parameter-format 
-;;                                                                                                      :name parameter-name
-;;                                                                                                      :value parameter-value)))
-;;                                                                 parameters))))
-;;               indicator-list))
-;;         ((server:respond :ok ret))))
-;;       (server:rest-post% indicator-format 
-;;                          (server:concat
-;;                           (ret (server:with-fields ((name name)
-;;                                                     (code source-code)
-;;                                                     (start-date start-date)) indicator-format
-;;                                  (server:create-entity indicator-entity
-;;                                                        :name name
-;;                                                        :source-code code
-;;                                                        :start-date start-date))) 
-;;                           ((server:respond :created)))))
-;;      indicator-item))
+(server:defresource indicators-collection
+    (server:rest-collection 
+     'indicators
+     (list 
+      
+      ;; (server:rest-post% indicator-format 
+      ;;                    (server:bl-let ((entity1 (server:bl-create-entity indicator-entity 
+      ;;                                                                      :indicator-id (expr:const 1)))
+      ;;                                    (entity2 (server:bl-let ((entity3 (server:bl-create-entity indicator-entity 
+      ;;                                                                                               :indicator-id (expr:const 2)))
+      ;;                                                             (entity4 entity3)) 
+      ;;                                               entity4))
+      ;;                                    (name (server:bl-get :indicator-id entity2))
+      ;;                                    (name-test (server:bl-call (server:bl-lambda ((x (string-type 20))
+      ;;                                                                                  (y (string-type 20)))
+      ;;                                                                                 (server:bl-cat x (server:bl-call (server:bl-lambda ((x (string-type 20))
+      ;;                                                                                                                                     (y (string-type 20)))
+      ;;                                                                                                                                    (server:bl-cat x y))
+      ;;                                                                                                                  name name)))
+      ;;                                                               name name))
+      ;;                                    (cond-test (server:bl-unless% (list (server:bl-condition entity1 (parse-indicator-error (server:bl-cat (expr:const 1))))
+      ;;                                                                        (server:bl-condition entity2 (parse-indicator-error nil)))
+      ;;                                                                  name-test))) 
+      ;;                      (server:bl-unless% (list (server:bl-condition entity1 (parse-indicator-error nil))
+      ;;                                               (server:bl-condition entity2 (parse-indicator-error nil)))
+      ;;                                         cond-test))
+
+
+
+
+      ;;                    (server:concat
+      ;;                     (ret (server:with-fields ((name name)
+      ;;                                               (code source-code)
+      ;;                                               (start-date start-date)) indicator-format
+      ;;                                               (server:create-entity indicator-entity
+      ;;                                                                     :name name
+      ;;                                                                     :source-code code
+      ;;                                                                     :start-date start-date))) 
+      ;;                     ((server:respond :created))))
+      )
+     indicator-item))
 
 ;; (defparameter parameters-collection
 ;;   (server:rest-collection 'parameters
@@ -150,6 +158,7 @@
        (basedir "D:/giusv/temp/backgen/")
        (app-entities (loop for value being the hash-values of *entities* collect value))
        (app-daos (mapcar #'generate-dao app-entities)) 
+       (app-dtos (mapcar #'dto app-entities)) 
        (app-formats (loop for value being the hash-values of *formats* collect value))
        (app-services (loop for value being the hash-values of server:*services* collect value))
        (app-errors (loop for value being the hash-values of server:*errors* collect value))
@@ -173,6 +182,12 @@
               (write-file filename
                           (synth :string (synth :doc (synth :java (synth :dao dao package)))))))
           app-daos)
+  (mapcar (lambda (dto) 
+            (let ((filename (mkstr basedir "dto/" (upper-camel (synth :name dto)) ".java"))) 
+              (pprint filename)
+              (write-file filename
+                          (synth :string (synth :doc (synth :java (synth :dto dto package)))))))
+          app-dtos)
   (mapcar (lambda (ejb) 
             (let ((filename (mkstr basedir "ejb/" (upper-camel (synth :name ejb)) ".java"))) 
               (pprint filename)

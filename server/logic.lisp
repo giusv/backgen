@@ -21,28 +21,67 @@
      (bl-let% (list ,@(mapcar (lambda (binding) `(bl-binding ',(car binding) ,(cadr binding)))
                                       bindings)) ,@expr)))
 
+
+;; (:implementation (cont &rest args) 
+;;                    (apply cont (java-chain (java-dynamic (symb (synth :name entity) "-d-a-o"))
+;;                                            (apply #'java-call (symb 'create "-" (synth :name entity))
+;;                                                       (synth-plist-merge (lambda (binding) (synth :implementation (cadr bindings) #'identity))
+;;                                                                          bindings)))
+;;                           args))
 (defprim bl-create-entity% (entity bindings)
   (:pretty () (list 'create-entity (list :entity entity :bindings (synth-plist :pretty bindings)))) 
   (:implementation (cont &rest args) 
-          (let* ((new-entity-name (gensym (symbol-name (synth :name entity)))) 
-                 (new-entity (java-dynamic new-entity-name)))
-            (java-concat
-             (java-statement (java-pair new-entity-name #1=(java-object-type (synth :name entity)) 
-                                        :init (java-new #1#)))
-             (synth-plist-merge
-              (lambda (binding)
-                (java-statement (java-chain new-entity
-                                            (java-call (symb "SET-" (car binding)) (synth :implementation (cadr binding) #'identity)))))
-              bindings)
-             (java-statement (java-chain (java-dynamic 'entity-manager)
-                                         (java-call 'persist new-entity)))
-             (apply cont new-entity args))))
+                   (let* ((dto-name (gensym (symbol-name (synth :name entity)))) 
+                          (dto (java-dynamic dto-name)))
+                     (java-concat
+                      (java-statement (java-pair dto-name #1=(java-object-type (symb (synth :name entity) "-d-t-o")) 
+                                                 :init (java-new #1#)))
+                      (synth-plist-merge
+                       (lambda (binding)
+                         (java-statement (java-chain dto
+                                                     (java-call (symb "SET-" (car binding)) (synth :implementation (cadr binding) #'identity)))))
+                       bindings)
+                      (apply cont (java-chain (java-dynamic (symb (synth :name entity) "-d-a-o"))
+                                              (java-call 'create dto))
+                             args))))
   (:errors () nil)
-  (:type () (entity-type entity))
+  (:type () (integer-type))
   (:latex (cont &rest args) (apply cont (normal "Creazione dell'entita ~a" (synth :name entity)) args)))
 
 (defmacro bl-create-entity (entity &rest bindings)
   `(bl-create-entity% ,entity (list ,@bindings)))
+
+(defprim bl-find-entity (entity id)
+  (:pretty () (list 'find-entity (list :entity entity :id id))) 
+  (:implementation (cont &rest args) 
+                   (let* ((dto-name (gensym (symbol-name (synth :name entity)))) 
+                          (dto (java-dynamic dto-name)))
+                     (java-concat
+                      (java-statement (java-pair dto-name #1=(java-object-type (symb (synth :name entity) "-d-t-o")) 
+                                                 :init (java-new #1#)))
+                     
+                      (apply cont (java-chain (java-dynamic (symb (synth :name entity) "-d-a-o"))
+                                              (java-call 'find (synth :implementation id #'identity)))
+                             args))))
+  (:errors () nil)
+  (:type () (transfer-type entity))
+  (:latex (cont &rest args) (apply cont (normal "Creazione dell'entita ~a" (synth :name entity)) args)))
+
+(defprim bl-delete-entity (entity id)
+  (:pretty () (list 'delete-entity (list :entity entity :id id))) 
+  (:implementation (cont &rest args) 
+                   (let* ((dto-name (gensym (symbol-name (synth :name entity)))) 
+                          (dto (java-dynamic dto-name)))
+                     (java-concat
+                      (java-statement (java-pair dto-name #1=(java-object-type (symb (synth :name entity) "-d-t-o")) 
+                                                 :init (java-new #1#)))
+                     
+                      (apply cont (java-chain (java-dynamic (symb (synth :name entity) "-d-a-o"))
+                                              (java-call 'delete (synth :implementation id #'identity)))
+                             args))))
+  (:errors () nil)
+  (:type () (transfer-type entity))
+  (:latex (cont &rest args) (apply cont (normal "Creazione dell'entita ~a" (synth :name entity)) args)))
 
 (defprim bl-get (place object)
   (:pretty () (list 'bl-get (list :place place :object (synth :pretty object))))

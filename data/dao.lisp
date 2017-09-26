@@ -6,11 +6,8 @@
          (setf (gethash name *daos*) name)
          name))
 
-
-
-
 (defprim dao (entity &rest methods)
-  (:pretty () (list 'dao (list :methods (synth-all :pretty methods))))
+  (:pretty () (list 'dao (list :entity (synth :pretty entity) :methods (synth-all :pretty methods))))
   (:req () (synth-all :req methods))
   (:name () (symb (synth :name entity) "-D-A-O"))
   (:dao (package) (java-unit (synth :name entity)
@@ -21,12 +18,12 @@
                                          :public t 
                                          :fields (list (java-with-annotations (list (java-annotation '|PersistenceContext|))
                                                                               (java-statement (java-pair 'em (java-object-type 'entity-manager) :private t))))
-                                         :methods (synth-all :implementation methods)
+                                         :methods (synth-all :implementation methods entity)
                                          ))))
 
 (defprim dao-query (query)
   (:pretty () (list 'dao-query (list :query (synth :pretty query))))
-  (:implementation () (let ((et (java-object-type (synth :name (synth :entity query))))
+  (:implementation (entity) (let ((et (java-object-type (synth :name entity)))
                             (attributes (synth :schema query))
                             (args (synth :args query)))
                         (java-method (doc:textify (lower-camel (synth :name query)))
@@ -59,26 +56,76 @@
                                                                                      attributes
                                                                                      (loop for i from 0 to (length attributes) collect (java-const i)))
                                                                              (java-statement (java-chain (java-dynamic 'results)
-                                                                                                         (java-call 'add (java-dynamic 'temp)))))
-                                                                )
-                                                  (java-return (java-dynamic 'results)))
-                                     )
-                        )))
-
-
-
-(defprim dao-insert ()
-  (:pretty () (list 'dao-insert)))
-
-(defprim dao-delete ()
-  (:pretty () (list 'dao-delete)))
+                                                                                                         (java-call 'add (java-dynamic 'temp))))))
+                                                  (java-return (java-dynamic 'results)))))))
+ 
+(defprim dao-create ()
+  (:pretty () (list 'dao-create)) 
+  (:implementation (entity) 
+                   (let* ((new-entity-name (synth :name entity)) 
+                          (dto-name (symb (synth :name entity) "-D-T-O")) 
+                          (new-entity (java-dynamic new-entity-name))
+                          (dto (java-dynamic dto-name)))
+                     (java-method (doc:textify (lower-camel 'create)) 
+                                  (list (java-pair dto-name (java-object-type dto-name)))
+                                  (java-primitive-type 'long)
+                                  (java-concat
+                                   (java-statement (java-pair new-entity-name #1=(java-object-type (synth :name entity)) 
+                                                              :init (java-new #1#)))
+                                   (mapcar
+                                    (lambda (field)
+                                      (java-statement (java-chain new-entity
+                                                                  (java-call (symb "SET-" (synth :name field))
+                                                                             (java-chain dto 
+                                                                                         (java-call (symb "GET-" (synth :name field))))))))
+                                    (synth :fields entity))
+                                   (java-statement (java-chain (java-dynamic 'entity-manager)
+                                                               (java-call 'persist new-entity)))
+                                   (java-return (java-chain new-entity (java-call 'get-id)))))))
+  (:errors () nil))
 
 (defprim dao-find ()
-  (:pretty () (list 'dao-find)))
+  (:pretty () (list 'dao-find)) 
+  (:implementation (entity) 
+                   (let* ((found-entity-name (synth :name entity)) 
+                          (dto-name (symb (synth :name entity) "-D-T-O")) 
+                          (found-entity (java-dynamic found-entity-name))
+                          (dto (java-dynamic dto-name)))
+                     (java-method (doc:textify (lower-camel 'find)) 
+                                  (list (java-pair 'id (synth :java-type (integer-type))))
+                                  (java-object-type dto-name)
+                                  (java-concat
+                                   (java-statement (java-pair dto-name #1=(java-object-type dto-name) 
+                                                              :init (java-new #1#)))
+                                   (java-statement (java-pair found-entity-name (java-object-type (synth :name entity)) 
+                                                              :init (java-chain (java-dynamic 'entity-manager)
+                                                                                (java-call 'find (java-dynamic 'id)))))
+                                   (mapcar
+                                    (lambda (field)
+                                      (java-statement (java-chain dto
+                                                                  (java-call (symb "SET-" (synth :name field))
+                                                                             (java-chain found-entity 
+                                                                                         (java-call (symb "GET-" (synth :name field))))))))
+                                    (synth :fields entity))
+                                   
+                                   (java-return dto)))))
+  (:errors () nil))
 
-;; (defun generate-dao (entity)
-;;   (apply #'defdao (synth :name entity) entity 
-;;          (mapcar #'dao-query (get-queries entity))))
+(defprim dao-delete ()
+  (:pretty () (list 'dao-delete)) 
+  (:implementation (entity) 
+                   (let* ((deleted-entity-name (synth :name entity)) 
+                          (deleted-entity (java-dynamic deleted-entity-name)))
+                     (java-method (doc:textify (lower-camel 'delete)) 
+                                  (list (java-pair 'id (synth :java-type (integer-type))))
+                                  (java-primitive-type 'void)
+                                  (java-concat
+                                   (java-statement (java-chain (java-dynamic 'entity-manager)
+                                                               (java-call 'delete (java-dynamic 'id))))))))
+  (:errors () nil))
 
 (defun generate-dao (entity)
-  (apply #'dao entity (mapcar #'dao-query (get-queries entity))))
+  (apply #'dao entity (append* (dao-create)
+                               (dao-find)
+                               (dao-delete)
+                               (mapcar #'dao-query (get-queries entity)))))

@@ -6,7 +6,7 @@
 
 (defprim integer-type ()
   (:pretty () (list 'integer-type))
-  (:java-type () (java-object-type 'string)))
+  (:java-type () (java-primitive-type 'long)))
 
 (defprim entity-type (entity)
   (:pretty () (list 'entity-type (list :entity (synth :pretty entity))))
@@ -21,6 +21,20 @@
                                 (synth :type it)
                                 (error "property ~a does not exist in ~a" prop name))))
   (:java-type () (java-object-type (synth :name entity))))
+
+(defprim transfer-type (entity)
+  (:pretty () (list 'transfer-type (list :entity (synth :pretty entity))))
+  (:property-type (prop) (let ((primary (synth :primary entity))
+                               (fields (synth :fields entity))
+                               (name (synth :name entity)))
+                           ;; (pprint (mapcar (lambda (att) (synth :name att))
+                           ;;                 (cons primary fields)))
+                           
+                           (aif (car (remove-if-not (lambda (att) (eq prop (synth :name att)))
+                                                    (cons primary fields)))
+                                (synth :type it)
+                                (error "property ~a does not exist in ~a" prop name))))
+  (:java-type () (java-object-type (symb (synth :name entity) "-D-T-O"))))
 
 (defprim format-type (format)
   (:pretty () (list 'format-type (list :format (synth :pretty format))))

@@ -29,6 +29,7 @@
                                      (:file "jsonschema")
                                      (:file "entity")
                                      (:file "dao")
+                                     (:file "dto")
                                      ))
                
                
