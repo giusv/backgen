@@ -8,6 +8,11 @@
   (:pretty () (list 'integer-type))
   (:java-type () (java-primitive-type 'long)))
 
+
+(defprim boolean-type ()
+  (:pretty () (list 'boolean-type))
+  (:java-type () (java-primitive-type 'boolean)))
+
 (defprim entity-type (entity)
   (:pretty () (list 'entity-type (list :entity (synth :pretty entity))))
   (:property-type (prop) (let ((primary (synth :primary entity))
@@ -38,7 +43,11 @@
 
 (defprim format-type (format)
   (:pretty () (list 'format-type (list :format (synth :pretty format))))
-  (:java-type () (java-object-type (synth :name format))))
+  (:property-type (name) (aif (car (remove-if-not (lambda (prop) (eq name (synth :name prop)))
+                                                  (synth :props format)))
+                              (synth :type it)
+                              (error "property ~a does not exist in ~a" name (synth :name format))))
+  (:java-type () (java-object-type (symb (synth :name format) "-V-O"))))
 
 (defprim collection-type (type)
   (:pretty () (list 'array-type (list :type (synth :pretty type))))

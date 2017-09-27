@@ -7,7 +7,7 @@
               (jsprop :value "Valore" (jsstring))))
 
 (deformat indicator-format "Formato JSON di un indicatore dinamico"
-    (jsobject 'parameter
+    (jsobject 'indicator
               (jsprop :indicator-id "Identificativo univoco dell'indicatore" (jsstring))
               (jsprop :source "Codice sorgente" (jsstring))
               (jsprop :start-date "Data inizio" (jsstring))
@@ -31,37 +31,36 @@
     (relationship 'parameters-indicator indicator-entity parameter-entity :one-to-many))
 
 (server:deferror parse-indicator-error (server:bl-bad-request-error))
+(server:deferror indicator-not-found-error (server:bl-bad-request-error))
 
 (server:defresource indicator-item
     (server:rest-item 'indicator ((indicator (url:path-parameter 'indicator (integer-type)))) 
                       (list 
                        (server:rest-get ()
-                                        (server:bl-let ((entity1 (server:bl-create-entity indicator-entity 
-                                                                                          :indicator-id (expr:const 1)))
-                                                        (id (server:bl-let ((entity3 (server:bl-create-entity indicator-entity 
-                                                                                                              :indicator-id (expr:const 2)))
-                                                                            (entity4 entity3)) 
-                                                              entity4))
-                                                        (ent (server:bl-find-entity indicator-entity (expr:const 2))
-                                                             (entity4 entity3) 
-                                                             entity4)
-                                                        ;; (name (server:bl-get :indicator-id id))
-                                                        ;; (entity10 (server:bl-find-entity (expr:const 1)))
-                                                        (id-test (server:bl-call (server:bl-lambda ((x (integer-type))
-                                                                                                    (y (integer-type)))
-                                                                                                   (server:bl-cat x (server:bl-call (server:bl-lambda ((x (integer-type))
-                                                                                                                                                       (y (integer-type)))
-                                                                                                                                                      (server:bl-cat x y))
-                                                                                                                                    id id)))
-                                                                                 id id))
-                                                        (cond-test (server:bl-unless% (list (server:bl-condition entity1 (parse-indicator-error (server:bl-cat (expr:const 1))))
-                                                                                            (server:bl-condition id (parse-indicator-error nil)))
-                                                                                      id-test))) 
-                                          (server:bl-unless% (list (server:bl-condition entity1 (parse-indicator-error nil))
-                                                                   (server:bl-condition id (parse-indicator-error nil)))
-                                                             ent))))))
+                                        (server:bl-let ((ent (server:bl-find-entity indicator-entity (expr:const 2))))
+                                          ent)))))
+;; (with-environment ((name "...")) 
+;;   (require (true))
+;;   (invoke-service indicators-collection rest-get name)
+;;   (ensure (false)))
 
-(server:defservice server (server:rest-service 'indicator-service (url:void) indicator-item))
+
+(server:defresource indicators-collection
+    (server:rest-collection 
+     'indicators
+     (list 
+      (server:rest-post% indicator-format 
+                         (server:bl-let ((source (server:bl-get :source indicator-format))
+                                         (entity (server:bl-create-entity indicator-entity 
+                                                                          :source source))) 
+                           entity))
+      (server:rest-get ((name (url:query-parameter 'name (string-type 20))))
+                       (server:bl-let ((ent (server:bl-exec-query (indicator-by-name name))))
+                         (server:bl-unless (((server:bl-null ent) (indicator-not-found-error nil)))
+                           ent))))
+     indicator-item))
+
+(server:defservice server (server:rest-service 'indicator-service (url:void) indicators-collection))
 
 (defquery indicator-by-name (name) indicator-entity
           (with-queries ((inds (relation indicator-entity))
@@ -78,47 +77,7 @@
           (with-queries ((inds (relation indicator-entity)))
             inds))
 
-(server:defresource indicators-collection
-    (server:rest-collection 
-     'indicators
-     (list 
-      
-      ;; (server:rest-post% indicator-format 
-      ;;                    (server:bl-let ((entity1 (server:bl-create-entity indicator-entity 
-      ;;                                                                      :indicator-id (expr:const 1)))
-      ;;                                    (entity2 (server:bl-let ((entity3 (server:bl-create-entity indicator-entity 
-      ;;                                                                                               :indicator-id (expr:const 2)))
-      ;;                                                             (entity4 entity3)) 
-      ;;                                               entity4))
-      ;;                                    (name (server:bl-get :indicator-id entity2))
-      ;;                                    (name-test (server:bl-call (server:bl-lambda ((x (string-type 20))
-      ;;                                                                                  (y (string-type 20)))
-      ;;                                                                                 (server:bl-cat x (server:bl-call (server:bl-lambda ((x (string-type 20))
-      ;;                                                                                                                                     (y (string-type 20)))
-      ;;                                                                                                                                    (server:bl-cat x y))
-      ;;                                                                                                                  name name)))
-      ;;                                                               name name))
-      ;;                                    (cond-test (server:bl-unless% (list (server:bl-condition entity1 (parse-indicator-error (server:bl-cat (expr:const 1))))
-      ;;                                                                        (server:bl-condition entity2 (parse-indicator-error nil)))
-      ;;                                                                  name-test))) 
-      ;;                      (server:bl-unless% (list (server:bl-condition entity1 (parse-indicator-error nil))
-      ;;                                               (server:bl-condition entity2 (parse-indicator-error nil)))
-      ;;                                         cond-test))
 
-
-
-
-      ;;                    (server:concat
-      ;;                     (ret (server:with-fields ((name name)
-      ;;                                               (code source-code)
-      ;;                                               (start-date start-date)) indicator-format
-      ;;                                               (server:create-entity indicator-entity
-      ;;                                                                     :name name
-      ;;                                                                     :source-code code
-      ;;                                                                     :start-date start-date))) 
-      ;;                     ((server:respond :created))))
-      )
-     indicator-item))
 
 ;; (defparameter parameters-collection
 ;;   (server:rest-collection 'parameters
@@ -162,14 +121,14 @@
        (app-formats (loop for value being the hash-values of *formats* collect value))
        (app-services (loop for value being the hash-values of server:*services* collect value))
        (app-errors (loop for value being the hash-values of server:*errors* collect value))
-       (app-ejbs (mapcar #'server:generate-ejb app-services))
-       )
+       (app-ejbs (mapcar #'server:generate-ejb app-services)))
  
   ;; (process (mkstr basedir (string-downcase (synth :name app-module)) ".module.ts") app-module)
   ;; (process (mkstr basedir (string-downcase (synth :name app)) ".component.ts") app )
   ;; (mapcar (lambda (component) 
   ;;           (process (mkstr basedir (string-downcase (synth :name component)) ".component.ts") component))
   ;;         app-components)
+  ;; (pprint (synth-all :pretty app-ejbs))
   (mapcar (lambda (entity) 
             (let ((filename (mkstr basedir "model/" (upper-camel (synth :name entity)) ".java"))) 
               (pprint filename)
@@ -204,24 +163,16 @@
             (let ((filename (mkstr basedir "vo/" (upper-camel (symb (synth :name format) '|-V-O|)) ".java"))) 
               (pprint filename)
               (write-file filename
-                          (synth :string (synth :doc (synth :req format)))
+                          (synth :string (synth :doc (synth :java (synth :implementation format package))))
                           ;; (synth :string (synth :doc (synth :java (synth :req format))))
                           )))
           app-formats)
-  
   (mapcar (lambda (service) 
             (let ((filename (mkstr basedir "service/" (upper-camel (synth :name service)) ".java"))) 
               (pprint filename)
               (write-file filename
                           (synth :string (synth :doc (synth :java (synth :implementation service package)))))))
-          app-services)
-  ;; (mapcar (lambda (service) 
-  ;;           (let ((filename (mkstr basedir "ejb/" (upper-camel (symb (synth :name service) '|-Bean|)) ".java"))) 
-  ;;             (pprint filename)
-  ;;             (write-file filename
-  ;;                         (synth :string (synth :doc (synth :java (synth :bean-class service package)))))))
-  ;;         app-services)
-  )
+          app-services))
 
 
 ;; (let ((test (server:bl-let ((entity1 (server:bl-create-entity indicator-entity 

@@ -95,6 +95,7 @@
 (defpackage :type
   (:use :cl :lol :utils :parser :grammar :java) 
   (:export :integer-type
+           :boolean-type
            :string-type
            :entity-type
            :transfer-type
@@ -161,6 +162,8 @@
            :bl-create-entity% :bl-create-entity :bl-find-entity :bl-delete-entity
            :bl-lambda% :bl-lambda
            :bl-arg :bl-call
+           :bl-exec-query
+           :bl-null
            :bl-get
            :bl-unless% :bl-unless
            :bl-condition

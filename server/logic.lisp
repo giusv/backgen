@@ -131,6 +131,7 @@
 (defun closure-equal (x y)
   (equal (synth :pretty x) (synth :pretty y)))
 
+
 (defprim bl-call (function &rest inputs)
   (:pretty () (list 'bl-call (list :function (synth :pretty function) :inputs (synth-all :pretty inputs))))
   (:implementation (cont &rest args) 
@@ -149,6 +150,28 @@
                                    (seq 
                                     (normal "per ogni elemento della collezione ~a viene effettuata la seguente operazione:" name)
                                     (synth :latex function #'identity)))))
+
+(defprim bl-null (expr)
+  (:pretty () (list 'bl-null (list :expr (synth :pretty expr))))
+  (:implementation (cont &rest args) 
+          (apply cont 
+                 (java-chain (synth :implementation expr #'identity)
+                             (java-call 'empty))
+                 args))
+  (:type () (boolean-type))
+  (:errors () (synth :errors expr))
+  ;; (:latex (cont &rest args) (apply cont 
+  ;;                                  (seq 
+  ;;                                   (normal "per ogni elemento della collezione ~a viene effettuata la seguente operazione:" name)
+  ;;                                   (synth :latex expr #'identity))))
+  )
+(defprim bl-exec-query (query)
+  (:pretty () (list 'bl-exec-query (:query (synth :pretty query)))) 
+  (:implementation (cont &rest args) (apply cont (java-chain (java-dynamic (symb (synth :name (synth :entity query)) "-D-A-O"))
+                                                             (java-call (lower-camel (synth :name query)))) args))
+  (:errors () nil)
+  (:type () (collection-type (transfer-type (synth :entity query)))))
+
 (defprim bl-cat (&rest exps)
   (:pretty () (list 'bl-cat (:exps (synth-all :pretty exps)))) 
   (:implementation (cont &rest args) (apply cont (reduce #'java-+ (synth-all :implementation exps #'identity)) args))
@@ -173,7 +196,7 @@
 (defprim bl-unless% (conditions expr)
   (:pretty () (list 'bl-unless (list :conditions (synth-all :pretty conditions) :expr (synth :pretty expr))))
   (:implementation (cont &rest args)
-                   (reduce (lambda (condition acc) 
+                   (reduce (lambda (condition acc)
                              (java-if (synth :implementation (synth :test condition) #'identity)
                                       (java-throw (java-new (synth :type (synth :expr condition))
                                                             (synth :implementation (synth :message (synth :expr condition)) #'identity)))
@@ -183,3 +206,7 @@
                            :initial-value (apply #'synth :implementation expr cont args)))
   (:errors () (apply #'append (synth :errors expr) (synth-all :errors conditions)))
   (:type () (synth :type expr)))
+
+(defmacro bl-unless (conditions &body expr)
+  `(bl-unless% (list ,@(mapcar #`(bl-condition ,(car a1) ,(cadr a1)) conditions))
+               ,@expr))
