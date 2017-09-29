@@ -60,12 +60,12 @@
      collect (if (eq (synth :name (synth :subordinate rel)) (synth :name entity)) rel)))
 
 (defun get-queries (entity)
-  (loop for q being the hash-values of *queries*
-     ;; do (pprint (synth :name (synth :entity q)))
-       ;; (pprint (synth :pretty q))
-       ;; (pprint (synth :name entity))
-       ;; (pprint (eq (synth :name (synth :entity q)) (synth :name entity)))
-     collect (if (eq (synth :name (synth :entity q)) (synth :name entity)) q)))
+  (remove nil (loop for q being the hash-values of *queries*
+                 ;; do (pprint (synth :name (synth :entity q)))
+                 ;; (pprint (synth :pretty q))
+                 ;; (pprint (synth :name entity))
+                 ;; (pprint (eq (synth :name (synth :entity q)) (synth :name entity)))
+                 collect (if (eq (synth :name (synth :entity q)) (synth :name entity)) q))))
 
 (defprim entity (name &key desc primary fields)
   (:pretty () (list 'entity :name name

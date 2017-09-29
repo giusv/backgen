@@ -52,8 +52,8 @@
       (server:rest-post% indicator-format 
                          (server:bl-let ((source (server:bl-get :source indicator-format))
                                          (entity (server:bl-create-entity indicator-entity 
-                                                                          :source source))) 
-                           entity))
+                                                                          :source-code source))) 
+                           (server:bl-value-object entity)))
       (server:rest-get ((name (url:query-parameter 'name (string-type 20))))
                        (server:bl-let ((ent (server:bl-exec-query (indicator-by-name name))))
                          (server:bl-unless (((server:bl-null ent) (indicator-not-found-error nil)))
@@ -112,9 +112,11 @@
 
 ;; (pprint (synth :pretty (generate-dao indicator-entity)))
 
-(let* ((package '|it.bancaditalia.backgen|)
+(let* ((package (list "com" "extent" "backgen"))
+       (package-symb (apply #'symb (interleave package ".")))
        ;; (basedir "D:/Dati/Profili/m026980/workspace/backgen/src/main/java/it/bancaditalia/backgen/")
-       (basedir "D:/giusv/temp/backgen/")
+       ;; (basedir "D:/giusv/temp/backgen/")
+       (basedir (merge-pathnames (make-pathname :directory (cons :relative package))  #p"D:/Dati/Profili/m026980/workspace/backgen/src/main/java/")) 
        (app-entities (loop for value being the hash-values of *entities* collect value))
        (app-daos (mapcar #'generate-dao app-entities)) 
        (app-dtos (mapcar #'dto app-entities)) 
@@ -129,41 +131,42 @@
   ;;           (process (mkstr basedir (string-downcase (synth :name component)) ".component.ts") component))
   ;;         app-components)
   ;; (pprint (synth-all :pretty app-ejbs))
+  (pprint basedir)
   (mapcar (lambda (entity) 
             (let ((filename (mkstr basedir "model/" (upper-camel (synth :name entity)) ".java"))) 
               (pprint filename)
               (write-file filename
-                          (synth :string (synth :doc (synth :java (synth :entity entity package)))))))
+                          (synth :string (synth :doc (synth :java (synth :entity entity package-symb)))))))
           app-entities)
   (mapcar (lambda (dao) 
             (let ((filename (mkstr basedir "dao/" (upper-camel (synth :name dao)) ".java"))) 
               (pprint filename)
               (write-file filename
-                          (synth :string (synth :doc (synth :java (synth :dao dao package)))))))
+                          (synth :string (synth :doc (synth :java (synth :dao dao package-symb)))))))
           app-daos)
   (mapcar (lambda (dto) 
             (let ((filename (mkstr basedir "dto/" (upper-camel (synth :name dto)) ".java"))) 
               (pprint filename)
               (write-file filename
-                          (synth :string (synth :doc (synth :java (synth :dto dto package)))))))
+                          (synth :string (synth :doc (synth :java (synth :dto dto package-symb)))))))
           app-dtos)
   (mapcar (lambda (ejb) 
             (let ((filename (mkstr basedir "ejb/" (upper-camel (synth :name ejb)) ".java"))) 
               (pprint filename)
               (write-file filename
-                          (synth :string (synth :doc (synth :java (synth :ejb ejb package)))))))
+                          (synth :string (synth :doc (synth :java (synth :ejb ejb package-symb)))))))
           app-ejbs)
   (mapcar (lambda (error) 
             (let ((filename (mkstr basedir "error/" (upper-camel (synth :name error)) ".java"))) 
               (pprint filename)
               (write-file filename
-                          (synth :string (synth :doc (synth :java (synth :implementation error package)))))))
+                          (synth :string (synth :doc (synth :java (synth :implementation error package-symb)))))))
           app-errors) 
   (mapcar (lambda (format) 
-            (let ((filename (mkstr basedir "vo/" (upper-camel (symb (synth :name format) '|-V-O|)) ".java"))) 
+            (let ((filename (mkstr basedir "vo/" (upper-camel (symb (synth :name (synth :format format)) '|-V-O|)) ".java"))) 
               (pprint filename)
               (write-file filename
-                          (synth :string (synth :doc (synth :java (synth :implementation format package))))
+                          (synth :string (synth :doc (synth :java (synth :implementation format package-symb))))
                           ;; (synth :string (synth :doc (synth :java (synth :req format))))
                           )))
           app-formats)
@@ -171,7 +174,7 @@
             (let ((filename (mkstr basedir "service/" (upper-camel (synth :name service)) ".java"))) 
               (pprint filename)
               (write-file filename
-                          (synth :string (synth :doc (synth :java (synth :implementation service package)))))))
+                          (synth :string (synth :doc (synth :java (synth :implementation service package-symb)))))))
           app-services))
 
 

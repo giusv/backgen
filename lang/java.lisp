@@ -142,13 +142,13 @@
                   (cond ((null content) (empty))
                         (t (parens (synth :java content)))))))
 
-(defprim java-class (name &key public interfaces parent fields constructor methods)
+(defprim java-class (name &key public interfaces parent fields constructors methods)
   (:pretty () (list 'java-class (list :name name 
                                     :public public
                                     :interfaces interfaces 
                                     :parent parent 
                                     :fields (synth-all :pretty fields) 
-                                    :constructor (synth :pretty constructor)
+                                    :constructors (synth-all :pretty constructors)
                                     :methods (synth-al :pretty methods)))) 
   (:java () (vcat (hcat 
                    (if public (text "public ") (empty)) 
@@ -161,7 +161,7 @@
                    (nest 4 (apply #'vcat 
                                   (append* 
                                    (synth-all :java fields)
-                                   (synth :java constructor)
+                                   (synth-all :java constructors)
                                    (synth-all :java methods))))
                    :newline t))))
 
@@ -300,13 +300,13 @@
 
 (defprim java-constructor (name parameters &rest statements)
   (:pretty () (list 'java-constructor (list :name name
-                                          :parameters (synth-all :pretty parameters) 
-                                          :statements (synth-all :pretty statements)))) 
+                                            :parameters (synth-all :pretty parameters) 
+                                            :statements (synth-all :pretty statements)))) 
   (:java () (vcat (hcat (text "public ~a" (upper-camel name)) 
-                              (parens (apply #'punctuate (comma) nil (synth-all :java parameters)))) 
-                        (braces 
-                         (nest 4 (apply #'vcat (synth-all :java statements)))
-                         :newline t))))
+                        (parens (apply #'punctuate (comma) nil (synth-all :java parameters)))) 
+                  (braces 
+                   (nest 4 (apply #'vcat (synth-all :java statements)))
+                   :newline t))))
 
 ;; (defprim java-arrow (parameters &rest statements)
 ;;   (:pretty () (list 'java-arrow (list :parameters (synth-all :pretty parameters) 

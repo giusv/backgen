@@ -68,9 +68,7 @@
   (:implementation (package)
                    (let ((vo-name (symb name "-V-O")))
                      (java-unit vo-name
-                                (java-package (symb package '|.vo|))
-                                (java-import '|java.util| '|List|)
-                                (java-import '|java.util| '|Arrays|)
+                                (java-package (symb package '|.vo|)) 
                                 (java-class vo-name 
                                             :public t
                                             :fields (synth-all :implementation props)))))
@@ -98,7 +96,7 @@
             (td (ul (synth-all :req validators)))
             (td (doc:text "~a" description))
             (td (synth :ref content))))
-  (:implementation () (java-statement (java-pair name (synth :java-type (synth :type content)))))
+  (:implementation () (java-field-with-accessors nil name (synth :java-type (synth :type content))))
   (:type () (synth :type content))
   (:random () (list (keyw name) (synth :random content)))
   (:imports () (synth :imports content))

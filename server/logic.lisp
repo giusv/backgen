@@ -5,6 +5,7 @@
   (:implementation (cont &rest args) 
           (apply cont (synth :implementation expr (lambda (x) (java-statement (java-pair name (synth :java-type (synth :type expr)) :init x)))) args))
   (:errors () (synth :errors expr))
+  (:entities () (synth :entities expr))
   (:latex (cont &rest args) (apply cont (paragraph (line (normal "Si assegna a ~a il risultato della seguente espressione:" name))
                                                    (synth :latex expr #'identity)))))
 
@@ -14,8 +15,10 @@
           (java-concat (synth-all :implementation bindings #'identity)
                        (apply #'synth :implementation expr cont args)))
   (:errors () (apply #'append (synth :errors expr) (synth-all :errors bindings)))
+  (:entities () (apply #'append (synth :entities expr) (synth-all :entities bindings)))
   (:type () (synth :type expr))
   (:latex (cont &rest args) (apply cont (append (synth-all :latex bindings #'identity) args))))
+
 (defmacro bl-let (bindings &body expr)
   `(let* ,(mapcar #`(,(car a1) (bl-variab ',(car a1) (synth :type ,(cadr a1)))) bindings)
      (bl-let% (list ,@(mapcar (lambda (binding) `(bl-binding ',(car binding) ,(cadr binding)))
@@ -45,8 +48,10 @@
                                               (java-call 'create dto))
                              args))))
   (:errors () nil)
-  (:type () (integer-type))
+  (:entities () (list entity))
+  (:type () (transfer-type entity))
   (:latex (cont &rest args) (apply cont (normal "Creazione dell'entita ~a" (synth :name entity)) args)))
+
 
 (defmacro bl-create-entity (entity &rest bindings)
   `(bl-create-entity% ,entity (list ,@bindings)))
@@ -64,8 +69,11 @@
                                               (java-call 'find (synth :implementation id #'identity)))
                              args))))
   (:errors () nil)
+  (:entities () (list entity))
   (:type () (transfer-type entity))
   (:latex (cont &rest args) (apply cont (normal "Creazione dell'entita ~a" (synth :name entity)) args)))
+
+
 
 (defprim bl-delete-entity (entity id)
   (:pretty () (list 'delete-entity (list :entity entity :id id))) 
@@ -80,6 +88,7 @@
                                               (java-call 'delete (synth :implementation id #'identity)))
                              args))))
   (:errors () nil)
+  (:entities () (list entity))
   (:type () (transfer-type entity))
   (:latex (cont &rest args) (apply cont (normal "Creazione dell'entita ~a" (synth :name entity)) args)))
 
@@ -90,8 +99,26 @@
                                    (java-dynamic (synth :name object)) (java-call (symb 'get "-" place)))))
             (apply cont logic args)))
   (:errors () nil)
+  (:entities () nil)
   (:type () (synth :property-type (synth :type object) place))
   (:latex (cont &rest args) (apply cont (normal "l'estrazione del campo ~a dall'oggetto ~a" place (synth :name object)))))
+
+(defprim bl-value-object (object)
+  (:pretty () (list 'bl-value-object (list :object (synth :pretty object)))) 
+  (:implementation (cont &rest args) 
+                   (let* ((dto-name (gensym (symbol-name (synth :name entity)))) 
+                          (dto (java-dynamic dto-name)))
+                     (java-concat
+                      (java-statement (java-pair dto-name #1=(java-object-type (symb (synth :name entity) "-d-t-o")) 
+                                                 :init (java-new #1#)))
+                     
+                      (apply cont (java-chain (java-dynamic (symb (synth :name entity) "-d-a-o"))
+                                              (java-call 'find (synth :implementation id #'identity)))
+                             args))))
+  (:errors () nil)
+  (:entities () (list entity))
+  (:type () (transfer-type entity))
+  (:latex (cont &rest args) (apply cont (normal "Creazione dell'entita ~a" (synth :name entity)) args)))
 
 (defprim bl-arg (name type)
   (:pretty () (list 'bl-arg (list :name name :type (synth :pretty type)))))
@@ -104,6 +131,7 @@
                                                 inputs)
                                         (synth :implementation expr (lambda (x) (java-return x)))))
   (:errors () (synth :errors expr))
+  (:entities () (synth :entities expr))
   (:type () (function-type (synth :type expr) (synth-all :type inputs)))
   (:latex (cont &rest args) (apply cont (synth :latex expr #'identity) args)))
 
@@ -119,6 +147,7 @@
                                    args))
   (:type () (collection-type (synth :type function)))
   (:errors () (synth :errors function))
+  (:entities () (synth :entities function))
   (:latex (cont &rest args) (apply cont 
                                    (sequence 
                                     (normal "per ogni elemento della collezione ~a viene effettuata la seguente operazione:" name)
@@ -126,7 +155,8 @@
 (defprim bl-variab (name type)
   (:pretty () (list 'bl-variab (list :name name)))
   (:implementation (cont &rest args) (apply cont (java-dynamic name) args))
-  (:errors () nil))
+  (:errors () nil)
+  (:entities () nil))
 
 (defun closure-equal (x y)
   (equal (synth :pretty x) (synth :pretty y)))
@@ -146,6 +176,7 @@
                 (synth :return-type (synth :type function))
                 (error "type mismatch")))
   (:errors () (synth :errors function))
+  (:entities () (synth :entities function))
   (:latex (cont &rest args) (apply cont 
                                    (seq 
                                     (normal "per ogni elemento della collezione ~a viene effettuata la seguente operazione:" name)
@@ -160,6 +191,7 @@
                  args))
   (:type () (boolean-type))
   (:errors () (synth :errors expr))
+  (:entities () (synth :entities expr))
   ;; (:latex (cont &rest args) (apply cont 
   ;;                                  (seq 
   ;;                                   (normal "per ogni elemento della collezione ~a viene effettuata la seguente operazione:" name)
@@ -170,12 +202,14 @@
   (:implementation (cont &rest args) (apply cont (java-chain (java-dynamic (symb (synth :name (synth :entity query)) "-D-A-O"))
                                                              (java-call (lower-camel (synth :name query)))) args))
   (:errors () nil)
+  (:entities () nil)
   (:type () (collection-type (transfer-type (synth :entity query)))))
 
 (defprim bl-cat (&rest exps)
   (:pretty () (list 'bl-cat (:exps (synth-all :pretty exps)))) 
   (:implementation (cont &rest args) (apply cont (reduce #'java-+ (synth-all :implementation exps #'identity)) args))
   (:errors () nil)
+  (:entities () nil)
   (:type () (string-type 20)))
 
 ;; (defmacro mapcomm (command collection)
@@ -191,6 +225,7 @@
   ;;                                                                                             (synth :implementation e #'identity))))))
   ;;                         args))
   (:errors () (list expr))
+  (:entities () nil)
   (:type () (synth :type expr)))
 
 (defprim bl-unless% (conditions expr)
@@ -205,6 +240,7 @@
                            :from-end t
                            :initial-value (apply #'synth :implementation expr cont args)))
   (:errors () (apply #'append (synth :errors expr) (synth-all :errors conditions)))
+  (:entities () (apply #'append (synth :entities expr) (synth-all :entities conditions)))
   (:type () (synth :type expr)))
 
 (defmacro bl-unless (conditions &body expr)
