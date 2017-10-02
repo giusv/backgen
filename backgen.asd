@@ -41,5 +41,6 @@
                                      (:file "ejb")
                                      (:file "logic")))
                (:file "latex")
-               (:file "backgen")
+               (:file "test")
+               ;; (:file "backgen")
                ))

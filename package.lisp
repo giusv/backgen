@@ -181,6 +181,9 @@
 
 
 
+(defpackage :test
+  (:use :cl :lol :utils :doc :grammar :java :type :data))
+
 (defpackage :backgen
   (:use :cl :lol :utils :doc :grammar :java :type :data))
 

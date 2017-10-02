@@ -39,28 +39,7 @@
                        (server:rest-get ()
                                         (server:bl-let ((ent (server:bl-find-entity indicator-entity (expr:const 2))))
                                           ent)))))
-;; (with-environment ((name "...")) 
-;;   (require (true))
-;;   (invoke-service indicators-collection rest-get name)
-;;   (ensure (false)))
 
-
-(server:defresource indicators-collection
-    (server:rest-collection 
-     'indicators
-     (list 
-      (server:rest-post% indicator-format 
-                         (server:bl-let ((source (server:bl-get :source indicator-format))
-                                         (entity (server:bl-create-entity indicator-entity 
-                                                                          :source-code source))) 
-                           (server:bl-value-object entity)))
-      (server:rest-get ((name (url:query-parameter 'name (string-type 20))))
-                       (server:bl-let ((ent (server:bl-exec-query (indicator-by-name name))))
-                         (server:bl-unless (((server:bl-null ent) (indicator-not-found-error nil)))
-                           ent))))
-     indicator-item))
-
-(server:defservice server (server:rest-service 'indicator-service (url:void) indicators-collection))
 
 (defquery indicator-by-name (name) indicator-entity
           (with-queries ((inds (relation indicator-entity))
@@ -76,7 +55,23 @@
 (defquery all-indicators () indicator-entity
           (with-queries ((inds (relation indicator-entity)))
             inds))
-
+(server:defresource indicators-collection
+    (server:rest-collection 
+     'indicators
+     (list 
+      (server:rest-post% indicator-format 
+                         (server:bl-let ((source (server:bl-get :source indicator-format))
+                                         (entity (server:bl-create-entity indicator-entity 
+                                                                          :source-code source))) 
+                           ;; (server:bl-value-object entity)
+                           entity
+                           ))
+      (server:rest-get ((name (url:query-parameter 'name (string-type 20))))
+                       (server:bl-let ((ent (server:bl-exec-query (indicator-by-name name))))
+                         (server:bl-unless (((server:bl-null ent) (indicator-not-found-error nil)))
+                           ent))))
+     indicator-item))
+(server:defservice server (server:rest-service 'indicator-service (url:void) indicators-collection))
 
 
 ;; (defparameter parameters-collection
