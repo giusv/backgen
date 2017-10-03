@@ -17,8 +17,8 @@
                         :components ((:file "java")
                                      ;; (:file "sql")
                                      ))
-               (:file "expression")
                (:file "type")
+               (:file "expression")
                ;; (:file "validator")
                
                (:file "url")
@@ -42,5 +42,5 @@
                                      (:file "logic")))
                (:file "latex")
                (:file "test")
-               ;; (:file "backgen")
+               (:file "backgen")
                ))

@@ -41,7 +41,7 @@
                                           ent)))))
 
 
-(defquery indicator-by-name (name) indicator-entity
+(defquery indicator-by-name ((name (string-type 20))) indicator-entity
           (with-queries ((inds (relation indicator-entity))
                          (pars (relation parameter-entity)))
             (project (restrict (product inds pars)
@@ -50,7 +50,7 @@
                                               (expr:attr pars 'id))
                                 (expr:+equal+ (expr:attr inds 'name)
                                               name)))
-                     'indicator-id 'name)))
+                     :indicator-id :name)))
 
 (defquery all-indicators () indicator-entity
           (with-queries ((inds (relation indicator-entity)))

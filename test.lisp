@@ -56,17 +56,21 @@
 
 (defprim tl-test (name pre function post)
   (:pretty () (list 'tl-test (list :name name 
-                                    :pre (synth :pretty pre)
-                                    :function (synth :pretty function)
-                                    :post (synth :pretty post))))
+                                   :pre (synth :pretty pre)
+                                   :function (synth :pretty function)
+                                   :post (synth :pretty post))))
   (:implementation (cont &rest args) 
-                   (apply cont (synth :implementation function #'identity) 
-                          ;; (java-method name 
-                               ;;              (mapcar (lambda (input)
-                               ;;                        (java-pair (synth :name input)
-                               ;;                                   (synth :java-type (synth :type input))))
-                               ;;                      (synth :inputs function))
-                               ;;              (synth :immplementation (synth :expr function) #'identity))
+                   (apply cont ;; (synth :implementation function #'identity)
+                          (java-method (doc:textify (lower-camel name)) 
+                                       (mapcar (lambda (input)
+                                                 (java-pair (synth :name input)
+                                                            (synth :java-type (synth :type input))))
+                                               (synth :inputs function))
+                                       (synth :java-type (synth :type (synth :expr function)))
+                                       (synth :implementation pre #'java-statement)
+                                       (synth :implementation (synth :expr function) #'identity)
+                                       (synth :implementation post #'java-statement)
+                                       )
                           args))
   ;; (:type () (synth :type expr))
   )
@@ -94,14 +98,14 @@
 (defprim tl-ensure (assertion)
   (:pretty () (list 'tl-ensure (list :assertion (synth :pretty assertion))))
   (:implementation (cont &rest args) 
-                   (apply cont (apply #'java-call 'assert (synth :implementation assertion #'identity)) args))
+                   (apply cont (java-call 'assert (synth :implementation assertion #'identity)) args))
   ;; (:type () (synth :type expr))
   )
 
 (defprim tl-require (assertion)
   (:pretty () (list 'tl-require (list :assertion (synth :pretty assertion))))
   (:implementation (cont &rest args) 
-                   (apply cont (apply #'java-call 'require (synth :implementation assertion #'identity)) args))
+                   (apply cont (java-call 'require (synth :implementation assertion #'identity)) args))
   ;; (:type () (synth :type expr))
   )
 
@@ -113,6 +117,12 @@
   ;; (:type () (synth :type expr))
   )
 
+(defprim tl-invoke-service (name)
+  (:pretty () (list 'tl-invoke-service (list :name name)))
+  (:implementation (cont &rest args) 
+                   (apply cont (java-call name) args))
+  (:type () (integer-type)))
+
 
 (defparameter *tests* (make-hash-table))
 (defmacro deftest (name inputs pre expr post)
@@ -123,12 +133,30 @@
               (tl-test ',name
                        (tl-ensure ,pre)
                        (tl-lambda% (list ,@(mapcar #'car inputs)) ,expr)
-                       (tl-let ((response (tl-variab 'response ,(synth :type expr))))
+                       (tl-let ((response ,expr))
                          (tl-require ,post))))) 
           (setf (gethash ',name *tests*) ,name)))
 
 
 
-(deftest create-indicator ((id (integer-type))) (tl-equal id (expr:const 1)) nil(tl-equal id (expr:const 1)))
+(deftest create-indicator ((id (integer-type))) 
+  (tl-equal id (expr:const 1)) 
+  (tl-invoke-service 'indicators)
+  (tl-equal id (expr:const 1)))
+
+
+(defprim tl-generate (n name table values &rest generators)
+  (:pretty () (list 'tl-generate (list :n n :name name :table (synth :pretty table) :values (synth-all :pretty values)
+                                       :generators (synth-all :pretty generators))))
+  (:implementation (cont &rest args) 
+                   (apply cont (reduce #'java-+ (list 
+                                                 (java-const "insert into ") 
+                                                 (java-const (mkstr name)))
+                                       :initial-value nil) args))
+  ;; (:type () (synth :type expr))
+  )
+
 (pprint (synth :string (synth :doc (synth :java (synth :implementation create-indicator #'identity)))))
 (pprint (synth :string (synth :doc (synth :java (synth :implementation (create-indicator (expr:const 1)) #'identity)))))
+(terpri)
+(synth :output (synth :doc (synth :java (synth :implementation (tl-generate nil 'indicators nil nil) #'identity))) 0)

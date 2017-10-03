@@ -203,21 +203,21 @@
 
 (defprim java-method (name parameters rtype &rest args)
   (:pretty () (list 'java-method (list :name name 
-                                     :parameters (synth-all :pretty parameters) 
-                                     :rtype rtype
-                                     :throws (synth-all :pretty (getf (rest-key args) :throws))
-                                     :statements (synth-all :pretty (rest-plain args))))) 
+                                       :parameters (synth-all :pretty parameters) 
+                                       :rtype rtype
+                                       :throws (synth-all :pretty (getf (rest-key args) :throws))
+                                       :statements (synth-all :pretty (rest-plain args))))) 
   (:java ()  (vcat (hcat (text "public ") 
-                        (synth :java rtype)
-                        (blank)
-                        name
-                        (parens (apply #'punctuate (comma) t (synth-all :java parameters)))
-                        (aif (getf (rest-key args) :throws) 
-                             (hcat+ (text " throws") 
-                                    (apply #'punctuate (comma) t (synth-all :java it))))) 
-                  (braces 
-                   (nest 4 (apply #'vcat (synth-all :java (rest-plain args))))
-                   :newline t))))
+                         (synth :java rtype)
+                         (blank)
+                         name
+                         (parens (apply #'punctuate (comma) t (synth-all :java parameters)))
+                         (aif (getf (rest-key args) :throws) 
+                              (hcat+ (text " throws") 
+                                     (apply #'punctuate (comma) t (synth-all :java it))))) 
+                   (braces 
+                    (nest 4 (apply #'vcat (synth-all :java (rest-plain args))))
+                    :newline t))))
 
 (defprim java-signature (name parameters rtype)
   (:pretty () (list 'java-signature (list :name name 

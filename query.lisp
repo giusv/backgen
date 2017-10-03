@@ -23,6 +23,9 @@
 (defprim project (query &rest attributes) 
   (:pretty () (list 'project (list :attributes attributes :query (synth :pretty query))))
   (:schema () (let ((schema (synth :schema query))) 
+                (pprint (reduce (lambda (acc att) (cons (assoc att schema) acc)) 
+                         attributes
+                         :initial-value nil))
                 (reduce (lambda (acc att) (cons (assoc att schema) acc)) 
                         attributes
                         :initial-value nil)))
@@ -87,7 +90,8 @@
           ;;     (named-query ',name ,body)))
           (defparameter ,name 
             (named-query ',name (list ,@(mapcar #`',a1 args)) ,entity
-                         (let ,(mapcar #`(,a1 (expr:param ',a1)) args)
+                         (let ,(mapcar #`(,(car a1) (expr:variab (gensym (mkstr ',(car a1))) ,(cadr a1))) args)
+                           ;; ,(mapcar #`(,a1 (expr:param ',a1)) args)
                            ,body)))
           
           (setf (gethash ',name *queries*) ,name)))
