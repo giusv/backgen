@@ -51,7 +51,7 @@
 
 (defprim collection-type (type)
   (:pretty () (list 'array-type (list :type (synth :pretty type))))
-  (:java-type () (java-array-type (synth :java-type type))))
+  (:java-type () (java-template-type 'list (synth :java-type type))))
 
 (defprim function-type (return-type arg-types)
   (:pretty () (list 'function-type (list :return-type (synth :pretty return-type) :arg-types (synth-all :pretty arg-types))))

@@ -17,8 +17,8 @@
                         :components ((:file "java")
                                      ;; (:file "sql")
                                      ))
-               (:file "type")
                (:file "expression")
+               (:file "type")
                ;; (:file "validator")
                
                (:file "url")

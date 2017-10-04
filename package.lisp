@@ -169,7 +169,7 @@
            :bl-condition
            :bl-variab
            :bl-cat
-           :bl-error :bl-error-instance :bl-bad-request-error
+           :bl-exception :bl-exception-instance :bl-bad-request-exception
            :stateless-ejb
            :ejb-method
            ;; :ejb-parameter

@@ -38,7 +38,7 @@
                                    (dto (java-dynamic dto-name))
                                    (dto-list-type (java-template-type 'list dto-type))) 
                               (java-method (doc:textify (lower-camel (synth :name query)))
-                                           (mapcar (lambda (arg) (java-pair arg (java-object-type 'string)))
+                                           (mapcar (lambda (arg) (java-pair (synth :name arg) (synth :java-type (synth :type arg))))
                                                    args)
                                            (java-template-type 'list dto-type)
                                            (java-concat (java-statement (java-pair 'query (java-object-type 'query) 
@@ -46,7 +46,7 @@
                                                                                                      (java-call 'create-named-query (java-const (mkstr (upper-camel (synth :name query))))))))
                                                         (mapcar (lambda (arg) 
                                                                   (java-statement (java-chain (java-dynamic 'query)
-                                                                                              (java-call 'set-parameter (java-const (mkstr (lower-camel arg))) (java-dynamic arg)))))
+                                                                                              (java-call 'set-parameter (java-const (mkstr (lower-camel (synth :name arg)))) (synth :implementation arg #'identity)))))
                                                                 args)
                                                         (java-with-annotations (list (java-annotation '|SuppressWarnings| (java-const "rawtypes")))
                                                                                (java-statement 

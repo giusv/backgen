@@ -68,7 +68,8 @@
   (:implementation (package)
                    (let ((vo-name (symb name "-V-O")))
                      (java-unit vo-name
-                                (java-package (symb package '|.vo|)) 
+                                (java-package (symb package '|.vo|))
+                                (java-import '|java.util| '|List|) 
                                 (java-class vo-name 
                                             :public t
                                             :fields (synth-all :implementation props)))))

@@ -60,6 +60,13 @@
 ;;                                     (expr:+true+))
 ;;                           'id 'name))))
 
+(defprim ql-variab (name type)
+  (:pretty () (list 'ql-variab (list :name name)))
+  (:implementation (cont &rest args) (apply cont (java-dynamic name) args))
+  (:sql () (doc:text ":~a" (lower-camel name)))
+  (:errors () nil)
+  (:entities () nil))
+
 (defprim named-query (name args entity template)
   (:pretty () (list 'named-query (list :name name 
                                        :entity (synth :pretty entity)
@@ -74,24 +81,24 @@
   (:pretty () (list 'named-query (list :name name :entity (synth :pretty entity) :args (synth-plist :pretty args))))
   (:type () (java-array-type (java-object-type (synth :name entity))))
   (:call () (java-chain (java-call 'create-named-query (java-const (mkstr name)))
-                      (synth-plist-merge 
-                       (lambda (arg)
-                         (java-call 'set-parameter (java-const (mkstr (car arg))) (synth :call (cadr arg)))) 
-                       args)
-                      (java-call 'get-result-list)
-                      (java-call 'to-array))))
+                        (synth-plist-merge 
+                         (lambda (arg)
+                           (java-call 'set-parameter (java-const (mkstr (car arg))) (synth :call (cadr arg)))) 
+                         args)
+                        (java-call 'get-result-list)
+                        (java-call 'to-array))))
 
 (defparameter *queries* (make-hash-table))
 (defmacro defquery (name args entity body)
-  `(progn (defun ,name ,args 
-            (named-query-instance ',name ,entity ,@(apply #'append (mapcar #`(,(keyw a1) ,a1) args))))
+  `(progn (defun ,name ,(mapcar #'car args) 
+            (named-query-instance ',name ,entity ,@(apply #'append (mapcar #`(,(keyw (car a1)) ,(car a1)) args))))
           ;; (defparameter ,(symb name "-TEMPLATE")
           ;;   (let ,(mapcar #`(,a1 (expr:param ',a1)) args)
           ;;     (named-query ',name ,body)))
           (defparameter ,name 
-            (named-query ',name (list ,@(mapcar #`',a1 args)) ,entity
-                         (let ,(mapcar #`(,(car a1) (expr:variab (gensym (mkstr ',(car a1))) ,(cadr a1))) args)
-                           ;; ,(mapcar #`(,a1 (expr:param ',a1)) args)
+            (let ,(mapcar #`(,(car a1) (ql-variab ',(car a1) ,(cadr a1))) args)
+              ;; ,(mapcar #`(,a1 (expr:param ',a1)) args)
+              (named-query ',name (list ,@(mapcar #`,(car a1) args)) ,entity
                            ,body)))
           
           (setf (gethash ',name *queries*) ,name)))

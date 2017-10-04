@@ -33,7 +33,9 @@
                                            pair
                                            :newline nil)
                       pair)))
-  (:call () (java:java-dynamic (symb (lower-camel name) "-ID")))
+  (:implementation (cont &rest args) (apply cont 
+                                            (java:java-dynamic (symb (lower-camel name) "-ID"))
+                                            args))
   ;; (:req () (html:taglist 
   ;;           (html:span-color (string-downcase name))
   ;;           (doc:text "(parametro path)")))
@@ -56,7 +58,7 @@
                                            pair
                                            :newline nil)
                       pair)))
-  (:call () (java:java-dynamic name))
+  (:implementation (cont &rest args) (apply cont (java:java-dynamic name) args))
   ;; (:type () (doc:text "query"))
   )
 

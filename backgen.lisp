@@ -30,14 +30,14 @@
 (defrel indicator-parameters
     (relationship 'parameters-indicator indicator-entity parameter-entity :one-to-many))
 
-(server:deferror parse-indicator-error (server:bl-bad-request-error))
-(server:deferror indicator-not-found-error (server:bl-bad-request-error))
+(server:deferror parse-indicator-exception (server:bl-bad-request-exception))
+(server:deferror indicator-not-found-exception (server:bl-bad-request-exception))
 
 (server:defresource indicator-item
     (server:rest-item 'indicator ((indicator (url:path-parameter 'indicator (integer-type)))) 
                       (list 
                        (server:rest-get ()
-                                        (server:bl-let ((ent (server:bl-find-entity indicator-entity (expr:const 2))))
+                                        (server:bl-let ((ent (server:bl-find-entity indicator-entity indicator)))
                                           ent)))))
 
 
@@ -64,11 +64,12 @@
                                          (entity (server:bl-create-entity indicator-entity 
                                                                           :source-code source))) 
                            ;; (server:bl-value-object entity)
-                           entity
-                           ))
+                           entity))
       (server:rest-get ((name (url:query-parameter 'name (string-type 20))))
-                       (server:bl-let ((ent (server:bl-exec-query (indicator-by-name name))))
-                         (server:bl-unless (((server:bl-null ent) (indicator-not-found-error nil)))
+                       (server:bl-let ((ent (server:bl-exec-query ;; (all-indicators)
+                                                                  (indicator-by-name name)
+                                                                  )))
+                         (server:bl-unless (((server:bl-null ent) (indicator-not-found-exception nil)))
                            ent))))
      indicator-item))
 (server:defservice server (server:rest-service 'indicator-service (url:void) indicators-collection))
@@ -117,7 +118,7 @@
        (app-dtos (mapcar #'dto app-entities)) 
        (app-formats (loop for value being the hash-values of *formats* collect value))
        (app-services (loop for value being the hash-values of server:*services* collect value))
-       (app-errors (loop for value being the hash-values of server:*errors* collect value))
+       (app-exceptions (loop for value being the hash-values of server:*errors* collect value))
        (app-ejbs (mapcar #'server:generate-ejb app-services)))
  
   ;; (process (mkstr basedir (string-downcase (synth :name app-module)) ".module.ts") app-module)
@@ -152,11 +153,11 @@
                           (synth :string (synth :doc (synth :java (synth :ejb ejb package-symb)))))))
           app-ejbs)
   (mapcar (lambda (error) 
-            (let ((filename (mkstr basedir "error/" (upper-camel (synth :name error)) ".java"))) 
+            (let ((filename (mkstr basedir "exception/" (upper-camel (synth :name error)) ".java"))) 
               (pprint filename)
               (write-file filename
                           (synth :string (synth :doc (synth :java (synth :implementation error package-symb)))))))
-          app-errors) 
+          app-exceptions) 
   (mapcar (lambda (format) 
             (let ((filename (mkstr basedir "vo/" (upper-camel (symb (synth :name (synth :format format)) '|-V-O|)) ".java"))) 
               (pprint filename)

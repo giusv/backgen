@@ -15,15 +15,23 @@
   (:implementation (package) 
                    (java-unit name
                               (java-package (symb package '|.service|))
-                              (java-import '|javax.ws.rs| '|Path| '|Consumes| '|Produces| '|GET| '|POST| '|PUT| '|DELETE| '|PathParam| '|QueryParam|)
+                              (java-import '|javax.ws.rs| '|*|
+                                           ;; '|Path| '|Consumes| '|Produces| '|GET| '|POST| '|PUT| '|DELETE| '|PathParam| '|QueryParam|
+                                           )
                               (java-import '|javax.naming| '|Context| '|InitialContext| '|NamingException|)
-                              (java-import '|javax.ws.rs.core| '|Response|)
+                              (java-import (symb package '|.exception|) '|*|)
+                              (java-import '|javax.ejb| '|EJB|)                              (java-import '|javax.ws.rs.core| '|Response|)
                               (java-import '|javax.ws.rs.core.Response| '|ResponseBuilder|)
                               (java-import (symb package '|.ejb|) '|*|)
-                              (java-import (symb package '|.jto|) '|*|)
+                              (java-import (symb package '|.vo|) '|*|)
                               (java-with-annotations 
                                (list (java-annotation '|Path| (java-const (synth :string (synth :url url)))))
                                (java-class name :public t
+                                           :fields (list (java-with-annotations 
+                                                          (list (java-annotation '|EJB|))
+                                                          (let ((bean-name  (symb name "-E-J-B")))
+                                                            (java-statement (java-pair bean-name 
+                                                                                       (java-object-type bean-name) :private t )))))
                                            :methods (apply #'append (synth-all :implementation resources name url)))))))
 
 (defprim rest-singleton (name actions)
@@ -106,7 +114,7 @@
                                                                        (java-chain (java-dynamic bean-name)  
                                                                                    (apply #'java-call (symb 'retrieve "-" (synth :name chunk))
                                                                                           ;; (mapcar #'java-dynamic (append queries (synth :path-parameters path)))
-                                                                                          (synth-all :call (append queries (synth :path-parameters path))))))
+                                                                                          (synth-all :implementation (append queries (synth :path-parameters path)) #'identity))))
                                                             (java-call 'build)))))
                          (aif (synth :errors action)
                               (java-try ret
@@ -118,7 +126,7 @@
                                                 it))
                               ret)))))
   (:ejb-method (path chunk) 
-               (ejb-method (symb "GET-" (synth :name chunk))
+               (ejb-method (symb 'retrieve "-" (synth :name chunk))
                            (synth-all :declaration (append queries (synth :path-parameters path)))
                            action)
                ;; (java-method (doc:text "retrieve~a" (upper-camel (synth :name chunk)))
@@ -161,11 +169,11 @@
                                                   (java-call 'created
                                                              (java-chain (java-dynamic bean-name) 
                                                                          (apply #'java-call (symb 'add "-" (singular (synth :name chunk)))
-                                                                                (append*  (synth-all :call (synth :path-parameters path))
+                                                                                (append*  (synth-all :implementation (synth :path-parameters path) #'identity)
                                                                                           (java-dynamic (synth :name format))))))
                                                   (java-call 'build)))))))
   (:ejb-method (path chunk) 
-               (ejb-method (symb "POST-" (synth :name chunk))
+               (ejb-method (symb 'add "-" (singular (synth :name chunk)))
                            (append* (synth-all :declaration (synth :path-parameters path))
                                     (java-pair (synth :name format) (synth :java-type (synth :type format))))
                            action)))
@@ -200,7 +208,7 @@
                                                  (with-lookup bean-name
                                                    (java-statement (java-chain (java-dynamic bean-name) 
                                                                                (apply #'java-call (symb 'update "-" (synth :name chunk))
-                                                                                      (append*  (synth-all :call (synth :path-parameters path))
+                                                                                      (append*  (synth-all :implementation (synth :path-parameters path) #'identity)
                                                                                                 (java-dynamic (synth :name format))))))))))))
   (:ejb-method (path chunk) 
                (ejb-method (symb "PUT-"(synth :name chunk))

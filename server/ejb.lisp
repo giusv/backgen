@@ -19,6 +19,7 @@
                                (java-import (symb package '|.dao|) '|*|) 
                                (java-import (symb package '|.vo|) '|*|) 
                                (java-import (symb package '|.model|) '|*|)
+                               (java-import (symb package '|.exception|) '|*|)
                                (java-import '|java.util| '|List|)
                                (java-import '|java.util| '|Arrays|)
                                (java-with-annotations 
@@ -42,8 +43,9 @@
 (defprim ejb-method (name parameters logic)
   (:pretty () (list 'ejb-method (list :name name :parameters (synth-all :pretty parameters) :logic (synth :pretty logic))))
   (:implementation () (java-method (doc:textify (lower-camel name))
-                                   parameters
+                                   parameters 
                                    (synth :java-type (synth :type logic))
+                                   :throws (synth-all :type (synth :errors logic))
                                    (synth :implementation logic (lambda (x) (java-return x))))))
 
 (defun generate-ejb (service)
