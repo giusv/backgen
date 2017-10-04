@@ -149,14 +149,21 @@
   (:pretty () (list 'tl-generate (list :n n :name name :table (synth :pretty table) :values (synth-all :pretty values)
                                        :generators (synth-all :pretty generators))))
   (:implementation (cont &rest args) 
-                   (apply cont (reduce #'java-+ (list 
-                                                 (java-const "insert into ") 
-                                                 (java-const (mkstr name)))
-                                       :initial-value nil) args))
-  ;; (:type () (synth :type expr))
-  )
+                   (apply cont (java-const (synth :string (synth :sql (apply #'insert table
+                                                                             (synth-plist :implementation values #'identity)))))
+                          args)))
+
+
+(defprim tl-generate (n name table values &rest generators)
+  (:pretty () (list 'tl-generate (list :n n :name name :table (synth :pretty table) :values (synth-all :pretty values)
+                                       :generators (synth-all :pretty generators))))
+  (:implementation (cont &rest args) 
+                   (apply cont (java-const (synth :string (synth :sql (apply #'insert table
+                                                                             (synth-plist :implementation values #'identity)))))
+                          args)))
+
 
 (pprint (synth :string (synth :doc (synth :java (synth :implementation create-indicator #'identity)))))
 (pprint (synth :string (synth :doc (synth :java (synth :implementation (create-indicator (expr:const 1)) #'identity)))))
 (terpri)
-(synth :output (synth :doc (synth :java (synth :implementation (tl-generate nil 'indicators nil nil) #'identity))) 0)
+(synth :output (synth :doc (synth :java (synth :implementation (tl-generate nil nil 'indicators nil) #'identity))) 0)

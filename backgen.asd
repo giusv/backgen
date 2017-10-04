@@ -15,8 +15,7 @@
                (:module "lang"
                         :serial t
                         :components ((:file "java")
-                                     ;; (:file "sql")
-                                     ))
+                                     (:file "sql")))
                (:file "expression")
                (:file "type")
                ;; (:file "validator")
@@ -42,5 +41,5 @@
                                      (:file "logic")))
                (:file "latex")
                (:file "test")
-               (:file "backgen")
+               ;; (:file "backgen")
                ))

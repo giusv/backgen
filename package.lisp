@@ -86,6 +86,10 @@
            :java-equal :java-greater-than :java-less-than
            :java-field-with-accessors))
 
+(defpackage :sql
+  (:use :cl :lol :utils :grammar :doc)
+  (:export :insert :select))
+
 (defpackage :url
   (:use :cl :lol :utils :parser :grammar :doc :java)
   (:export :void :static-chunk :dynamic-chunk :expression-chunk :path-parameter :query-parameter :login-parameter 
@@ -182,7 +186,7 @@
 
 
 (defpackage :test
-  (:use :cl :lol :utils :doc :grammar :java :type :data))
+  (:use :cl :lol :utils :doc :grammar :java :type :data :sql))
 
 (defpackage :backgen
   (:use :cl :lol :utils :doc :grammar :java :type :data))
