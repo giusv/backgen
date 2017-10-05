@@ -28,8 +28,8 @@
                                                         (java-dynamic name))
                                               (java-dynamic name))))))
   (:paramdecl () (java-pair name (synth :java-type type)))
-  (:ddl () (doc:hcat (doc:text "~20a" name)
-                     (loa :ddl type))))
+  (:ddl () (doc:hcat (doc:text "~40a" (upper name))
+                     (synth :sql-type type))))
 
 (defprim primary-key (attribute)
   (:pretty () (list 'primary-key (list :attribute (synth :pretty attribute)))) 
@@ -37,13 +37,17 @@
   (:accessors () (synth :accessors attribute))
   (:paramdecl () (synth :paramdecl attribute))
   (:ddl () (doc:hcat (synth :ddl attribute) (doc:text " NOT NULL PRIMARY KEY"))))
+
 (defprim foreign-key (attribute reference)
   (:pretty () (list 'foreign-key (list :attribute (synth :pretty attribute) :reference (synth :pretty reference)))) 
-  (:ddl () (let ((new-attribute (attribute (symb (synth :name reference) "_" (synth :name attribute)) (synth :type attribute)))) 
+  (:ddl () (let ((new-attribute (attribute ;; (upper (synth :name (synth :primary reference)))
+                                           (symb (upper (synth :name reference)) "_" (upper (synth :name (synth :primary reference))))
+                                           ;; (symb (synth :name reference) "_" (synth :name attribute))
+                                           (synth :type attribute)))) 
              ;; (synth :pandoric-set attribute 'name (symb (synth :name reference) "-" (synth :name attribute)))
              
              (doc:hcat (synth :ddl new-attribute)
-                       (doc:text " REFERENCES ~a(~a)" (synth :name reference) (synth :name (synth :primary reference)))))))
+                       (doc:text " REFERENCES ~a(~a)" (upper (synth :name reference)) (upper (synth :name (synth :primary reference))))))))
 
 (defun get-sources (entity)
   (loop for rel being the hash-values of *relationships*
@@ -75,7 +79,7 @@
   (:entity (package) (java-unit name
                                 (java-package (symb package '|.model|))
                                 (java-import '|javax.persistence| '|Column| '|Entity| '|Id| '|Table| '|ManyToOne| '|OneToMany| '|OneToOne| '|ManyToMany| '|NamedQueries| '|NamedQuery|)
-                                ;; (java-import '|java.util| '|List|)
+                                (java-import '|java.util| '|List| '|Date|)
                                 (java-with-annotations 
                                  (list 
                                   (java-annotation '|SuppressWarnings| (java-const "unused"))
@@ -106,7 +110,7 @@
   ;;                                                   (java-method (doc:textify (lower-camel (symb "CANCEL-" name)))
   ;;                                                                (list (synth :paramdecl primary)) 
   ;;                                                                (java-object-type name)))))
-  (:ddl () (doc:vcat (doc:text "CREATE TABLE ~a" name)
+  (:ddl () (doc:vcat (doc:text "CREATE TABLE ~a" (upper name))
                      (doc:parens (doc:nest 4 (apply #'doc:punctuate (doc:comma) t (synth-all :ddl (remove nil (append* (primary-key primary) fields
                                                                                                                        (synth-all :target-foreign-key (get-sources this))
                                                                                                                        (synth-all :source-foreign-key (get-targets this))))))) :newline t)))

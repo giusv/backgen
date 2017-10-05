@@ -13,7 +13,7 @@
   (:dao (package) (java-unit (synth :name entity)
                              (java-package (symb package '|.dao|)) 
                              (if (get-queries entity) 
-                                 (list (java-import '|java.util| '|List| '|ArrayList|)
+                                 (list (java-import '|java.util| '|List| '|ArrayList| '|Date|)
                                        (java-import '|java.util.stream| '|Stream|)
                                        (java-import '|javax.persistence| '|Query|)))
                              (java-import package '|model.*|)

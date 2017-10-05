@@ -13,9 +13,9 @@
               (jsprop :start-date "Data inizio" (jsstring))
               (jsprop :parameters "parametri " (jsarray parameter-format))))
 
-(defent indicator-entity
-    (entity 'indicator 
-            :primary (attribute :indicator-id (string-type 20))
+(defent dwh-indicatori
+    (entity 'dwh-indicatori 
+            :primary (attribute :id (string-type 20))
             :fields (list (attribute :name (string-type 20) :desc "Nome dell'indicatore")
                           (attribute :source-code (string-type 200) :desc "Codice sorgente scritto dall'utente")
                           (attribute :object-code (string-type 200) :desc "Codice oggetto prodotto dal compilatore")
@@ -27,8 +27,99 @@
             :fields (list (attribute :name (string-type 20) :desc "Name del parametro")
                           (attribute :value (string-type 20) :desc "Valore del parametro"))))
 
+;; (defent ana-soggetto
+;;     (entity 'ana-soggetto
+;;             :primary (attribute :uid (integer-type))
+;;             :fields nil))
+
+;; (defent ana-veicolo
+;;     (entity 'ana-veicolo
+;;             :primary (attribute :uid (integer-type))
+;;             :fields nil))
+
+;; (defent sin-sinistro
+;;     (entity 'sin-sinistro
+;;             :primary (attribute :id-sini (integer-type))
+;;             :fields nil))
+
+;; (defent dwh-score-sogg
+;;     (entity 'dwh-score-sogg
+;;             :primary (attribute :score-id (integer-type))
+;;             :fields (list (attribute :score (integer-type) :nullable nil) 
+;;                           (attribute :qscore (integer-type) :nullable nil) 
+;;                           (attribute :last-update (date-type) :nullable nil))))
+;; (defent dwh-score-trg-veic
+;;     (entity 'dwh-score-trg-veic
+;;             :primary (attribute :score-id (integer-type))
+;;             :fields (list (attribute :score (integer-type) :nullable nil)
+;;                           (attribute :qscore (integer-type) :nullable nil)
+;;                           (attribute :last-update (date-type) :nullable nil))))
+
+;; (defent dwh-score-sini
+;;     (entity 'dwh-score-sini
+;;             :primary (attribute :score-id (integer-type))
+;;             :fields (list (attribute :score (integer-type) :nullable nil)
+;;                           (attribute :qscore (integer-type) :nullable nil)
+;;                           (attribute :last-update (date-type) :nullable nil))))
+
+;; (defent dwh-ind-risc-sogg
+;;     (entity 'dwh-ind-risc-sogg
+;;             :primary (attribute :ind-value-id (integer-type))
+;;             :fields (list ;; (attribute :ind-id (integer-type) :nullable nil)
+;;                           (attribute :value(string-type 1) :nullable nil)
+;;                           ;; (attribute :uid (integer-type) :nullable nil)
+;;                           ;; (attribute :id-sini (integer-type) :nullable nil)
+;;                           (attribute :last-update (date-type) :nullable nil))))
+;; (defent dwh-ind-risc-trg-veic
+;;     (entity 'dwh-ind-risc-trg-veic
+;;             :primary (attribute :ind-value-id (integer-type))
+;;             :fields (list (attribute :value (string-type 1) :nullable nil) 
+;;                           (attribute :last-update (date-type) :nullable nil))))
+
+;; (defent dwh-ind-risc-sini
+;;     (entity 'dwh-ind-risc-sini
+;;             :primary (attribute :ind-value-id (integer-type))
+;;             :fields (list (attribute :value (string-type 1) :nullable nil) 
+;;                           (attribute :last-update (date-type) :nullable nil))))
+
+;; (defrel ind-risc-trg-veic-indicators
+;;     (relationship 'dwh-ind-risc-trg-veic-indicators dwh-ind-risc-trg-veic dwh-indicatori :many-to-one))
+
+;; (defrel dwh-ind-risc-trg-veic-ana-veicolo
+;;     (relationship 'dwh-ind-risc-trg-veic-ana-veicolo dwh-ind-risc-trg-veic ana-veicolo :many-to-one))
+
+;; (defrel dwh-ind-risc-trg-veic-sin-sinistro
+;;     (relationship 'dwh-ind-risc-sogg-sin-sinistro dwh-ind-risc-trg-veic sin-sinistro :many-to-one))
+
+;; (defrel dwh-ind-risc-sogg-indicators
+;;     (relationship 'dwh-ind-risc-sogg-indicators dwh-ind-risc-sogg dwh-indicatori :many-to-one))
+
+;; (defrel dwh-ind-risc-sogg-ana-soggetto
+;;     (relationship 'dwh-ind-risc-sogg-ana-soggetto dwh-ind-risc-sogg ana-soggetto :many-to-one))
+
+;; (defrel dwh-ind-risc-sogg-sin-sinistro
+;;     (relationship 'dwh-ind-risc-sogg-sin-sinistro dwh-ind-risc-sogg sin-sinistro :many-to-one))
+
 (defrel indicator-parameters
-    (relationship 'parameters-indicator indicator-entity parameter-entity :one-to-many))
+    (relationship 'parameters-indicator dwh-indicatori parameter-entity :one-to-many))
+
+;; (defrel dwh-ind-risc-sini-sin-sinistro
+;;     (relationship 'dwh-ind-risc-sini-sin-sinistro dwh-ind-risc-sini sin-sinistro :many-to-one))
+
+;; (defrel dwh-score-trg-veic-ana-veicolo
+;;     (relationship 'dwh-score-trg-veic-ana-veicolo dwh-score-trg-veic ana-veicolo :many-to-one))
+
+;; (defrel dwh-score-trg-veic-sin-sinistro
+;;     (relationship 'dwh-score-sogg-sin-sinistro dwh-score-trg-veic sin-sinistro :many-to-one))
+
+;; (defrel dwh-score-sogg-ana-soggetto
+;;     (relationship 'dwh-score-sogg-ana-soggetto dwh-score-sogg ana-soggetto :many-to-one))
+
+;; (defrel dwh-score-sogg-sin-sinistro
+;;     (relationship 'dwh-score-sogg-sin-sinistro dwh-score-sogg sin-sinistro :many-to-one))
+
+;; (defrel dwh-score-sini-sin-sinistro
+;;     (relationship 'dwh-score-sini-sin-sinistro dwh-score-sini sin-sinistro :many-to-one))
 
 (server:deferror parse-indicator-exception (server:bl-bad-request-exception))
 (server:deferror indicator-not-found-exception (server:bl-bad-request-exception))
@@ -37,12 +128,12 @@
     (server:rest-item 'indicator ((indicator (url:path-parameter 'indicator (integer-type)))) 
                       (list 
                        (server:rest-get ()
-                                        (server:bl-let ((ent (server:bl-find-entity indicator-entity indicator)))
+                                        (server:bl-let ((ent (server:bl-find-entity dwh-indicatori indicator)))
                                           ent)))))
 
 
-(defquery indicator-by-name ((name (string-type 20))) indicator-entity
-          (with-queries ((inds (relation indicator-entity))
+(defquery indicator-by-name ((name (string-type 20))) dwh-indicatori
+          (with-queries ((inds (relation dwh-indicatori))
                          (pars (relation parameter-entity)))
             (project (restrict (product inds pars)
                                (expr:+and+ 
@@ -50,10 +141,10 @@
                                               (expr:attr pars 'id))
                                 (expr:+equal+ (expr:attr inds 'name)
                                               name)))
-                     :indicator-id :name)))
+                     :id :name)))
 
-(defquery all-indicators () indicator-entity
-          (with-queries ((inds (relation indicator-entity)))
+(defquery all-indicators () dwh-indicatori
+          (with-queries ((inds (relation dwh-indicatori)))
             inds))
 (server:defresource indicators-collection
     (server:rest-collection 
@@ -61,7 +152,7 @@
      (list 
       (server:rest-post% indicator-format 
                          (server:bl-let ((source (server:bl-get :source indicator-format))
-                                         (entity (server:bl-create-entity indicator-entity 
+                                         (entity (server:bl-create-entity dwh-indicatori 
                                                                           :source-code source))) 
                            ;; (server:bl-value-object entity)
                            entity))
@@ -106,7 +197,8 @@
 
 
 
-;; (pprint (synth :pretty (generate-dao indicator-entity)))
+
+;; (pprint (synth :pretty (generate-dao dwh-indicatori)))
 
 (let* ((package (list "com" "extent" "backgen"))
        (package-symb (apply #'symb (interleave package ".")))
@@ -128,6 +220,22 @@
   ;;         app-components)
   ;; (pprint (synth-all :pretty app-ejbs))
   (pprint basedir)
+  (synth :output  (apply #'doc:postpend (doc:semi) t
+                         (remove nil (synth-all :ddl app-entities))) 0)
+  (let ((filename "D:/giusv/temp/doc/test.tex")) 
+              (pprint filename)
+              (write-file filename
+                          (synth :string (document 'title 'author
+                         (section 'section
+                                  (paragraph (normal "hello ")
+                                             (normal "world!"))
+                                  (table (row (normal "name") (normal "surname") (normal "address"))
+                                         (row (normal "a") (normal "b") (normal "b"))
+                                         (row (normal "c") (normal "d")))
+                                  (itemize (normal "a")
+                                           (normal "b"))
+                                  (description (a . (normal "a"))
+                                               (b . (normal "b"))))))))
   (mapcar (lambda (entity) 
             (let ((filename (mkstr basedir "model/" (upper-camel (synth :name entity)) ".java"))) 
               (pprint filename)
@@ -171,12 +279,13 @@
               (pprint filename)
               (write-file filename
                           (synth :string (synth :doc (synth :java (synth :implementation service package-symb)))))))
-          app-services))
+          app-services)
+  )
 
 
-;; (let ((test (server:bl-let ((entity1 (server:bl-create-entity indicator-entity 
+;; (let ((test (server:bl-let ((entity1 (server:bl-create-entity dwh-indicatori 
 ;;                                                               :indicator-id (expr:const 1)))
-;;                             (entity2 (server:bl-let ((entity3 (server:bl-create-entity indicator-entity 
+;;                             (entity2 (server:bl-let ((entity3 (server:bl-create-entity dwh-indicatori 
 ;;                                                                                        :indicator-id (expr:const 2)))
 ;;                                                      (entity4 entity3)) 
 ;;                                        entity4))
@@ -192,7 +301,7 @@
 ;;                                                                                                           name name)))
 ;;                                                        name name))) 
 ;;               name-test))
-;;       ;; (test (server:bl-create-entity indicator-entity (list :indicator-id (expr:const 1))))
+;;       ;; (test (server:bl-create-entity dwh-indicatori (list :indicator-id (expr:const 1))))
 ;;       )
 ;;   (pprint (synth :string (synth :doc (synth :java (synth :logic test (lambda (x) (java-return x))))))))
 

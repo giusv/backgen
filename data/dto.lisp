@@ -12,6 +12,7 @@
   (:dto (package) (java-unit (synth :name entity)
                              (java-package (symb package '|.dto|))
                              (java-import package '|model.*|)
+                             (java-import '|java.util| '|Date|)
                              (java-class (synth :name this)
                                          :public t
                                          :constructors (let* ((entity-name (synth :name entity))

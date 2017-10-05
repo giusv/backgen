@@ -86,6 +86,11 @@
   (let ((words (interleave (split-str (mkstr item)) separator)))
 
     (format nil "~(~a~)~{~a~}" (car words) (cdr words))))
+
+(defun upper (item &optional (separator "_"))
+  (let ((words (interleave (split-str (mkstr item)) separator)))
+    (format nil "~{~a~}" words)))
+
 (defun lower-camel (item &optional (separator ""))
   (let ((words (interleave (mapcar #'string-capitalize (split-str (mkstr item))) separator)))
     (format nil "~(~a~)~{~a~}" (car words) (cdr words))))

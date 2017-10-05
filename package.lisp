@@ -15,7 +15,7 @@
            :singular
            :bindall
            :glue
-           :lower
+           :lower :upper
            :lower-camel :upper-camel
            :split-str :interleave
            :append* 
@@ -101,6 +101,7 @@
   (:export :integer-type
            :boolean-type
            :string-type
+           :date-type
            :entity-type
            :transfer-type
            :format-type
@@ -189,6 +190,6 @@
   (:use :cl :lol :utils :doc :grammar :java :type :data :sql))
 
 (defpackage :backgen
-  (:use :cl :lol :utils :doc :grammar :java :type :data))
+  (:use :cl :lol :utils :doc :grammar :java :type :data :latex))
 
 

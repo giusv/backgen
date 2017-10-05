@@ -2,16 +2,24 @@
 
 (defprim string-type (size)
   (:pretty () (list 'string-type (list :size size)))
-  (:java-type () (java-object-type 'string)))
+  (:java-type () (java-object-type 'string))
+  (:sql-type () (doc:text "VARCHAR2(~a)" size)))
+
 
 (defprim integer-type ()
   (:pretty () (list 'integer-type))
-  (:java-type () (java-primitive-type 'long)))
+  (:java-type () (java-primitive-type 'long))
+  (:sql-type () (doc:text "NUMBER")))
 
+(defprim date-type ()
+  (:pretty () (list 'date-type))
+  (:java-type () (java-object-type 'date))
+   (:sql-type () (doc:text "TIMESTAMP")))
 
 (defprim boolean-type ()
   (:pretty () (list 'boolean-type))
-  (:java-type () (java-primitive-type 'boolean)))
+  (:java-type () (java-primitive-type 'boolean))
+  (:sql-type () (doc:text "VARCHAR(1)")))
 
 (defprim entity-type (entity)
   (:pretty () (list 'entity-type (list :entity (synth :pretty entity))))

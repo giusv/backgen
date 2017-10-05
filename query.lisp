@@ -23,9 +23,9 @@
 (defprim project (query &rest attributes) 
   (:pretty () (list 'project (list :attributes attributes :query (synth :pretty query))))
   (:schema () (let ((schema (synth :schema query))) 
-                (pprint (reduce (lambda (acc att) (cons (assoc att schema) acc)) 
-                         attributes
-                         :initial-value nil))
+                ;; (pprint (reduce (lambda (acc att) (cons (assoc att schema) acc)) 
+                ;;          attributes
+                ;;          :initial-value nil))
                 (reduce (lambda (acc att) (cons (assoc att schema) acc)) 
                         attributes
                         :initial-value nil)))

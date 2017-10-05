@@ -123,7 +123,6 @@
                    (apply cont (java-call name) args))
   (:type () (integer-type)))
 
-
 (defparameter *tests* (make-hash-table))
 (defmacro deftest (name inputs pre expr post)
   `(progn (defun ,name ,(mapcar #'car inputs)
@@ -137,33 +136,54 @@
                          (tl-require ,post))))) 
           (setf (gethash ',name *tests*) ,name)))
 
-
-
 (deftest create-indicator ((id (integer-type))) 
   (tl-equal id (expr:const 1)) 
   (tl-invoke-service 'indicators)
   (tl-equal id (expr:const 1)))
 
+(defmacro tl-get (place object)
+  `(getf (cadr ,object) ,place))
+(defmacro tl-generate (n (name table) (&rest values) &body generators)
+  `(apply #'append (loop for i from 1 to ,n collect
+                        (let ((,name (list ',table (list ,@(apply #'append (mapcar (lambda (pair) (list (car pair) (cadr pair)))
+                                                                                   (group values 2)))))))
+                          (apply #'list ,name
+                                 (append ,@generators))))))
 
-(defprim tl-generate (n name table values &rest generators)
-  (:pretty () (list 'tl-generate (list :n n :name name :table (synth :pretty table) :values (synth-all :pretty values)
-                                       :generators (synth-all :pretty generators))))
+(defprim tl-random-number (start end)
+  (:pretty () (list 'tl-random-number (list :start start :end end)))
   (:implementation (cont &rest args) 
-                   (apply cont (java-const (synth :string (synth :sql (apply #'insert table
-                                                                             (synth-plist :implementation values #'identity)))))
-                          args)))
+                   (apply cont (random-number start end) args)))
 
-
-(defprim tl-generate (n name table values &rest generators)
-  (:pretty () (list 'tl-generate (list :n n :name name :table (synth :pretty table) :values (synth-all :pretty values)
-                                       :generators (synth-all :pretty generators))))
+(defprim tl-random-string (length)
+  (:pretty () (list 'tl-random-string (list :length length)))
   (:implementation (cont &rest args) 
-                   (apply cont (java-const (synth :string (synth :sql (apply #'insert table
-                                                                             (synth-plist :implementation values #'identity)))))
-                          args)))
+                   (apply cont (random-string length) args)))
 
+(defprim tl-record (table values)
+  (:pretty () (list 'tl-record (list :table table :values values)))
+  (:implementation (cont &rest args) 
+                   (apply cont (java-const (synth :string (synth :sql (apply #'insert table values)))) args)))
 
+(defprim tl-db% (records)
+  (:pretty () (list 'tl-db% (list :records (synth-all :pretty records))))
+  (:implementation (cont &rest args) 
+                   (apply cont (apply #'java-concat (synth-all :implementation records #'identity)) args)))
+
+(defun tl-db (records)
+  (tl-db% (mapcar (lambda (record) (tl-record (car record) (cadr record)))
+                  records)))
 (pprint (synth :string (synth :doc (synth :java (synth :implementation create-indicator #'identity)))))
 (pprint (synth :string (synth :doc (synth :java (synth :implementation (create-indicator (expr:const 1)) #'identity)))))
+
 (terpri)
-(synth :output (synth :doc (synth :java (synth :implementation (tl-generate nil nil 'indicators nil) #'identity))) 0)
+
+(let ((gen (tl-generate 5 (ind indicators) (:id (random-number 10 20) :name (random-string 10))
+             (tl-generate 2 (par parameters) (:id (tl-get :id ind) :name (random-string 10))
+               (tl-generate 2 (boh bohs) (:id (tl-get :id par) :name (random-string 10)))))))
+  (pprint gen)
+  (pprint (listp gen))
+  (pprint (synth :output (synth :doc (synth :java (synth :implementation (tl-db gen) #'identity))) 0))
+  )
+
+
