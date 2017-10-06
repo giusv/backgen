@@ -23,12 +23,12 @@
   (:template () (html:button :|(click)| (doc:text "~aClick()" (lower-camel name))
                                         expr))
 
-  (:controller () (lang:bb-method (doc:text "~aClick" (lower-camel name)) 
+  (:controller () (typescript:ts-method (doc:text "~aClick" (lower-camel name)) 
                                  nil
-                                 (bb-type :void)))
+                                 (ts-primitive-type 'void)))
   (:components (*) nil)
   (:routes (father) nil)
-  (:imports () nil)
+  (:ts-imports () nil)
   (:dependencies () nil))
  
 

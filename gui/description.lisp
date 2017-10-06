@@ -25,14 +25,14 @@
                                        (html:label (synth :template (cadr binding))))) 
                                (group bindings 2))))
 
-  (:controller () (bb-empty))
+  (:controller () (ts-empty))
   (:components (*) nil)
   (:routes (father) nil)
-  (:imports () nil ;; (cons (bb-import (synth :name source) (synth :name source))
+  (:ts-imports () nil ;; (cons (ts-import (synth :name source) (synth :name source))
             ;;       nil
             ;;       ;; (apply #'append 
             ;;       ;;        (synth-plist-merge (lambda (pair)
-            ;;       ;;                             (synth :imports (cadr pair)))
+            ;;       ;;                             (synth :ts-imports (cadr pair)))
             ;;       ;;                           bindings))
             ;;       )
             )

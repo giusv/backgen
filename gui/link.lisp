@@ -17,10 +17,10 @@
                     :|routerLinkActive| "active"
                     (synth :template expr)))
 
-  (:controller () (bb-empty))
+  (:controller () (ts-empty))
   (:components (*) nil)
   (:routes (*) nil)
-  (:imports () nil)
+  (:ts-imports () nil)
   (:dependencies () nil))
 
 

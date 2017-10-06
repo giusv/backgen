@@ -24,10 +24,10 @@
                   (html:div :|*ngFor| (doc:hcat (doc:text "let ~a of ~a" (lower-camel rowname) (lower-camel (synth :name source))) )
                             (synth :template element))))
 
-  (:controller () (bb-empty))
+  (:controller () (ts-empty))
   (:components (*) nil)
   (:routes (father) nil)
-  (:imports () (synth :imports element))
+  (:ts-imports () (synth :ts-imports element))
   (:dependencies () (synth :dependencies element)))
 
 ;; (defun csplice (cond &rest exps)

@@ -25,11 +25,11 @@
                            :|id| (string-downcase name) 
                            :|placeholder| (if init (synth :doc init) ""))))
 
-  (:controller () (bb-empty))
-  (:form-controller (path) (bb-empty))
+  (:controller () (ts-empty))
+  (:form-controller (path) (ts-empty))
   (:components (*) nil)
   (:routes (*) nil)
-  (:form () (bb-new 'form-control (bb-const "")))
-  (:imports () nil)
+  (:form () (ts-new 'form-control (ts-const "")))
+  (:ts-imports () nil)
   (:dependencies () nil))
 

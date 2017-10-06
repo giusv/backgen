@@ -33,7 +33,7 @@
                                            pair
                                            :newline nil)
                       pair)))
-  (:implementation (cont &rest args) (apply cont 
+  (:java-implementation (cont &rest args) (apply cont 
                                             (java:java-dynamic (symb (lower-camel name) "-ID"))
                                             args))
   ;; (:req () (html:taglist 
@@ -58,7 +58,7 @@
                                            pair
                                            :newline nil)
                       pair)))
-  (:implementation (cont &rest args) (apply cont (java:java-dynamic name) args))
+  (:java-implementation (cont &rest args) (apply cont (java:java-dynamic name) args))
   ;; (:type () (doc:text "query"))
   )
 

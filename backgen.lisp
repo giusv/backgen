@@ -229,12 +229,12 @@
                          (section 'section
                                   (paragraph (normal "hello ")
                                              (normal "world!"))
-                                  (table (row (normal "name") (normal "surname") (normal "address"))
+                                  (tabular (row (normal "name") (normal "surname") (normal "address"))
                                          (row (normal "a") (normal "b") (normal "b"))
                                          (row (normal "c") (normal "d")))
                                   (itemize (normal "a")
                                            (normal "b"))
-                                  (description (a . (normal "a"))
+                                  (outline (a . (normal "a"))
                                                (b . (normal "b"))))))))
   (mapcar (lambda (entity) 
             (let ((filename (mkstr basedir "model/" (upper-camel (synth :name entity)) ".java"))) 
@@ -264,13 +264,13 @@
             (let ((filename (mkstr basedir "exception/" (upper-camel (synth :name error)) ".java"))) 
               (pprint filename)
               (write-file filename
-                          (synth :string (synth :doc (synth :java (synth :implementation error package-symb)))))))
+                          (synth :string (synth :doc (synth :java (synth :java-implementation error package-symb)))))))
           app-exceptions) 
   (mapcar (lambda (format) 
             (let ((filename (mkstr basedir "vo/" (upper-camel (symb (synth :name (synth :format format)) '|-V-O|)) ".java"))) 
               (pprint filename)
               (write-file filename
-                          (synth :string (synth :doc (synth :java (synth :implementation format package-symb))))
+                          (synth :string (synth :doc (synth :java (synth :java-implementation format package-symb))))
                           ;; (synth :string (synth :doc (synth :java (synth :req format))))
                           )))
           app-formats)
@@ -278,7 +278,7 @@
             (let ((filename (mkstr basedir "service/" (upper-camel (synth :name service)) ".java"))) 
               (pprint filename)
               (write-file filename
-                          (synth :string (synth :doc (synth :java (synth :implementation service package-symb)))))))
+                          (synth :string (synth :doc (synth :java (synth :java-implementation service package-symb)))))))
           app-services)
   )
 
@@ -306,12 +306,6 @@
 ;;   (pprint (synth :string (synth :doc (synth :java (synth :logic test (lambda (x) (java-return x))))))))
 
 
-;; (defun to-string (x)
-;;   (synth :string (synth :doc (synth :typescript x))))
-
-;; (defun process (name code) 
-;;   ;; (format t "~%~%~a~%--------------------------------------------------~%~%~a~%--------------------------------------------------~%" name (to-string code))
-;;   (write-file name (to-string code)))
 
 
 ;; (pprint (synth-all :pretty (synth :source (car (:get-sources trip-entity)))))
@@ -333,118 +327,8 @@
 
 ;; (synth-all :output (synth-all :java (synth-all :model (list trip-format city-format place-format) :server '|com.example.json|)) 0)
 
-;; (defparameter place-format
-;;   (jsobject 'place "aaa"
-;;                  (jsprop 'name t (jsstring 'name "aaa"))))
-
-;; (defparameter city-format
-;;   (jsobject 'city "aaa"
-;;                  (jsprop 'name t (jsstring 'name "aaa"))
-;;                  (jsprop 'places t (jsarray 'places "aaa" place-format))))
-
-;; (defparameter trip-format
-;;   (jsobject 'trip "aaa"
-;;                  (jsprop 'name t (jsstring 'name "aaa"))
-;;                  (jsprop 'cities t (jsarray 'cities "aaa" city-format))))
-
-;; (defparameter model-list (list place-format city-format trip-format))
 
 
-;; (defparameter gui
-;;   (gui:vert
-;;    (gui:navbar 'nav 
-;;                (gui:link 'home (expr:const "home") (url:void))
-;;                (gui:link 'nested (expr:const "nested") (url:url `(nested)))
-;;                (gui:link 'nested2 (expr:const "form") (url:url `(my-form)))
-;;                (gui:link 'dynamic (expr:const "dynamic") (url:url `(nested / param)))) 
-;;    (gui:alt 
-;;     (gui:vert 
-;;      (gui:panel 'panel-test 
-;;                 (gui:label (expr:const "header2"))
-;;                 (gui:label (expr:const "body2")))
-;;      (gui:button 'test (doc:text "level 0 1")) 
-;;      (with-data ((places (remote 'places place-format 
-;;                                            (url:url `(home)))))
-;;        (gui:table 'table places (row)
-;;          :|Name| (gui:label (expr:attr row 'name))
-;;          :|Value| (gui:label (expr:attr row 'value)))))
-;;     (gui:static 'nested nil 
-;;                 (gui:alt (gui:label (expr:const "nested"))
-;;                          (gui:dynamic 'dyn (id) 
-;;                                       (gui:label (expr:value id)))))
-;;     (gui:static 'nested2 nil 
-;;                 (gui:vert (gui:label (expr:const "nested 2"))
-;;                           (with-data ((places 
-;;                                             (rand 'places (jsarray 'places "aaa" place-format))))
-;;                             (gui:table 'table places (row)
-;;                               :|Name| (gui:label (expr:attr row 'name))
-;;                               :|Value| (gui:label (expr:attr row 'value))
-;;                               :|Description| (gui:description 'description row 
-;;                                                :|Name| (expr:attr row 'name)
-;;                                                :|Value| (expr:attr row 'value))
-;;                               :|Details| (gui:button 'details (doc:text "Details"))
-;;                               :|Panel| (gui:panel 'panel (gui:label (expr:attr row 'name)) 
-;;                                                   (gui:label (expr:attr row 'value)))))))    
-;;     (gui:static 'my-form nil
-;;                 (gui:form 'trip-form trip-format
-;;                           ((name name (gui:input 'name (expr:const "Trip name")))
-;;                            (cities cities (gui:arr 'cities city-format 
-;;                                                    ((city-name city-name (gui:input 'city-name (expr:const "City name"))) 
-;;                                                     (places places (gui:arr 'places place-format
-;;                                                                             ((place-name place-name (gui:input 'place-name (expr:const "Place name"))))
-;;                                                                             place-name)))
-;;                                                    (gui:vert city-name places))))
-;;                           (gui:vert name cities))))))
-
-
-
-;; (let* ((basedir "d:/giusv/angular/template/src/app/")
-;;        (app-models (mapcar (lambda (format) (synth :model format)) 
-;;                            model-list))
-;;        (app-components (synth :components gui nil))
-;;        (app-component-names (cons (java-static 'app-component)
-;;                                   (mapcar (lambda (component)
-;;                                             (java-static (symb (synth :name component) "-COMPONENT")))
-;;                                           app-components)))
-;;        (app (java-unit 'app
-;;                      (java-import "@angular/core" 'component)
-;;                      (java-import "@angular/forms" 'form-array 'form-builder 'form-group 'form-control)
-;;                      (java-annotation 'component
-;;                                    :selector (java-const (string-downcase 'app))
-;;                                    :template (java-template (synth :template gui)))
-;;                      (java-class 'app-component
-;;                                :fields (list (synth :controller gui))))) 
-;;        (app-module (java-unit 'app
-;;                             (java-import "@angular/core" 'java-module)
-;;                             (java-import "@angular/platform-browser" 'browser-module)
-;;                             (java-import "@angular/http" 'http-module)
-;;                             (java-import "@angular/forms" 'reactive-forms-module)
-;;                             (java-import "@angular/router" 'router-module 'routes)
-;;                             (java-import "./app.component" 'app-component) ;; FIXME
-;;                             (mapcar (lambda (component)
-;;                                       (java-import (mkstr "./" (string-downcase (synth :name component)) ".component") 
-;;                                                  (symb (synth :name component) "-COMPONENT")))
-;;                                     app-components)
-;;                             (java-pair 'app-routes (java-type 'routes) :const t 
-;;                                      :init (java-array (synth :routes gui nil)))
-;;                             (java-annotation 'java-module
-;;                                           :imports (java-array (java-static 'browser-module)
-;;                                                              (java-static 'http-module)
-;;                                                              (java-static 'reactive-forms-module)
-;;                                                              (java-chain (java-static 'router-module) 
-;;                                                                        (java-call 'for-root (java-dynamic 'app-routes))))
-;;                                           :declarations (java-array app-component-names) 
-;;                                           :bootstrap (java-array (java-static 'app-component)))
-;;                             (java-class 'app-module)))
-;;        (app-components (synth :components gui nil))) 
-;;   (process (mkstr basedir (string-downcase (synth :name app-module)) ".module.ts") app-module)
-;;   (process (mkstr basedir (string-downcase (synth :name app)) ".component.ts") app )
-;;   (mapcar (lambda (component) 
-;;             (process (mkstr basedir (string-downcase (synth :name component)) ".component.ts") component))
-;;           app-components)
-;;   (mapcar (lambda (model) 
-;;             (process (mkstr basedir (string-downcase (synth :name model)) ".ts") model))
-;;           app-models))
 
 
 

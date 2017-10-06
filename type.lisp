@@ -3,22 +3,26 @@
 (defprim string-type (size)
   (:pretty () (list 'string-type (list :size size)))
   (:java-type () (java-object-type 'string))
+  (:ts-type () (ts-primitive-type 'string))
   (:sql-type () (doc:text "VARCHAR2(~a)" size)))
 
 
 (defprim integer-type ()
   (:pretty () (list 'integer-type))
   (:java-type () (java-primitive-type 'long))
+  (:ts-type () (ts-primitive-type 'number))
   (:sql-type () (doc:text "NUMBER")))
 
 (defprim date-type ()
   (:pretty () (list 'date-type))
   (:java-type () (java-object-type 'date))
-   (:sql-type () (doc:text "TIMESTAMP")))
+  (:ts-type () (ts-object-type 'date))
+  (:sql-type () (doc:text "TIMESTAMP")))
 
 (defprim boolean-type ()
   (:pretty () (list 'boolean-type))
   (:java-type () (java-primitive-type 'boolean))
+  (:ts-type () (ts-primitive-type 'boolean))
   (:sql-type () (doc:text "VARCHAR(1)")))
 
 (defprim entity-type (entity)
@@ -33,7 +37,8 @@
                                                     (cons primary fields)))
                                 (synth :type it)
                                 (error "property ~a does not exist in ~a" prop name))))
-  (:java-type () (java-object-type (synth :name entity))))
+  (:java-type () (java-object-type (synth :name entity)))
+  (:ts-type () (ts-object-type (synth :name entity))))
 
 (defprim transfer-type (entity)
   (:pretty () (list 'transfer-type (list :entity (synth :pretty entity))))
@@ -55,11 +60,13 @@
                                                   (synth :props format)))
                               (synth :type it)
                               (error "property ~a does not exist in ~a" name (synth :name format))))
-  (:java-type () (java-object-type (symb (synth :name format) "-V-O"))))
+  (:java-type () (java-object-type (symb (synth :name format) "-V-O")))
+  (:ts-type () (ts-object-type (synth :name format))))
 
 (defprim collection-type (type)
   (:pretty () (list 'array-type (list :type (synth :pretty type))))
-  (:java-type () (java-template-type 'list (synth :java-type type))))
+  (:java-type () (java-template-type 'list (synth :java-type type)))
+  (:ts-type () (ts-array-type (synth :ts-type type))))
 
 (defprim function-type (return-type arg-types)
   (:pretty () (list 'function-type (list :return-type (synth :pretty return-type) :arg-types (synth-all :pretty arg-types))))

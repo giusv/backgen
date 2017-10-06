@@ -20,9 +20,9 @@
                              (html:li (synth :template link)))
                            links)))))
 
-  (:controller () (bb-empty))
+  (:controller () (ts-empty))
   (:components (*) nil)
   (:routes (father) nil)
-  (:imports () nil)
+  (:ts-imports () nil)
   (:dependencies () nil))
 

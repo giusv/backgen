@@ -15,17 +15,22 @@
 
 (defprim jsformat (name desc format)
   (:pretty () (list 'jsformat (list :name name :desc desc  :format (synth :pretty format))))
-  (:implementation (package) (synth :implementation format package))
+  (:java-implementation (package) (synth :java-implementation format package))
+  (:ts-implementation () (synth :ts-implementation format))
+  (:ts-imports () (synth :ts-imports format))
   (:type () (synth :type format))
+  (:random () (synth :random format))
   (:req () (synth :req format))
   (:ref () name))
+
 (defprim jsbool ()
   (:pretty () (list 'jsbool))
   (:req () (doc:text "boolean"))
   (:ref () (synth :req this))
-  (:implementation () (java-primitive-type 'boolean))
+  (:java-implementation () (java-primitive-type 'boolean))
   (:random () (jbool (random-boolean)))
-  (:imports () nil)
+  (:java-imports () nil)
+  (:ts-imports () nil)
   (:type () (boolean-type))
   (:init () (java-const 'true)))
 
@@ -33,9 +38,10 @@
   (:pretty () (list 'jsstring))
   (:req () (doc:text "string"))
   (:ref () (synth :req this))
-  (:implementation () (java-object-type 'string))
+  (:java-implementation () (java-object-type 'string))
   (:random () (jstring (random-string 10)))
-  (:imports () nil)
+  (:java-imports () nil)
+  (:ts-imports () nil)
   (:type () (string-type 20))
   (:init () (java-const "")))
 
@@ -43,10 +49,11 @@
   (:pretty () (list 'jsnumber))
   (:req () (doc:text "number"))
   (:ref () (synth :req this))
-  (:implementation () (java-primitive-type 'long))
+  (:java-implementation () (java-primitive-type 'long))
   (:random () (jnumber (random-number 0 100)))
-  (:imports () nil)
-  (:type () (integer-type))
+  (:java-imports () nil)
+  (:ts-imports () nil)
+  (:type () (integer-type)) 
   (:init () (java-const 0)))
 
 ;; handle choice in instantiation
@@ -58,36 +65,34 @@
 (defprim jsobject (name &rest props)
   (:pretty () (list 'jsobject (list :name name :props (synth-all :pretty props))))
   (:req () (table
-            (tr (th (doc:text "Nome"))
-                (th (doc:text "Vincoli"))
-                (th (doc:text "Descrizione"))
-                (th (doc:text "Contenuto")))
-            (synth-all :req props)))
+               (tr (th (doc:text "Nome"))
+                   (th (doc:text "Vincoli"))
+                   (th (doc:text "Descrizione"))
+                   (th (doc:text "Contenuto")))
+               (synth-all :req props)))
   (:ref () name)
   (:random () (apply #'jobject (apply #'append (synth-all :random props))))
-  (:implementation (package)
-                   (let ((vo-name (symb name "-V-O")))
-                     (java-unit vo-name
-                                (java-package (symb package '|.vo|))
-                                (java-import '|java.util| '|List|) 
-                                (java-class vo-name 
-                                            :public t
-                                            :fields (synth-all :implementation props)))))
+  (:java-implementation (package)
+                        (let ((vo-name (symb name "-V-O")))
+                          (java-unit vo-name
+                                     (java-package (symb package '|.vo|)) 
+                                     (java-class vo-name 
+                                                 :public t
+                                                 :fields (synth-all :java-implementation props)))))
   ;; (:definition () (java-pair vo-name (synth :type this)))
   (:type () (format-type this))
-  (:model ()
-          (java-unit name 
-                     (synth-all :imports props) 
-                     (java-class name
-                                 :fields (synth-all :type props))))
+  (:ts-implementation () (ts-unit name 
+                                  (synth-all :ts-imports props) 
+                                  (ts-class name
+                                            :fields (synth-all :ts-implementation props))))
   (:vo (package)
        (java-unit name 
                   (java-package (symb package '|.vo|)) 
                   (java-class (symb name "-V-O") :public t
                               :fields (mapcar #'java-statement (synth-all :type props '|-V-O|))
                               :methods (apply #'append (synth-all :accessors props '|-V-O|)))))
-  (:imports ()  (java-import (mkstr "./" (string-downcase name)) name)) 
-  
+  (:java-imports ()  (java-import (mkstr "./" (string-downcase name)) name)) 
+  (:ts-imports ()  (ts-import (mkstr "./" (string-downcase name)) name)) 
   (:init () nil))
 
 (defprim jsprop (name description content &rest validators)
@@ -97,10 +102,12 @@
             (td (ul (synth-all :req validators)))
             (td (doc:text "~a" description))
             (td (synth :ref content))))
-  (:implementation () (java-field-with-accessors nil name (synth :java-type (synth :type content))))
+  (:java-implementation () (java-field-with-accessors nil name (synth :java-type (synth :type content))))
+  (:ts-implementation () (ts-field-with-accessors nil name (synth :ts-type (synth :type content))))
   (:type () (synth :type content))
   (:random () (list (keyw name) (synth :random content)))
-  (:imports () (synth :imports content))
+  (:java-imports () (synth :java-imports content))
+  (:ts-imports () (synth :ts-imports content))
   (:init () (error "should not be reachable"))
   (:accessors (&optional suffix) 
               (list (java-method (doc:text "get~a" (upper-camel name)) nil (synth :type content suffix)
@@ -118,7 +125,8 @@
   (:random () (let* ((length (random-number 2 5))
                      (values (loop for i from 0 to length collect (synth :random element)))) 
                 (apply #'jarray values))) 
-  (:imports () (synth :imports element))
+  (:java-imports () (synth :java-imports element))
+  (:ts-imports () (synth :ts-imports element))
   (:type () (collection-type (synth :type element)))
   (:init () nil))
 

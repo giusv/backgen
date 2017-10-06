@@ -23,9 +23,9 @@
 (defprim project (query &rest attributes) 
   (:pretty () (list 'project (list :attributes attributes :query (synth :pretty query))))
   (:schema () (let ((schema (synth :schema query))) 
-                ;; (pprint (reduce (lambda (acc att) (cons (assoc att schema) acc)) 
-                ;;          attributes
-                ;;          :initial-value nil))
+                (pprint (reduce (lambda (acc att) (cons (assoc att schema) acc)) 
+                         attributes
+                         :initial-value nil))
                 (reduce (lambda (acc att) (cons (assoc att schema) acc)) 
                         attributes
                         :initial-value nil)))
@@ -62,7 +62,7 @@
 
 (defprim ql-variab (name type)
   (:pretty () (list 'ql-variab (list :name name)))
-  (:implementation (cont &rest args) (apply cont (java-dynamic name) args))
+  (:java-implementation (cont &rest args) (apply cont (java-dynamic name) args))
   (:sql () (doc:text ":~a" (lower-camel name)))
   (:errors () nil)
   (:entities () nil))

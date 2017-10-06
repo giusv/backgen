@@ -11,10 +11,10 @@
                                          :|class| "row"
                                          template))
                                       (synth-all :template elements))))
-  (:controller () (bb-list (synth-all :controller elements))) 
+  (:controller () (ts-concat (synth-all :controller elements))) 
   (:components (father) (apply #'append (synth-all :components elements father)))
   (:routes (father) (apply #'append (synth-all :routes elements father)))
-  (:imports () (apply #'append (synth-all :imports elements)))
+  (:ts-imports () (apply #'append (synth-all :ts-imports elements)))
   (:dependencies () (apply #'append (synth-all :dependencies elements))))
 
 (defmacro vert* (&rest elements) 

@@ -10,16 +10,17 @@
                (:file "utils")
                (:file "parser")
                (:file "grammar")
-               (:file "doc")
-               (:file "html")
+               (:file "doc") 
                (:module "lang"
                         :serial t
-                        :components ((:file "java")
-                                     (:file "sql")))
+                        :components ((:file "html")
+                                     (:file "java")
+                                     (:file "sql")
+                                     (:file "typescript")
+                                     (:file "latex")))
                (:file "expression")
                (:file "type")
-               ;; (:file "validator")
-               
+               ;; (:file "validator") 
                (:file "url")
                (:file "query") 
                (:module "data"
@@ -29,20 +30,18 @@
                                      (:file "entity")
                                      (:file "dao")
                                      (:file "dto")
+                                     (:file "data")
                                      ))
-               
-               
-               
                (:module "server"
                         :serial t
                         :components ((:file "error")
                                      (:file "rest")
                                      (:file "ejb")
-                                     (:file "logic")))
-
+                                     (:file "logic"))) 
                (:module "gui"
                         :serial t
-                        :components ((:file "input")
+                        :components ((:file "common")
+                                     (:file "input")
                                      (:file "button")
                                      (:file "link")
                                      (:file "navbar")
@@ -59,7 +58,8 @@
                                      (:file "alt")
                                      (:file "form")))
 
-               (:file "latex")
+               
                (:file "test")
                ;; (:file "backgen")
+               (:file "guigen")
                ))

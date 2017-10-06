@@ -1,18 +1,77 @@
 (in-package :latex)
 
-(defprim plain (text)
-  (:pretty () (list name (list :attributes (synth-plist :pretty (rest-key args)) :body (synth-all :pretty (rest-plain args)))))
-  (:doc () (labels ((stringify (item)
-                         (if (or (numberp item) (stringp item) (keywordp item) (symbolp item))
-                             item
-                             (synth :string item)))
-                       (open-tag (as) (doc:text "<~a~{ ~a=\"~a\"~}>" (string-downcase name) (mapcar #'stringify as)))
-                       (close-tag () (doc:text "</~a>" (string-downcase name)))
-                       (open-close-tag (as) (doc:text "<~a~{ ~a=\"~a\"~}/>" (string-downcase name) (mapcar #'stringify as))))
-                (let ((attributes (rest-key args)) 
-                      (body (apply #'append* (rest-plain args))))
-                  (if (null body)
-                      (open-close-tag attributes)
-                      (doc:vcat (open-tag attributes)
-                                (doc:nest 4 (apply #'doc:vcat (synth-all :doc body)))
-                                (close-tag)))))))
+(defun with-env (name param &rest contents)
+  (vcat (text "\\begin{~a}~@[{~a}~]" (string-downcase name) param)
+        (apply #'vcat (append* contents))
+        (text "\\end{~a}" (string-downcase name))))
+
+(defprim normal (template &rest args)
+  (:pretty () (list 'line (list :template template :args (synth :pretty args))))
+  (:doc () (apply #'text template args)))
+
+(defprim paragraph (&rest contents)
+  (:pretty () (list 'paragraph (list :contents (synth-all :pretty contents))))
+  (:doc () (hcat (apply #'vcat (synth-all :doc contents)) 
+                 (text "\\\\"))))
+
+(defprim seq (&rest elements)
+  (:pretty () (list 'seq (list :elements (synth-all :pretty elements))))
+  (:doc () (apply #'vcat (synth-all :doc elements))))
+
+(defprim section (title &rest contents)
+  (:pretty () (list 'section (list :title title :contents (synth-all :pretty (apply #'append* contents)))))
+  (:doc () (apply #'vcat (text "\\section{~a}" (string-downcase title))
+                  (synth-all :doc (apply #'append* contents)))))
+
+(defprim tabular (&rest rows)
+  (:pretty () (list 'tabular (list :rows (synth-all :pretty rows))))
+  (:doc () (with-env 'tabular (apply #'symb (interleave (make-list (apply #'max (synth-all :size rows))
+                                                                   :initial-element '|c|) '|\||))
+                     (apply #'punctuate (text "~%\\hline") t (synth-all :doc rows)))))
+
+(defprim item (name &rest contents)
+  (:pretty () (list 'item (list :name name :contents (synth :pretty (append* contents)))))
+  (:doc () (hcat+ (text "\\item~@[[~a]~]" name)
+                  (apply #'vcat (synth-all :doc (apply #'append* contents))))))
+(defprim itemize (&rest items)
+  (:pretty () (list 'itemize (list :items (synth-all :pretty items))))
+  (:doc () (with-env 'itemize nil (synth-all :doc (mapcar (lambda (i) (item nil i))
+                                                          items)))))
+
+(defprim enumerate (&rest items)
+  (:pretty () (list 'enumerate (list :items (synth-all :pretty items))))
+  (:doc () (with-env 'enumerate nil (synth-all :doc (mapcar (lambda (i) (item nil i))
+                                                          items)))))
+
+(defprim outline% (&rest items)
+  (:pretty () (list 'outline (list :items (synth-all :pretty items))))
+  (:doc () (with-env 'outline nil (synth-all :doc items))))
+
+(defmacro outline (&rest items)
+  `(outline% ,@(mapcar (lambda (i) `(item ',(car i) ,(cdr i)))
+                          items)))
+
+(defprim row (&rest cols)
+  (:pretty () (list 'row (list :cols (synth-all :pretty cols))))
+  (:size () (length cols))
+  (:doc () (hcat+ (apply #'punctuate (text " & ") nil (synth-all :doc cols)) (text "\\\\"))))
+
+(defun document (title author &rest contents)
+  (vcat (text "\\documentclass[12pt]{article}") 
+        (text "\\title{~a}" title)
+        (text "\\author{~a}" author)
+        (with-env 'document nil
+          (text "\\maketitle")
+          (synth-all :doc contents))))
+  
+;; (synth :output (document 'title 'author
+;;                          (section 'section
+;;                                   (paragraph (normal "hello ")
+;;                                              (normal "world!"))
+;;                                   (tabular (row (normal "name") (normal "surname") (normal "address"))
+;;                                          (row (normal "a") (normal "b") (normal "b"))
+;;                                          (row (normal "c") (normal "d")))
+;;                                   (itemize (normal "a")
+;;                                            (normal "b"))
+;;                                   (outline (a . (normal "a"))
+;;                                                (b . (normal "b"))))) 0)

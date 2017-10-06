@@ -86,6 +86,24 @@
            :java-equal :java-greater-than :java-less-than
            :java-field-with-accessors))
 
+(defpackage :typescript
+  (:use :cl :lol :utils :grammar :doc)
+  (:export :ts-empty :ts-comment :ts-const 
+           :ts-type :ts-primitive-type :ts-array-type :ts-object-type :ts-template-type :ts-wildcard-type
+           :ts-pair :ts-array :ts-element
+           :ts-object :ts-annotation :ts-annotation2 :ts-with-annotations :ts-class :ts-interface :ts-method :ts-signature 
+           :ts-import :ts-package :ts-new :ts-call :ts-static :ts-dynamic :ts-enum :ts-chain :ts-constructor :ts-arrow 
+           :ts-concat :ts-unit :ts-template :ts-assign :ts-return :ts-throw :ts-statement
+           :ts-null :ts-nil 
+           :ts-try :ts-catch% :ts-catch
+           :ts-switch :ts-case :ts-break
+           :ts-if
+           :ts-+ :ts-- :ts-* :ts-/
+           :ts-or :ts-and :ts-not
+           :ts-true :ts-false
+           :ts-equal :ts-greater-than :ts-less-than
+           :ts-field-with-accessors))
+
 (defpackage :sql
   (:use :cl :lol :utils :grammar :doc)
   (:export :insert :select))
@@ -97,7 +115,7 @@
            :url))
 
 (defpackage :type
-  (:use :cl :lol :utils :parser :grammar :java) 
+  (:use :cl :lol :utils :parser :grammar :java :typescript) 
   (:export :integer-type
            :boolean-type
            :string-type
@@ -111,7 +129,7 @@
 
 
 (defpackage :data
-  (:use :cl :lol :utils :parser :grammar :java :html :type) 
+  (:use :cl :lol :utils :parser :grammar :java :typescript :html :type) 
   (:export :with-data :with-data%
            :remote
            :rand
@@ -130,14 +148,16 @@
 
 
 
+
+
 (defpackage :latex
   (:use :cl :lol :utils :doc :grammar)
   (:export :line :normal :section
-           :item :itemize :enumerate :description% :description
+           :item :itemize :enumerate :outline% :outline
            :document
            :paragraph
            :seq
-           :table :row))
+           :tabular :row))
 
 (defpackage :server
   (:use :cl :lol :utils :grammar :type :java :latex)
@@ -186,8 +206,10 @@
 
 
 (defpackage :gui
-  (:use :cl :lol :utils :grammar :java)
-  (:export :input :button
+  (:use :cl :lol :utils :grammar :typescript)
+  (:export :defelem 
+           :*elements*
+           :input :button
            :vert :vert*
            :horz :horz*
            :abst
@@ -207,6 +229,6 @@
   (:use :cl :lol :utils :doc :grammar :java :type :data :sql))
 
 (defpackage :backgen
-  (:use :cl :lol :utils :doc :grammar :java :type :data :latex))
+  (:use :cl :lol :utils :doc :grammar :java :type :typescript :data :latex :gui))
 
 

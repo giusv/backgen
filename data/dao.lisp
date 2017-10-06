@@ -24,12 +24,12 @@
                                          :public t 
                                          :fields (list (java-with-annotations (list (java-annotation '|PersistenceContext|))
                                                                               (java-statement (java-pair 'entity-manager (java-object-type 'entity-manager) :private t))))
-                                         :methods (synth-all :implementation methods entity)
+                                         :methods (synth-all :java-implementation methods entity)
                                          ))))
 
 (defprim dao-query (query)
   (:pretty () (list 'dao-query (list :query (synth :pretty query))))
-  (:implementation (entity) (let* ((attributes (synth :schema query))
+  (:java-implementation (entity) (let* ((attributes (synth :schema query))
                                    (args (synth :args query))
                                    (entity-name (synth :name entity))
                                    (entity-var (java-dynamic entity-name))
@@ -46,7 +46,7 @@
                                                                                                      (java-call 'create-named-query (java-const (mkstr (upper-camel (synth :name query))))))))
                                                         (mapcar (lambda (arg) 
                                                                   (java-statement (java-chain (java-dynamic 'query)
-                                                                                              (java-call 'set-parameter (java-const (mkstr (lower-camel (synth :name arg)))) (synth :implementation arg #'identity)))))
+                                                                                              (java-call 'set-parameter (java-const (mkstr (lower-camel (synth :name arg)))) (synth :java-implementation arg #'identity)))))
                                                                 args)
                                                         (java-with-annotations (list (java-annotation '|SuppressWarnings| (java-const "rawtypes")))
                                                                                (java-statement 
@@ -87,7 +87,7 @@
  
 (defprim dao-create ()
   (:pretty () (list 'dao-create)) 
-  (:implementation (entity) 
+  (:java-implementation (entity) 
                    (let* ((new-entity-name (synth :name entity)) 
                           (dto-name (symb (synth :name entity) "-D-T-O")) 
                           (new-entity (java-dynamic new-entity-name))
@@ -112,7 +112,7 @@
 
 (defprim dao-find ()
   (:pretty () (list 'dao-find)) 
-  (:implementation (entity) 
+  (:java-implementation (entity) 
                    (let* ((found-entity-name (synth :name entity)) 
                           (dto-name (symb (synth :name entity) "-D-T-O")) 
                           (found-entity (java-dynamic found-entity-name))
@@ -140,7 +140,7 @@
 
 (defprim dao-delete ()
   (:pretty () (list 'dao-delete)) 
-  (:implementation (entity) 
+  (:java-implementation (entity) 
                    (let* ((deleted-entity-name (synth :name entity)) 
                           (deleted-entity (java-dynamic deleted-entity-name)))
                      (java-method (doc:textify (lower-camel 'delete)) 

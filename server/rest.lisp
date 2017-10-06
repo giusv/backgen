@@ -12,7 +12,7 @@
 
 (defprim rest-service (name url &rest resources)
   (:pretty () (list 'rest-service (list :name name :url (synth :pretty url) :resources (synth-all :pretty resources))))
-  (:implementation (package) 
+  (:java-implementation (package) 
                    (java-unit name
                               (java-package (symb package '|.service|))
                               (java-import '|javax.ws.rs| '|*|
@@ -32,11 +32,11 @@
                                                           (let ((bean-name  (symb name "-E-J-B")))
                                                             (java-statement (java-pair bean-name 
                                                                                        (java-object-type bean-name) :private t )))))
-                                           :methods (apply #'append (synth-all :implementation resources name url)))))))
+                                           :methods (apply #'append (synth-all :java-implementation resources name url)))))))
 
 (defprim rest-singleton (name actions)
   (:pretty () (list 'rest-singleton (list :name name :actions (synth-all :pretty actions))))
-  (:implementation (bean path)  (let* ((chunk (url:static-chunk name))
+  (:java-implementation (bean path)  (let* ((chunk (url:static-chunk name))
                                        (newpath (url:backward-chain chunk path)))
                                   (synth-all :verb actions bean newpath chunk)))
   (:ejb-methods (path) (let* ((chunk (url:static-chunk name))
@@ -46,10 +46,10 @@
 (defprim rest-collection (name actions &rest resources)
   (:pretty () (list 'rest-collection (list :name name :resources (synth-all :pretty resources) 
                                            :actions (synth-all :pretty actions))))
-  (:implementation (bean path)  (let* ((chunk (url:static-chunk name))
+  (:java-implementation (bean path)  (let* ((chunk (url:static-chunk name))
                                        (newpath (url:backward-chain chunk path)))
                                   (apply #'append (synth-all :verb actions bean newpath chunk)
-                                         (synth-all :implementation resources bean newpath))))
+                                         (synth-all :java-implementation resources bean newpath))))
   (:ejb-methods (path) (let* ((chunk (url:static-chunk name))
                                (newpath (url:backward-chain chunk path)))
                           (append (synth-all :ejb-method actions newpath chunk)
@@ -61,10 +61,10 @@
 (defprim rest-item% (name param actions &rest resources)
   (:pretty () (list 'rest-item (list :name name :param (synth :pretty param) :resources (synth-all :pretty resources) 
                                      :actions (synth-all :pretty actions))))
-  (:implementation (bean path) (let* ((chunk (synth :url param))
+  (:java-implementation (bean path) (let* ((chunk (synth :url param))
                                       (newpath (url:backward-chain chunk path)))
                                  (apply #'append (synth-all :verb actions bean newpath chunk)
-                                        (synth-all :implementation resources bean newpath))))
+                                        (synth-all :java-implementation resources bean newpath))))
   (:ejb-methods (path) (let* ((chunk (synth :url param))
                                (newpath (url:backward-chain chunk path)))
                           (append (synth-all :ejb-method actions newpath chunk)
@@ -114,7 +114,7 @@
                                                                        (java-chain (java-dynamic bean-name)  
                                                                                    (apply #'java-call (symb 'retrieve "-" (synth :name chunk))
                                                                                           ;; (mapcar #'java-dynamic (append queries (synth :path-parameters path)))
-                                                                                          (synth-all :implementation (append queries (synth :path-parameters path)) #'identity))))
+                                                                                          (synth-all :java-implementation (append queries (synth :path-parameters path)) #'identity))))
                                                             (java-call 'build)))))
                          (aif (synth :errors action)
                               (java-try ret
@@ -169,7 +169,7 @@
                                                   (java-call 'created
                                                              (java-chain (java-dynamic bean-name) 
                                                                          (apply #'java-call (symb 'add "-" (singular (synth :name chunk)))
-                                                                                (append*  (synth-all :implementation (synth :path-parameters path) #'identity)
+                                                                                (append*  (synth-all :java-implementation (synth :path-parameters path) #'identity)
                                                                                           (java-dynamic (synth :name format))))))
                                                   (java-call 'build)))))))
   (:ejb-method (path chunk) 
@@ -208,7 +208,7 @@
                                                  (with-lookup bean-name
                                                    (java-statement (java-chain (java-dynamic bean-name) 
                                                                                (apply #'java-call (symb 'update "-" (synth :name chunk))
-                                                                                      (append*  (synth-all :implementation (synth :path-parameters path) #'identity)
+                                                                                      (append*  (synth-all :java-implementation (synth :path-parameters path) #'identity)
                                                                                                 (java-dynamic (synth :name format))))))))))))
   (:ejb-method (path chunk) 
                (ejb-method (symb "PUT-"(synth :name chunk))

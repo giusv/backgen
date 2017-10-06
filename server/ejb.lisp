@@ -35,18 +35,18 @@
                                                                        (java-with-annotations (list (java-annotation '|Inject|))
                                                                                               (java-statement (java-pair dao-name (java-object-type dao-name) :private t)))))
                                                                    daos))
-                                            :methods (synth-all :implementation methods)))))))
+                                            :methods (synth-all :java-implementation methods)))))))
 ;; (defprim ejb-parameter (name type)
 ;;   (:pretty () (list 'ejb-parameter (list :name name :type (synth :pretty type))))
-;;   (:implementation () (java-pair name type)))
+;;   (:java-implementation () (java-pair name type)))
 
 (defprim ejb-method (name parameters logic)
   (:pretty () (list 'ejb-method (list :name name :parameters (synth-all :pretty parameters) :logic (synth :pretty logic))))
-  (:implementation () (java-method (doc:textify (lower-camel name))
+  (:java-implementation () (java-method (doc:textify (lower-camel name))
                                    parameters 
                                    (synth :java-type (synth :type logic))
                                    :throws (synth-all :type (synth :errors logic))
-                                   (synth :implementation logic (lambda (x) (java-return x))))))
+                                   (synth :java-implementation logic (lambda (x) (java-return x))))))
 
 (defun generate-ejb (service)
   (stateless-ejb (symb (synth :name service) "-E-J-B")

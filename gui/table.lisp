@@ -32,12 +32,12 @@
                     (mapcar (lambda (element) (html:td (synth :template element))) 
                             (plist-values bindings))))))
 
-  (:controller () (bb-empty))
+  (:controller () (ts-empty))
   (:components (*) nil)
   (:routes (father) nil)
-  (:imports () (apply #'append 
+  (:ts-imports () (apply #'append 
                       (synth-plist-merge (lambda (pair)
-                                           (synth :imports (cadr pair)))
+                                           (synth :ts-imports (cadr pair)))
                                          bindings)))
   (:dependencies () (apply #'append 
                            (synth-plist-merge (lambda (pair)
