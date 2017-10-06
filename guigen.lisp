@@ -15,13 +15,15 @@
               (jsprop :cities  "citta'" (jsarray city))))
 
 
+(defelem nav  
+  (gui:navbar 'nav 
+              (gui:link 'home (expr:const "home") (url:void))
+              (gui:link 'nested (expr:const "nested") (url:url `(nested)))
+              (gui:link 'nested2 (expr:const "form") (url:url `(my-form)))
+              (gui:link 'dynamic (expr:const "dynamic") (url:url `(nested / param)))))
 (defelem gui
   (gui:vert
-   (gui:navbar 'nav 
-               (gui:link 'home (expr:const "home") (url:void))
-               (gui:link 'nested (expr:const "nested") (url:url `(nested)))
-               (gui:link 'nested2 (expr:const "form") (url:url `(my-form)))
-               (gui:link 'dynamic (expr:const "dynamic") (url:url `(nested / param)))) 
+   nav
    (gui:alt 
     (gui:vert 
      (gui:panel 'panel-test 
