@@ -39,6 +39,26 @@
                                      (:file "rest")
                                      (:file "ejb")
                                      (:file "logic")))
+
+               (:module "gui"
+                        :serial t
+                        :components ((:file "input")
+                                     (:file "button")
+                                     (:file "link")
+                                     (:file "navbar")
+                                     (:file "vert")
+                                     (:file "horz")
+                                     (:file "label")
+                                     (:file "panel")
+                                     (:file "listing")
+                                     (:file "table")
+                                     (:file "description")
+                                     (:file "abst")
+                                     (:file "static")
+                                     (:file "dynamic")
+                                     (:file "alt")
+                                     (:file "form")))
+
                (:file "latex")
                (:file "test")
                ;; (:file "backgen")

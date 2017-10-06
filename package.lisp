@@ -185,6 +185,23 @@
 ;;   (:export :required))
 
 
+(defpackage :gui
+  (:use :cl :lol :utils :grammar :java)
+  (:export :input :button
+           :vert :vert*
+           :horz :horz*
+           :abst
+           :static :static%
+           :dynamic :dynamic%
+           :label
+           :listing :listing%
+           :alt
+           :form% :form :bnd :obj% :obj :arr% :arr
+           :table :table%
+           :description :description%
+           :panel
+           :link :navbar))
+
 
 (defpackage :test
   (:use :cl :lol :utils :doc :grammar :java :type :data :sql))
