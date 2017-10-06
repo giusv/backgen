@@ -21,7 +21,7 @@
   (:type () (synth :type format))
   (:random () (synth :random format))
   (:req () (synth :req format))
-  (:ref () name))
+  (:ref () (normal "~a" name)))
 
 (defprim jsbool ()
   (:pretty () (list 'jsbool))
@@ -64,13 +64,13 @@
 
 (defprim jsobject (name &rest props)
   (:pretty () (list 'jsobject (list :name name :props (synth-all :pretty props))))
-  (:req () (table
-               (tr (th (doc:text "Nome"))
-                   (th (doc:text "Vincoli"))
-                   (th (doc:text "Descrizione"))
-                   (th (doc:text "Contenuto")))
-               (synth-all :req props)))
-  (:ref () name)
+  (:req () (apply #'tabular
+            (row (normal "Nome")
+                 (normal "Vincoli")
+                 (normal "Descrizione")
+                 (normal "Contenuto"))
+            (synth-all :req props)))
+  (:ref () (normal "~a" name))
   (:random () (apply #'jobject (apply #'append (synth-all :random props))))
   (:java-implementation (package)
                         (let ((vo-name (symb name "-V-O")))
@@ -97,11 +97,11 @@
 
 (defprim jsprop (name description content &rest validators)
   (:pretty () (list 'jsprop (list :name name :description description :validators (synth-all :pretty validators) :content (synth :pretty content))))
-  (:req () (tr
-            (td (doc:textify name))
-            (td (ul (synth-all :req validators)))
-            (td (doc:text "~a" description))
-            (td (synth :ref content))))
+  (:req () (row
+            (normal "~a" name)
+            ;; (td (ul (synth-all :req validators)))
+            (normal "~a" description)
+            (synth :ref content)))
   (:java-implementation () (java-field-with-accessors nil name (synth :java-type (synth :type content))))
   (:ts-implementation () (ts-field-with-accessors nil name (synth :ts-type (synth :type content))))
   (:type () (synth :type content))

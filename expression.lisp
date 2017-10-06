@@ -2,7 +2,7 @@
 
 (defprim const (lit)
   (:pretty () (list 'const (list :lit lit)))
-  (:req () (doc:double-quotes (doc:text "~a" lit)))
+  (:req () (doc (doc:double-quotes (doc:text "~a" lit))))
   ;; (:url () (doc:text "~a" lit))
   ;; (:chunk () lit)
   (:string () (synth :template this))
@@ -16,8 +16,7 @@
 
 (defprim attr (name exp)
   (:pretty () (list 'attr (list :name name :exp exp)))
-  (:req () (html:taglist (html:span-color (lower-camel name)) 
-                         (doc:text "!~a"  (lower-camel exp))))
+  (:req () (doc (doc:text "!~a"  (lower-camel exp))))
   (:string () (doc:text "~a!~a" (lower-camel (synth :name name)) (lower-camel exp)))
   (:template () (doc:text "{{~a.~a}}" (lower-camel name) (lower-camel exp)))
   (:java-implementation (cont &rest args) (apply cont (java:java-chain (java:java-dynamic (if (functionp name)
@@ -28,8 +27,7 @@
 
 (defprim value (exp)
   (:pretty () (list 'value (list :exp exp)))
-  (:req () (html:taglist (html:span-color (lower-camel name)) 
-                         (doc:text "!~a"  (lower-camel exp))))
+  (:req () (doc (doc:text "!~a"  (lower-camel exp))))
   (:string () (doc:text "~a!~a" (lower-camel (synth :name name)) (lower-camel exp)))
   (:template () (doc:text "{{~a}}" (lower-camel (synth :name exp)))))
 

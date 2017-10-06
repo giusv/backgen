@@ -5,19 +5,19 @@
                                  :source (synth :pretty source) 
                                  :rowname rowname
                                  :bindings (synth-plist :pretty bindings))))
-  ;; (:req (path)
-  ;;       (html:div
-  ;;        (doc:text "Tabella denominata ")
-  ;;        (html:span-color (string-downcase name))
-  ;;        (doc:text " associata a ")
-  ;;        (html:span-color (string-downcase (synth :name source)))
-  ;;        (doc:text "(istanza del formato dati ")
-  ;;        (html:a :href (concatenate 'string "#" (synth :string (synth :brief (synth :schema source)) 0))
-  ;;                (html:code (synth :brief (synth :schema source)))) 
-  ;;        (doc:text "con la seguente espressione:") 
-  ;;        (html:p (synth :req bindings path))))
-  ;; (:brief (path) (synth :req this path))
-  ;; (:reqlist (*) nil)
+  (:req (path)
+        (paragraph
+         (normal "Tabella denominata ~a"
+                 (string-downcase name))
+         (normal " associata a ~a"
+                 (string-downcase (synth :name source)))
+         (normal "(istanza del formato dati ")
+         (verbatim (synth :req (synth :schema source))) 
+         ;; (normal "con la seguente espressione:") 
+         ;; (synth :req bindings path)
+         ))
+  (:brief (path) (synth :req this path))
+  (:reqlist (*) nil)
 
  
   (:template () (html:table 

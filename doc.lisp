@@ -76,6 +76,7 @@
   `(defun ,name (doc &key newline (padding 0))
      (wrap doc (text ,start) (text ,end) :newline newline :padding padding)))
 
+(defwrapper vbars "|" "|")
 (defwrapper parens "(" ")")
 (defwrapper brackets "[" "]")
 (defwrapper braces "{" "}")

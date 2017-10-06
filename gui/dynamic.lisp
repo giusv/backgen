@@ -2,25 +2,23 @@
 
 (defprim dynamic% (name param element)
   (:pretty () (list 'dynamic (list :name name :param param :element (synth :pretty element))))
-  ;; (:brief (path) (let ((newpath (backward-chain (dynamic-chunk name) path)))
-  ;;                  (html:strong 
-  ;;                   (doc:text "~a (URL: " (upper-camel name #\Space)) 
-  ;;                   (html:a :href (doc:text "#~a" (synth :string (synth :url newpath) 0))
-  ;;                           (html:code (synth :url newpath)))
-  ;;                   (doc:text ")"))))
+  (:brief (path) (let ((newpath (backward-chain (dynamic-chunk name) path)))
+                   (bold 
+                    (normal "~a (URL: " (upper-camel name #\Space)) 
+                    (normal "#~a" (synth :string (synth :url newpath) 0))
+                    (verbatim (synth :url newpath))
+                    (normal ")"))))
 
-  ;; (:req (path) (let ((newpath (backward-chain (dynamic-chunk name) path)))
-  ;;                (html:taglist 
-  ;;                 (html:section 
-  ;;                  (html:h4 nil (doc:text "~a (URL: " (upper-camel name #\Space)) 
-  ;;                           (html:code :id (synth :string (synth :url newpath) 0) 
-  ;;                                      (synth :url newpath))
-  ;;                           (doc:text ")"))
-  ;;                  (synth :req element newpath)))))
-  ;; (:reqlist (path) 
-  ;;           (let ((newpath (backward-chain (dynamic-chunk name) path))) 
-  ;;             (cons (synth :req this path)
-  ;;                   (synth :reqlist element newpath))))
+  (:req (path) (let ((newpath (backward-chain (dynamic-chunk name) path)))
+                 (section 
+                  (seq (normal "~a (URL: " (upper-camel name #\Space)) 
+                       (verbatim (synth :url newpath))
+                       (normal ")"))
+                  (synth :req element newpath))))
+  (:reqlist (path) 
+            (let ((newpath (backward-chain (dynamic-chunk name) path))) 
+              (cons (synth :req this path)
+                    (synth :reqlist element newpath))))
   (:template () (html:tag name (doc:empty)))
   (:controller () (ts-empty)) 
   (:components (father) 
@@ -33,8 +31,8 @@
                                 (ts-import "@angular/router" 'router 'activated-route 'params)
                                 (synth :ts-imports this)
                                 (ts-annotation 'component
-                                              :selector (ts-const (string-downcase name))
-                                              :template (ts-template (synth :template element)))
+                                               :selector (ts-const (string-downcase name))
+                                               :template (ts-template (synth :template element)))
                                 (ts-class (mkstr unit-name "-component")
                                           :interfaces (list 'on-init)
                                           :constructor (ts-constructor 

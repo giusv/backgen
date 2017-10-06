@@ -5,8 +5,12 @@
         (apply #'vcat (append* contents))
         (text "\\end{~a}" (string-downcase name))))
 
+
+(defprim doc (doc)
+  (:pretty () (list 'doc (list :doc (synth :pretty doc)))))
+
 (defprim normal (template &rest args)
-  (:pretty () (list 'line (list :template template :args (synth :pretty args))))
+  (:pretty () (list 'normal (list :template template :args (synth :pretty args))))
   (:doc () (apply #'text template args)))
 
 (defprim paragraph (&rest contents)
@@ -14,13 +18,29 @@
   (:doc () (hcat (apply #'vcat (synth-all :doc contents)) 
                  (text "\\\\"))))
 
+(defprim emph (content)
+  (:pretty () (list 'emph (list :content (synth :pretty content))))
+  (:doc () (hcat (text "\\emph") (brackets (synth :doc content)))))
+
+(defprim bold (content)
+  (:pretty () (list 'bold (list :content (synth :pretty content))))
+  (:doc () (hcat (text "\\bfseries") (brackets (synth :doc content)))))
+
+(defprim verbatim (content)
+  (:pretty () (list 'verbatim (list :content (synth :pretty content))))
+  (:doc () (hcat (text "\\texttt") (brackets (synth :doc content)))
+        ;; (hcat (text "\\verb") (vbars (synth :doc content)))
+        ))
+
 (defprim seq (&rest elements)
-  (:pretty () (list 'seq (list :elements (synth-all :pretty elements))))
-  (:doc () (apply #'vcat (synth-all :doc elements))))
+  (:pretty () (list 'seq (list :elements (synth-all :pretty (apply #'append* elements)))))
+  (:doc () (apply #'vcat (synth-all :doc (apply #'append* elements)))))
 
 (defprim section (title &rest contents)
   (:pretty () (list 'section (list :title title :contents (synth-all :pretty (apply #'append* contents)))))
-  (:doc () (apply #'vcat (text "\\section{~a}" (string-downcase title))
+  (:doc () (apply #'vcat 
+                  (hcat (text "\\section")
+                        (brackets (synth :doc title)))
                   (synth-all :doc (apply #'append* contents)))))
 
 (defprim tabular (&rest rows)
@@ -29,23 +49,23 @@
                                                                    :initial-element '|c|) '|\||))
                      (apply #'punctuate (text "~%\\hline") t (synth-all :doc rows)))))
 
-(defprim item (name &rest contents)
-  (:pretty () (list 'item (list :name name :contents (synth :pretty (append* contents)))))
+(defprim litem (name &rest contents)
+  (:pretty () (list 'litem (list :name name :contents (synth :pretty (append* contents)))))
   (:doc () (hcat+ (text "\\item~@[[~a]~]" name)
                   (apply #'vcat (synth-all :doc (apply #'append* contents))))))
 (defprim itemize (&rest items)
-  (:pretty () (list 'itemize (list :items (synth-all :pretty items))))
-  (:doc () (with-env 'itemize nil (synth-all :doc (mapcar (lambda (i) (item nil i))
-                                                          items)))))
+  (:pretty () (list 'itemize (list :items (synth-all :pretty (apply #'append* items)))))
+  (:doc () (with-env 'itemize nil (synth-all :doc (mapcar (lambda (i) (litem nil i))
+                                                          (apply #'append* items))))))
 
 (defprim enumerate (&rest items)
-  (:pretty () (list 'enumerate (list :items (synth-all :pretty items))))
+  (:pretty () (list 'enumerate (list :items (synth-all :pretty (apply #'append* items)))))
   (:doc () (with-env 'enumerate nil (synth-all :doc (mapcar (lambda (i) (item nil i))
-                                                          items)))))
+                                                          (apply #'append* items))))))
 
 (defprim outline% (&rest items)
-  (:pretty () (list 'outline (list :items (synth-all :pretty items))))
-  (:doc () (with-env 'outline nil (synth-all :doc items))))
+  (:pretty () (list 'outline (list :items (synth-all :pretty (apply #'append* items)))))
+  (:doc () (with-env 'outline nil (synth-all :doc (apply #'append* items)))))
 
 (defmacro outline (&rest items)
   `(outline% ,@(mapcar (lambda (i) `(item ',(car i) ,(cdr i)))

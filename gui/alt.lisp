@@ -2,11 +2,11 @@
 (defprim alt (default &rest elements)
   (:pretty () (list 'alt (:default (synth :pretty default) :elements (synth-all :pretty elements))))
   (:req (path)
-        (html:taglist 
-         (doc:text "Tale elemento mostra, a seconda dell'URL, una alternativa della lista")
-         (if (not elements) (doc:text " vuota") (doc:text " seguente:"))
-         (ul (if default (listify (synth :req default path))) 
-             (mapcar #'listify (synth-all :brief elements path)))))
+        (seq
+         (normal "Tale elemento mostra, a seconda dell'URL, una alternativa della lista")
+         (if (not elements) (normal " vuota") (normal " seguente:"))
+         (itemize (if default (synth :req default path)) 
+             (synth-all :brief elements path))))
   (:brief (path) (synth :req this path))
   (:reqlist (path) (apply #'append (synth-all :req (cons default elements) path)))
   (:template () (html:tag 'router-outlet

@@ -40,7 +40,7 @@
 (defpackage :doc
   (:use :cl :lol :utils :grammar)
   (:export :empty :text :nest :vcat :hcat :hcat+
-           :parens :brackets :braces :single-quotes :double-quotes :back-quotes :angular
+           :parens :brackets :braces :single-quotes :double-quotes :back-quotes :angular :vbars
            :comma :dot :semi :colon :forward-slash :equals :blank
            :punctuate :prepend :postpend
            :textify))
@@ -53,14 +53,25 @@
            :html :head :title :meta :link :body :h1 :h2 :h3 :h4 :h5 :div :span :li :dl :dt :dd :ul :ol :pre :i 
            :strong :code :script
            :table :thead :tbody :tr :th :td
-           :section :article :aside :p :a
+           ;; :section
+           :article :aside :p :a
            :button :input :textarea
            :label
            :form
            :nav))
+(defpackage :latex
+  (:use :cl :lol :utils :doc :grammar)
+  (:export :line :normal :section
+           :emph :bold :verbatim
+           :doc
+           :litem :itemize :enumerate :outline% :outline
+           :document
+           :paragraph
+           :seq
+           :tabular :row))
 
 (defpackage :expr
-  (:use :cl :lol :utils :grammar)
+  (:use :cl :lol :utils :grammar :latex)
   (:export :const :attr :variab :value :param
            :+true+ :+false+ :+and+ :+or+ :+not+ :+equal+ :+less-than+ :+greater-than+ :+null+
            :cat
@@ -114,8 +125,11 @@
            :backward-chain :multi :forward-chain :queried
            :url))
 
+
+
+
 (defpackage :type
-  (:use :cl :lol :utils :parser :grammar :java :typescript) 
+  (:use :cl :lol :utils :parser :grammar :java :typescript :latex) 
   (:export :integer-type
            :boolean-type
            :string-type
@@ -129,7 +143,7 @@
 
 
 (defpackage :data
-  (:use :cl :lol :utils :parser :grammar :java :typescript :html :type) 
+  (:use :cl :lol :utils :parser :grammar :java :typescript :latex :html :type) 
   (:export :with-data :with-data%
            :remote
            :rand
@@ -150,14 +164,7 @@
 
 
 
-(defpackage :latex
-  (:use :cl :lol :utils :doc :grammar)
-  (:export :line :normal :section
-           :item :itemize :enumerate :outline% :outline
-           :document
-           :paragraph
-           :seq
-           :tabular :row))
+
 
 (defpackage :server
   (:use :cl :lol :utils :grammar :type :java :latex)
@@ -206,7 +213,7 @@
 
 
 (defpackage :gui
-  (:use :cl :lol :utils :grammar :typescript)
+  (:use :cl :lol :utils :grammar :typescript :latex )
   (:export :defelem 
            :*elements*
            :input :button

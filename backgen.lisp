@@ -100,9 +100,6 @@
 ;; (defrel dwh-ind-risc-sogg-sin-sinistro
 ;;     (relationship 'dwh-ind-risc-sogg-sin-sinistro dwh-ind-risc-sogg sin-sinistro :many-to-one))
 
-(defrel indicator-parameters
-    (relationship 'parameters-indicator dwh-indicatori parameter-entity :one-to-many))
-
 ;; (defrel dwh-ind-risc-sini-sin-sinistro
 ;;     (relationship 'dwh-ind-risc-sini-sin-sinistro dwh-ind-risc-sini sin-sinistro :many-to-one))
 
@@ -120,6 +117,10 @@
 
 ;; (defrel dwh-score-sini-sin-sinistro
 ;;     (relationship 'dwh-score-sini-sin-sinistro dwh-score-sini sin-sinistro :many-to-one))
+
+
+(defrel indicator-parameters
+    (relationship 'parameters-indicator dwh-indicatori parameter-entity :one-to-many))
 
 (server:deferror parse-indicator-exception (server:bl-bad-request-exception))
 (server:deferror indicator-not-found-exception (server:bl-bad-request-exception))
@@ -146,6 +147,7 @@
 (defquery all-indicators () dwh-indicatori
           (with-queries ((inds (relation dwh-indicatori)))
             inds))
+
 (server:defresource indicators-collection
     (server:rest-collection 
      'indicators
@@ -222,20 +224,6 @@
   (pprint basedir)
   (synth :output  (apply #'doc:postpend (doc:semi) t
                          (remove nil (synth-all :ddl app-entities))) 0)
-  (let ((filename "D:/giusv/temp/doc/test.tex")) 
-              (pprint filename)
-              (write-file filename
-                          (synth :string (document 'title 'author
-                         (section 'section
-                                  (paragraph (normal "hello ")
-                                             (normal "world!"))
-                                  (tabular (row (normal "name") (normal "surname") (normal "address"))
-                                         (row (normal "a") (normal "b") (normal "b"))
-                                         (row (normal "c") (normal "d")))
-                                  (itemize (normal "a")
-                                           (normal "b"))
-                                  (outline (a . (normal "a"))
-                                               (b . (normal "b"))))))))
   (mapcar (lambda (entity) 
             (let ((filename (mkstr basedir "model/" (upper-camel (synth :name entity)) ".java"))) 
               (pprint filename)

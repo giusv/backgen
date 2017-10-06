@@ -2,12 +2,12 @@
 
 (defprim remote (name schema url)
   (:pretty () (list 'remote (list :name name :schema (synth :pretty schema) :url (synth :pretty url))))
-  (:html ()  (html:taglist
-              (doc:text "Sorgente dati remota identificata come ")
-              (html:span-color (string-downcase name))
-              (doc:text ", istanza dello schema dati ~a " (lower-camel (synth :name schema)))
-              (doc:text "e popolata al caricamento dell'elemento tramite richiesta HTTP GET verso l'URL ")
-              (html:p (html:code (synth :url url)))))
+  (:req ()  (seq
+             (normal "Sorgente dati remota identificata come ~a"
+                     (string-downcase name))
+             (normal ", istanza dello schema dati ~a " (lower-camel (synth :name schema)))
+             (normal "e popolata al caricamento dell'elemento tramite richiesta HTTP GET verso l'URL ")
+             (verbatim (doc (synth :url url)))))
   (:template () ())
   (:controller () (ts-method (doc:text "get~a" (upper-camel name))
                              nil
@@ -32,11 +32,11 @@
 
 (defprim rand (name schema)
   (:pretty () (list 'rand (list :name name :schema (synth :pretty schema))))
-  (:html ()  (html:taglist
-              (doc:text "Sorgente dati identificata come ")
-              (html:span-color (string-downcase name))
-              (doc:text ", istanza dello schema dati ~a " (lower-camel (synth :name schema)))
-              (doc:text "e popolata al caricamento dell'elemento tramite generazione casuale")))
+  (:req ()  (seq
+             (normal "Sorgente dati identificata come ~a"
+                     (string-downcase name))
+              (normal ", istanza dello schema dati ~a " (lower-camel (synth :name schema)))
+              (normal "e popolata al caricamento dell'elemento tramite generazione casuale")))
   (:template () ())
   (:controller () (ts-pair name (ts-primitive-type 'any) :init (synth :ts-implementation (synth :random schema))))
   (:components (*) nil)
@@ -47,9 +47,9 @@
 
 (defprim with-data% (bindings element)
   (:pretty () (list 'with-data (list :bindings (synth-all :pretty bindings) :element (synth :pretty element))))
-  (:req (path) (html:taglist (doc:text "Tale elemento fa uso delle seguenti sorgenti dati:")
-                             (html:ul (mapcar #'listify (synth-all :req bindings))) 
-                             (synth :req element path)))
+  (:req (path) (seq (normal "Tale elemento fa uso delle seguenti sorgenti dati:")
+                    (apply #'itemize (synth-all :req bindings)) 
+                    (synth :req element path)))
   (:brief (path) (synth :brief element path))
   (:reqlist (path) (synth :reqlist element path))
   (:template () (synth :template element))

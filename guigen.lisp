@@ -82,8 +82,8 @@
                      (ts-import "@angular/core" 'component)
                      (ts-import "@angular/forms" 'form-array 'form-builder 'form-group 'form-control)
                      (ts-annotation 'component
-                                   :selector (ts-const (string-downcase 'app))
-                                   :template (ts-template (synth :template gui)))
+                                    :selector (ts-const (string-downcase 'app))
+                                    :template (ts-template (synth :template gui)))
                      (ts-class 'app-component
                                :fields (list (synth :controller gui))))) 
        (app-module (ts-unit 'app
@@ -100,13 +100,13 @@
                             (ts-pair 'app-routes (ts-object-type 'routes) :const t 
                                      :init (ts-array (synth :routes gui nil)))
                             (ts-annotation 'ng-module
-                                          :imports (ts-array (ts-static 'browser-module)
-                                                             (ts-static 'http-module)
-                                                             (ts-static 'reactive-forms-module)
-                                                             (ts-chain (ts-static 'router-module) 
-                                                                       (ts-call 'for-root (ts-dynamic 'app-routes))))
-                                          :declarations (ts-array app-component-names) 
-                                          :bootstrap (ts-array (ts-static 'app-component)))
+                                           :imports (ts-array (ts-static 'browser-module)
+                                                              (ts-static 'http-module)
+                                                              (ts-static 'reactive-forms-module)
+                                                              (ts-chain (ts-static 'router-module) 
+                                                                        (ts-call 'for-root (ts-dynamic 'app-routes))))
+                                           :declarations (ts-array app-component-names) 
+                                           :bootstrap (ts-array (ts-static 'app-component)))
                             (ts-class 'app-module)))
        (app-components (synth :components gui nil))) 
   (process (mkstr basedir (string-downcase (synth :name app-module)) ".module.ts") app-module)
@@ -117,4 +117,8 @@
   (mapcar (lambda (model) 
             (process (mkstr basedir (string-downcase (synth :name model)) ".ts") model))
           app-models)
-  )
+  (let ((filename "D:/giusv/temp/doc/test.tex")) 
+    (pprint filename)
+    (write-file filename
+                (synth :string (document 'title 'author
+                                         (synth :req gui (url:void)))))))

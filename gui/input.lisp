@@ -4,21 +4,18 @@
   (:pretty () (list 'input (list :name name 
                                  :label (synth :pretty label)
                                  :init (synth :pretty init))))
-  (:req (*) (html:taglist (doc:text "Campo di input identificato come")
-                          (html:span-color (string-downcase name))
-                          (doc:text " etichettato con ")
-                          (synth :req label) 
-                          ;; (if init
-                          ;;     (dlist init (span nil (text "Valore iniziale")) (synth :req init)))
-                          ))
+  (:req (*) (paragraph (normal "Campo di input identificato come ~a"
+                               (string-downcase name))
+                       (normal " etichettato con ")
+                       (synth :req label)))
   (:brief (path) (synth :req this path))
   (:reqlist (*) nil) 
   (:form-template (loopvar indexes) (html:div :|class| "form-group" 
-                          (html:label :|class| "center-block"
-                                      (synth :template label)
-                                      (html:input ;; :|type| "text"
-                                       :|class| "form-control" 
-                                       :|formControlName| (lower-camel name)))))
+                                              (html:label :|class| "center-block"
+                                                          (synth :template label)
+                                                          (html:input ;; :|type| "text"
+                                                           :|class| "form-control" 
+                                                           :|formControlName| (lower-camel name)))))
   (:template () (html:div :|class| "form-group" 
                           (html:input 
                            :|type| "text"

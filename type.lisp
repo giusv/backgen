@@ -4,26 +4,31 @@
   (:pretty () (list 'string-type (list :size size)))
   (:java-type () (java-object-type 'string))
   (:ts-type () (ts-primitive-type 'string))
-  (:sql-type () (doc:text "VARCHAR2(~a)" size)))
+  (:sql-type () (doc:text "VARCHAR2(~a)" size))
+  (:latex-type () (normal "string")))
 
 
 (defprim integer-type ()
   (:pretty () (list 'integer-type))
   (:java-type () (java-primitive-type 'long))
   (:ts-type () (ts-primitive-type 'number))
-  (:sql-type () (doc:text "NUMBER")))
+  (:sql-type () (doc:text "NUMBER"))
+  (:latex-type () (normal "number")))
 
 (defprim date-type ()
   (:pretty () (list 'date-type))
   (:java-type () (java-object-type 'date))
   (:ts-type () (ts-object-type 'date))
-  (:sql-type () (doc:text "TIMESTAMP")))
+  (:sql-type () (doc:text "TIMESTAMP"))
+  (:latex-type () (normal "date")))
+
 
 (defprim boolean-type ()
   (:pretty () (list 'boolean-type))
   (:java-type () (java-primitive-type 'boolean))
   (:ts-type () (ts-primitive-type 'boolean))
-  (:sql-type () (doc:text "VARCHAR(1)")))
+  (:sql-type () (doc:text "VARCHAR(1)"))
+  (:latex-type () (normal "boolean")))
 
 (defprim entity-type (entity)
   (:pretty () (list 'entity-type (list :entity (synth :pretty entity))))

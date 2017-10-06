@@ -3,19 +3,14 @@
 (defprim abst (parameters element)
   (:pretty () (list 'abst (list :parameters (synth-all :pretty parameters) 
                                 :element (synth :pretty element)))) 
-  (:req (path) (html:taglist (html:h5 (doc:text "Input")) 
-                             (doc:text "Elemento parametrico caratterizzato dai seguenti parametri:")
-                             (html:table :style "width: auto;" 
-                                         :class "table table-striped"
-                                         (html:tr 
-                                          (html:th (doc:text "Parametro"))
-                                          (html:th (doc:text "Tipo")))
-                                         (mapcar #'(lambda (par)
-                                                     (html:tr 
-                                                      (html:td (doc:text "~a" (synth :name par)))
-                                                      (html:td (synth :type par))))
-                                                 parameters))
-                             (synth :req element path)))
+  (:req (path) (seq (normal "Elemento parametrico caratterizzato dai seguenti parametri:")
+                    (tabular
+                        (row (normal "Parametro") (normal "Tipo"))
+                        (mapcar #'(lambda (par)
+                                    (row (normal "~a" (synth :name par))
+                                         (synth :latex-type (synth :type par))))
+                                parameters))
+                    (synth :req element path)))
   (:brief (path) (synth :req this path))
   (:reqlist (path) (synth :reqlist element path))
   (:template () (synth :template element))
