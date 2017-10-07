@@ -62,4 +62,4 @@
                (:file "test")
                ;; (:file "backgen")
                (:file "guigen")
-               ))
+               (:file "documentation")))

@@ -233,7 +233,10 @@
 
 
 (defpackage :test
-  (:use :cl :lol :utils :doc :grammar :java :type :data :sql))
+     (:use :cl :lol :utils :doc :grammar :java :type :data :sql))
+
+(defpackage :documentation
+     (:use :cl :lol :utils :doc :grammar :latex))
 
 (defpackage :backgen
   (:use :cl :lol :utils :doc :grammar :java :type :typescript :data :latex :gui))
