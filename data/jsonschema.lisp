@@ -18,6 +18,8 @@
   (:java-implementation (package) (synth :java-implementation format package))
   (:ts-implementation () (synth :ts-implementation format))
   (:ts-imports () (synth :ts-imports format))
+  (:java-implementation () (synth :java-implementation format))
+  (:java-imports () (synth :java-imports format))
   (:type () (synth :type format))
   (:random () (synth :random format))
   (:req () (synth :req format))
@@ -75,14 +77,15 @@
   (:java-implementation (package)
                         (let ((vo-name (symb name "-V-O")))
                           (java-unit vo-name
-                                     (java-package (symb package '|.vo|)) 
+                                     (java-package (symb package '|.vo|))
+                                     (apply #'append (synth-all :java-imports props))
                                      (java-class vo-name 
                                                  :public t
                                                  :fields (synth-all :java-implementation props)))))
   ;; (:definition () (java-pair vo-name (synth :type this)))
   (:type () (format-type this))
   (:ts-implementation () (ts-unit name 
-                                  (synth-all :ts-imports props) 
+                                  (apply #'append (synth-all :ts-imports props)) 
                                   (ts-class name
                                             :fields (synth-all :ts-implementation props))))
   (:vo (package)
@@ -91,8 +94,8 @@
                   (java-class (symb name "-V-O") :public t
                               :fields (mapcar #'java-statement (synth-all :type props '|-V-O|))
                               :methods (apply #'append (synth-all :accessors props '|-V-O|)))))
-  (:java-imports ()  (java-import (mkstr "./" (string-downcase name)) name)) 
-  (:ts-imports ()  (ts-import (mkstr "./" (string-downcase name)) name)) 
+  (:java-imports () nil) 
+  (:ts-imports () (list (ts-import (mkstr "./" (string-downcase name)) name))) 
   (:init () nil))
 
 (defprim jsprop (name description content &rest validators)
@@ -125,7 +128,8 @@
   (:random () (let* ((length (random-number 2 5))
                      (values (loop for i from 0 to length collect (synth :random element)))) 
                 (apply #'jarray values))) 
-  (:java-imports () (synth :java-imports element))
+  (:java-imports () (cons (java-import '|java.util| '|List|) 
+                          (synth :java-imports element)))
   (:ts-imports () (synth :ts-imports element))
   (:type () (collection-type (synth :type element)))
   (:init () nil))

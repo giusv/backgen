@@ -27,8 +27,8 @@
             (bl-error ',name ,parent)) 
           (setf (gethash ',name *errors*) ,name)))
 
-(defprim bl-bad-request-error ()
-  (:pretty () (list 'bl-bad-request-error))
+(defprim bl-bad-request-exception ()
+  (:pretty () (list 'bl-bad-request-exception))
   (:call (message)
          (java-throw (java-new (synth :type this) message)))
-  (:type () (java-object-type 'bad-request)))
+  (:type () (java-object-type 'bad-request-exception)))

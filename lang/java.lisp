@@ -50,7 +50,7 @@
 
 (defmacro java-catch (exceptions body)
   `(let* ((,(car exceptions) ',(car exceptions))) 
-     (java-catch% ,@(cdr exceptions) ,(car exceptions) ,body)))
+     (java-catch% (list ,@(cdr exceptions)) ,(car exceptions) ,body)))
 
 (defprim java-primitive-type (name)
   (:pretty () (list 'java-primitive-type (list :name name))) 

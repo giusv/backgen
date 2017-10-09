@@ -1,6 +1,6 @@
 (in-package :gui)
 (defprim panel (name header body &optional footer)
-  (:pretty () (list 'panel (:name name :header (synth :pretty header) :body (synth :pretty body) :footer (synth :pretty footer))))
+  (:pretty () (list 'panel (list :name name :header (synth :pretty header) :body (synth :pretty body) :footer (synth :pretty footer))))
   (:req (path) (paragraph 
                 (normal "Pannello identificato come ~a"
                         (lower-camel name)) 
