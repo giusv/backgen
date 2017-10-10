@@ -1,17 +1,18 @@
 (in-package :backgen)
 
-(deformat parameter-format  "Formato JSON del valore di un parametro relativo a un indicatore"
-    (jsobject 'parameter
-              (jsprop :parameter-id "Identificativo univoco del parametro" (jsstring))
-              (jsprop :name "Nome" (jsstring))
-              (jsprop :value "Valore" (jsstring))))
+;; (deformat parameter-format  "Formato JSON del valore di un parametro relativo a un indicatore"
+;;     (jsobject 'parameter
+;;               (jsprop :parameter-id "Identificativo univoco del parametro" (jsstring))
+;;               (jsprop :name "Nome" (jsstring))
+;;               (jsprop :value "Valore" (jsstring))))
 
 (deformat indicator-format "Formato JSON di un indicatore dinamico"
     (jsobject 'indicator
               (jsprop :indicator-id "Identificativo univoco dell'indicatore" (jsstring))
               (jsprop :source "Codice sorgente" (jsstring))
               (jsprop :start-date "Data inizio" (jsstring))
-              (jsprop :parameters "parametri " (jsarray parameter-format))))
+              ;; (jsprop :parameters "parametri " (jsarray parameter-format))
+              ))
 
 (defent dwh-indicatori
     (entity 'dwh-indicatori 
@@ -21,11 +22,11 @@
                           (attribute :object-code (string-type 200) :desc "Codice oggetto prodotto dal compilatore")
                           (attribute :start-date (string-type 8) :desc "Data inizio validita"))))
 
-(defent parameter-entity
-    (entity 'parameter
-            :primary (attribute :parameter-id (integer-type))
-            :fields (list (attribute :name (string-type 20) :desc "Name del parametro")
-                          (attribute :value (string-type 20) :desc "Valore del parametro"))))
+;; (defent parameter-entity
+;;     (entity 'parameter
+;;             :primary (attribute :parameter-id (integer-type))
+;;             :fields (list (attribute :name (string-type 20) :desc "Name del parametro")
+;;                           (attribute :value (string-type 20) :desc "Valore del parametro"))))
 
 ;; (defent ana-soggetto
 ;;     (entity 'ana-soggetto
@@ -219,8 +220,8 @@
 ;;     (relationship 'dwh-score-sini-sin-sinistro dwh-score-sini sin-sinistro :many-to-one))
 
 
-(defrel indicator-parameters
-    (relationship 'parameters-indicator dwh-indicatori parameter-entity :one-to-many))
+;; (defrel indicator-parameters
+;;     (relationship 'parameters-indicator dwh-indicatori parameter-entity :one-to-many))
 
 (server:deferror parse-indicator-exception (server:bl-bad-request-exception))
 (server:deferror indicator-not-found-exception (server:bl-bad-request-exception))
@@ -235,18 +236,20 @@
 
 (defquery indicator-by-name ((name (string-type 20))) dwh-indicatori
           (with-queries ((inds (relation dwh-indicatori))
-                         (pars (relation parameter-entity)))
-            (project (restrict (product inds pars)
+                         ;; (pars (relation parameter-entity))
+                         )
+            (project (restrict (product inds ;; pars
+                                        )
                                (expr:+and+ 
-                                (expr:+equal+ (expr:attr inds 'id)
-                                              (expr:attr pars 'id))
+                                ;; (expr:+equal+ (expr:attr inds 'id)
+                                ;;               (expr:attr pars 'id))
                                 (expr:+equal+ (expr:attr inds 'name)
                                               name)))
                      :id :name)))
 
 (defquery all-indicators () dwh-indicatori
           (with-queries ((inds (relation dwh-indicatori)))
-            inds))
+            (project inds)))
 
 (server:defresource indicators-collection
     (server:rest-collection 

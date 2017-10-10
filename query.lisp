@@ -13,7 +13,7 @@
 (defprim relation (entity)
   (:pretty () (list 'relation (list :entity (synth :pretty entity))))
   (:schema () (synth :schema entity))
-  (:sql () (doc:textify (synth :name entity))))
+  (:sql () (doc:textify (upper (synth :name entity)))))
 
 (defprim product (&rest queries) 
   (:pretty () (list 'product (list :queries (synth-all :pretty queries))))
@@ -23,9 +23,9 @@
 (defprim project (query &rest attributes) 
   (:pretty () (list 'project (list :attributes attributes :query (synth :pretty query))))
   (:schema () (let ((schema (synth :schema query))) 
-                (pprint (reduce (lambda (acc att) (cons (assoc att schema) acc)) 
-                         attributes
-                         :initial-value nil))
+                ;; (pprint (reduce (lambda (acc att) (cons (assoc att schema) acc)) 
+                ;;          attributes
+                ;;          :initial-value nil))
                 (reduce (lambda (acc att) (cons (assoc att schema) acc)) 
                         attributes
                         :initial-value nil)))
@@ -72,7 +72,7 @@
                                        :entity (synth :pretty entity)
                                        :args args
                                        :template (synth :pretty template))))
-  (:annotation () (java-annotation '|NamedQuery|
+  (:annotation () (java-annotation '|NamedNativeQuery|
                                    (java-object :|name| (java-const (mkstr name))
                                                 :|query| (java-const (synth :string (synth :sql template))))))
   (:schema () (synth :schema template)))

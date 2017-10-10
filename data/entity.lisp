@@ -17,7 +17,7 @@
 (defprim attribute (name type &key (nullable t) desc)
   (:pretty () (list 'attribute (list :name name :type (synth :pretty type) :nullable nullable :desc desc))) 
   (:entity (&rest annotations) (java-with-annotations 
-                                (cons (java-annotation '|Column| (java-object :|name| (java-const (mkstr name))))
+                                (cons (java-annotation '|Column| (java-object :|name| (java-const (mkstr (upper name)))))
                                       annotations)
                                 (java-statement (java-pair name (synth :java-type type) :private t))
                                 :newline t))
@@ -78,15 +78,15 @@
                     :fields (synth-all :pretty fields)))
   (:entity (package) (java-unit name
                                 (java-package (symb package '|.model|))
-                                (java-import '|javax.persistence| '|Column| '|Entity| '|Id| '|Table| '|ManyToOne| '|OneToMany| '|OneToOne| '|ManyToMany| '|NamedQueries| '|NamedQuery|)
+                                (java-import '|javax.persistence| '|Column| '|Entity| '|Id| '|Table| '|ManyToOne| '|OneToMany| '|OneToOne| '|ManyToMany| '|NamedNativeQueries| '|NamedNativeQuery|)
                                 (java-import '|java.util| '|List| '|Date|)
                                 (java-with-annotations 
                                  (list 
                                   (java-annotation '|SuppressWarnings| (java-const "unused"))
                                   (java-annotation '|Entity|)
-                                  (java-annotation '|Table| (java-object :|name| (java-const (mkstr name))))
+                                  (java-annotation '|Table| (java-object :|name| (java-const (mkstr (upper name)))))
                                   (aif (get-queries this)
-                                       (java-annotation '|NamedQueries| 
+                                       (java-annotation '|NamedNativeQueries| 
                                                         (apply #'java-array (synth-all :annotation it)))))
                                  (java-class name
                                              :public t
