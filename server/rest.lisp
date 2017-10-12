@@ -18,13 +18,16 @@
                               (java-import '|javax.ws.rs| '|*|)
                               (java-import '|javax.naming| '|Context| '|InitialContext| '|NamingException|)
                               (java-import (symb package '|.exception|) '|*|)
-                              (java-import '|javax.ejb| '|EJB|)                              (java-import '|javax.ws.rs.core| '|Response|)
+                              (java-import '|javax.ejb| '|EJB| '|LocalBean| '|Stateless|)
+                              (java-import '|javax.ws.rs.core| '|Response|)
                               (java-import '|javax.ws.rs.core.Response| '|ResponseBuilder|)
                               (java-import '|java.net| '|URI| '|URISyntaxException|)
                               (java-import (symb package '|.ejb|) '|*|)
                               (java-import (symb package '|.vo|) '|*|)
                               (java-with-annotations 
-                               (list (java-annotation '|Path| (java-const (synth :string (synth :url url)))))
+                               (list (java-annotation '|Path| (java-const (synth :string (synth :url url))))
+                                     (java-annotation '|LocalBean|)
+                                     (java-annotation '|Stateless|))
                                (java-class name :public t
                                            :fields (list (java-with-annotations 
                                                           (list (java-annotation '|EJB|))
@@ -85,7 +88,7 @@
   `(java-try (java-concat
               (java-statement (java-pair 'context (java-type 'context) :init (java-new (java-object-type 'initial-context))))
               (java-statement (java-pair ,bean-name (java-type ,bean-name) :init (java-chain (java-dynamic 'context) 
-                                                                                             (java-call 'lookup (java-const (mkstr "java:module/" (lower-camel ,bean-name)) )) :as (java-object-type ,bean-name))))
+                                                                                             (java-call 'lookup (java-const (mkstr "java:module/" (upper-camel ,bean-name)) )) :as (java-object-type ,bean-name))))
               ,body)
              (list (java-catch (e :naming-exception) 
                                (java-concat (java-statement (java-chain (java-dynamic e)

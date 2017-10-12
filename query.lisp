@@ -8,7 +8,7 @@
 (defprim query (name value)
   (:pretty () (list 'query (list :name name :value value)))
   (:schema () (synth :schema value))
-  (:sql () (doc:hcat+ (doc:parens (synth :sql value)) (doc:text "~a" name))))
+  (:sql () (doc:hcat+ (synth :sql value) (doc:text "~a" name))))
 
 (defprim relation (entity)
   (:pretty () (list 'relation (list :entity (synth :pretty entity))))
@@ -26,16 +26,17 @@
                 ;; (pprint (reduce (lambda (acc att) (cons (assoc att schema) acc)) 
                 ;;          attributes
                 ;;          :initial-value nil))
-                (reduce (lambda (acc att) (cons (assoc att schema) acc)) 
+                (reduce (lambda (att acc) (cons (assoc att schema) acc)) 
                         attributes
-                        :initial-value nil)))
-  (:sql () (doc:hcat+
-            (doc:text "SELECT")
-            (if attributes 
-                (apply #'doc:punctuate (doc:comma) nil (mapcar #'doc:textify (mapcar #'car (synth :schema this))))
-                (doc:text "*"))
-            (doc:text "FROM")
-            (synth :sql query))))
+                        :initial-value nil
+                        :from-end t)))
+  (:sql () (doc:parens (doc:hcat+
+                        (doc:text "SELECT")
+                        (if attributes 
+                            (apply #'doc:punctuate (doc:comma) nil (mapcar #'doc:textify (mapcar #'car (synth :schema this))))
+                            (doc:text "*"))
+                        (doc:text "FROM")
+                        (synth :sql query)))))
 
 (defprim restrict (query expression) 
   (:pretty () (list 'restrict (list :expression (synth :pretty expression) :query (synth :pretty query))))
@@ -73,7 +74,7 @@
                                        :args args
                                        :template (synth :pretty template))))
   (:annotation () (java-annotation '|NamedNativeQuery|
-                                   (java-object :|name| (java-const (mkstr name))
+                                   (java-object :|name| (java-const (string-downcase name))
                                                 :|query| (java-const (synth :string (synth :sql template))))))
   (:schema () (synth :schema template)))
 

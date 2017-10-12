@@ -589,3 +589,43 @@
 ;; ;; (pprint (parse (var-init) '((name init))))
 ;; ;;; "backgen" goes here. Hacks and glory await!
 
+(let ((maven (tag '|project| 
+     :|xmlns| "http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+     :|xsi:schemaLocation| "http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd"
+     (tag '|modelVersion| (simple "4.0.0")) 
+     (tag '|groupId| (simple "com.extent")) 
+     (tag '|artifactId| (simple "backgen")) 
+     (tag '|packaging| (simple "war")) 
+     (tag '|version| (simple "0.0.1-SNAPSHOT")) 
+     (tag '|name| (simple "backgen Maven Webapp")) 
+     (tag '|url| (simple "http://maven.apache.org")) 
+     (tag '|dependencies|
+          (tag '|dependency|
+               (tag '|groupId| (simple "junit")) 
+               (tag '|artifactId| (simple "junit")) 
+               (tag '|version| (simple "3.8.1")) 
+               (tag '|scope| (simple "test")))
+          (tag '|dependency|
+               (tag '|groupId| (simple "javax.servlet")) 
+               (tag '|artifactId| (simple "javax.servlet-api")) 
+               (tag '|version| (simple "3.1.0")) 
+               (tag '|scope| (simple "provided")))
+          (tag '|dependency|
+               (tag '|groupId| (simple "javax")) 
+               (tag '|artifactId| (simple "javaee-api")) 
+               (tag '|version| (simple "7.0")))
+          (tag '|dependency|
+               (tag '|groupId| (simple "org.apache.derby")) 
+               (tag '|artifactId| (simple "derby")) 
+               (tag '|version| (simple "10.8.3.0"))))
+     (tag '|build|
+          (tag '|finalName| (simple "backgen")) 
+		
+          (tag '|plugins|
+               (tag '|plugin|
+                    (tag '|artifactId| (simple "maven-compiler-plu)gin")) 
+                    (tag '|version| (simple "3.0")) 
+                    (tag '|configuration|
+                         (tag '|source| (simple "1.8")) 
+                         (tag '|target| (simple "1.8")))))))))
+  (pprint maven))

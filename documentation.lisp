@@ -1,7 +1,9 @@
 (in-package :documentation)
 
-(defparameter *documentation* (make-hash-table))
+(defparameter *documentation* nil)
 
-(defmacro defdoc (name doc)
-  `(progn (defparameter ,name ,doc) 
-         (setf (gethash ',name *documentation*) ,name)))
+(defmacro defdoc ((&rest names) doc)
+  `(acons (list ,@names ,doc *documentation*)))
+
+(defun get-documentation (namelist)
+  (cdr (assoc namelist *documentation*)))
