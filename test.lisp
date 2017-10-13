@@ -173,17 +173,22 @@
 (defun tl-db (records)
   (tl-db% (mapcar (lambda (record) (tl-record (car record) (cadr record)))
                   records)))
+
+(defprim tl-http-get (url)
+  (:pretty () (list 'tl-http-get (list :url (synth :pretty url))))
+  (:java-implementation (cont &rest args) 
+                   (apply cont (java-call name) args))
+  (:type () (integer-type)))
+
 (pprint (synth :string (synth :doc (synth :java (synth :java-implementation create-indicator #'identity)))))
 (pprint (synth :string (synth :doc (synth :java (synth :java-implementation (create-indicator (expr:const 1)) #'identity)))))
 
-(terpri)
 
-(let ((gen (tl-generate 5 (ind indicators) (:id (random-number 10 20) :name (random-string 10))
-             (tl-generate 2 (par parameters) (:id (tl-get :id ind) :name (random-string 10))
-               (tl-generate 2 (boh bohs) (:id (tl-get :id par) :name (random-string 10)))))))
-  (pprint gen)
-  (pprint (listp gen))
-  (pprint (synth :output (synth :doc (synth :java (synth :java-implementation (tl-db gen) #'identity))) 0))
-  )
+;; (let ((gen (tl-generate 5 (ind indicators) (:id (random-number 10 20) :name (random-string 10))
+;;              (tl-generate 2 (par parameters) (:id (tl-get :id ind) :name (random-string 10))
+;;                (tl-generate 2 (boh bohs) (:id (tl-get :id par) :name (random-string 10)))))))
+;;   (pprint gen)
+;;   (pprint (listp gen))
+;;   (pprint (synth :output (synth :doc (synth :java (synth :java-implementation (tl-db gen) #'identity))) 0)))
 
 

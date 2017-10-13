@@ -1,7 +1,7 @@
 (in-package :gui)
 (defprim panel (name header body &optional footer)
   (:pretty () (list 'panel (list :name name :header (synth :pretty header) :body (synth :pretty body) :footer (synth :pretty footer))))
-  (:req (path) (paragraph 
+  (:req (path namelist) (paragraph 
                 (normal "Pannello identificato come ~a"
                         (lower-camel name)) 
                  ;; (text "e composto da:")
@@ -9,8 +9,8 @@
                  ;;        body (span nil (text "body")) (synth :req body path)
                  ;;        footer (span nil (text "footer")) (synth :req footer path))
                  ))
-  (:brief (path) (synth :req this path))
-  (:reqlist (*) nil) 
+  (:brief (path namelist) (synth :req this path namelist))
+  (:reqlist (path namelist) nil) 
   (:template () (html:div 
                  :|class| "panel panel-primary" 
                  (html:div

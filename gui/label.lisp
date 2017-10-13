@@ -2,11 +2,11 @@
 
 (defprim label (expr)
   (:pretty () (list 'label (list :expr (synth :pretty expr))))
-  (:req (*) (seq 
-             (normal "Etichetta contenente la seguente espressione: ") 
-             (synth :req expr)))
-  (:brief (path) (synth :req this path))
-  (:reqlist (*) nil)
+  (:req (path namelist) (seq 
+                         (normal "Etichetta contenente la seguente espressione: ") 
+                         (synth :req expr)))
+  (:brief (path namelist) (synth :req this path))
+  (:reqlist (path namelist) nil)
   (:template () (html:label (synth :template expr)))
   (:controller () (ts-empty))
   (:components (*) nil)

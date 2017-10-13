@@ -70,6 +70,9 @@
   ;; (format t "~%~%~a~%--------------------------------------------------~%~%~a~%--------------------------------------------------~%" name (to-string code))
   (write-file name (to-string code)))
 
+(defdoc (nav) (bold (normal "blabla")))
+(defdoc (nav home) (bold (normal "askldhsldkfjh")))
+
 (let* ((basedir "d:/giusv/angular/template/src/app/")
        (app-formats (loop for value being the hash-values of *formats* collect value))
        (app-models (synth-all :ts-implementation app-formats))
@@ -121,4 +124,5 @@
     (pprint filename)
     (write-file filename
                 (synth :string (document 'title 'author
-                                         (synth :req gui (url:void)))))))
+                                         (synth :req gui (url:void) nil))))))
+

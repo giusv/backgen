@@ -1,11 +1,11 @@
 (in-package :gui)
 (defprim vert (&rest elements)
   (:pretty () (list 'vert (list :elements (synth-all :pretty elements))))
-  (:req (path) (seq (normal "Tale elemento si presenta come concatenazione verticale")
+  (:req (path namelist) (seq (normal "Tale elemento si presenta come concatenazione verticale")
                           (if (not  elements) (normal "vuota") (normal "dei seguenti sottoelementi:")) 
-                          (apply #'itemize (synth-all :req elements path))))
-  (:brief (path) (synth :req this path))
-  (:reqlist (path) (apply #'append (synth-all :req elements path)))
+                          (apply #'itemize (synth-all :req elements path namelist))))
+  (:brief (path namelist) (synth :req this path namelist))
+  (:reqlist (path namelist) (apply #'append (synth-all :req elements path namelist)))
   (:template () (html:taglist (mapcar (lambda (template)
                                         (html:div
                                          :|class| "row"

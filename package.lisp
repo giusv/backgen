@@ -45,6 +45,10 @@
            :punctuate :prepend :postpend
            :textify))
 
+(defpackage :documentation
+  (:use :cl :lol :utils :grammar)
+  (:export :defdoc :get-documentation))
+
 (defpackage :html
   (:use :cl :lol :utils :grammar)
   (:export :tag 
@@ -59,6 +63,12 @@
            :label
            :form
            :nav))
+
+(defpackage :xml
+  (:use :cl :lol :utils :grammar)
+  (:export :node :simple))
+
+
 (defpackage :latex
   (:use :cl :lol :utils :doc :grammar)
   (:export :line :normal :section
@@ -213,7 +223,7 @@
 
 
 (defpackage :gui
-  (:use :cl :lol :utils :grammar :typescript :latex )
+  (:use :cl :lol :utils :grammar :typescript :latex :documentation)
   (:export :defelem 
            :*elements*
            :input :button
@@ -239,6 +249,6 @@
      (:use :cl :lol :utils :doc :grammar :latex))
 
 (defpackage :backgen
-  (:use :cl :lol :utils :doc :grammar :java :type :typescript :data :latex :gui))
+  (:use :cl :lol :utils :doc :grammar :java :type :typescript :data :latex :gui :documentation))
 
 

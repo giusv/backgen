@@ -14,6 +14,7 @@
                (:module "lang"
                         :serial t
                         :components ((:file "html")
+                                     (:file "xml")
                                      (:file "java")
                                      (:file "sql")
                                      (:file "typescript")
@@ -22,7 +23,8 @@
                (:file "type")
                ;; (:file "validator") 
                (:file "url")
-               (:file "query") 
+               (:file "query")
+               (:file "documentation")
                (:module "data"
                         :serial t
                         :components ((:file "json")
@@ -60,6 +62,6 @@
 
                
                (:file "test")
-               (:file "backgen")
-               (:file "guigen")
-               (:file "documentation")))
+               ;; (:file "backgen")
+               ;; (:file "guigen")
+               ))

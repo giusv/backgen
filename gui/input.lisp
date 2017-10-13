@@ -4,12 +4,12 @@
   (:pretty () (list 'input (list :name name 
                                  :label (synth :pretty label)
                                  :init (synth :pretty init))))
-  (:req (*) (paragraph (normal "Campo di input identificato come ~a"
-                               (string-downcase name))
-                       (normal " etichettato con ")
-                       (synth :req label)))
-  (:brief (path) (synth :req this path))
-  (:reqlist (*) nil) 
+  (:req (path namelist) (paragraph (normal "Campo di input identificato come ~a"
+                                           (string-downcase name))
+                                   (normal " etichettato con ")
+                                   (synth :req label)))
+  (:brief (path namelist) (synth :req this path namelist))
+  (:reqlist (path namelist) nil) 
   (:form-template (loopvar indexes) (html:div :|class| "form-group" 
                                               (html:label :|class| "center-block"
                                                           (synth :template label)

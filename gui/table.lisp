@@ -5,7 +5,7 @@
                                  :source (synth :pretty source) 
                                  :rowname rowname
                                  :bindings (synth-plist :pretty bindings))))
-  (:req (path)
+  (:req (path namelist)
         (paragraph
          (normal "Tabella denominata ~a"
                  (string-downcase name))
@@ -16,8 +16,8 @@
          ;; (normal "con la seguente espressione:") 
          ;; (synth :req bindings path)
          ))
-  (:brief (path) (synth :req this path))
-  (:reqlist (*) nil)
+  (:brief (path namelist) (synth :req this path namelist))
+  (:reqlist (path namelist) nil)
 
  
   (:template () (html:table 
@@ -36,9 +36,9 @@
   (:components (*) nil)
   (:routes (father) nil)
   (:ts-imports () (apply #'append 
-                      (synth-plist-merge (lambda (pair)
-                                           (synth :ts-imports (cadr pair)))
-                                         bindings)))
+                         (synth-plist-merge (lambda (pair)
+                                              (synth :ts-imports (cadr pair)))
+                                            bindings)))
   (:dependencies () (apply #'append 
                            (synth-plist-merge (lambda (pair)
                                                 (synth :dependencies (cadr pair)))

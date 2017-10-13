@@ -1,12 +1,13 @@
 (in-package :gui)
 (defprim navbar (name &rest links)
   (:pretty () (list 'navbar (list :name name :links (synth-all :pretty links))))
-  (:req (path) (seq (normal "Barra di navigazione ")
-                          (if (not  links) (normal "vuota") (normal "composta dai seguenti link:"))
-                          (apply #'itemize (synth-all :req links path))))
-  (:brief (path) (synth :req this path))
+  (:req (path namelist) (seq (get-documentation (append* namelist name))
+                             (normal "Barra di navigazione ")
+                             (if (not  links) (normal "vuota") (normal "composta dai seguenti link:"))
+                             (apply #'itemize (synth-all :req links path (append* namelist name)))))
+  (:brief (path) (synth :req this path namelist))
 
-  (:reqlist (*) nil)
+  (:reqlist (path namelist) nil)
   (:template () (html:nav 
                  :|class| "navbar navbar-default"
                  (html:div
