@@ -7,6 +7,13 @@
   (:sql-type () (doc:text "VARCHAR2(~a)" size))
   (:latex-type () (normal "string")))
 
+(defprim character-type ()
+  (:pretty () (list 'character-type (list :size size)))
+  (:java-type () (java-primitive-type 'char))
+  (:ts-type () (ts-primitive-type 'char))
+  (:sql-type () (doc:text "CHARACTER(1)"))
+  (:latex-type () (normal "character")))
+
 
 (defprim integer-type ()
   (:pretty () (list 'integer-type))
