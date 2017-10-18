@@ -147,23 +147,26 @@
 (defmacro tl-and (&body formulas)
   `(apply #'append (list ,@formulas)))
 
-(defmacro tl-exists (name table (&rest values) &body formulas)
+(defmacro tl-exists ((name table) (&rest values) &body formulas)
   `(let ((,name (list ',table (list ,@(apply #'append (mapcar (lambda (pair) (list (car pair) (cadr pair)))
                                                               (group values 2)))))))
      (cons ,name (append ,@formulas))))
 
-(let ((gg (tl-forall i (list 1 2 3) 
-            (tl-exists c c-table 
-                (:cid i :cval (random-number 100 200)))
-            (tl-forall j (list 1 2) 
-              (tl-exists d d-table 
-                  (:did (list i j) :dval (random-string 10))
-                (tl-forall k (list 10 11 12) 
-                  (tl-forall n (list 20 21 22)  
-                    (tl-and (tl-exists f f-table 
-                                (:fid (list i j k n) :fval (tl-get :dval d)))))))))))
+(let ((gg (tl-db 
+            (tl-exists (a a-table) 
+                  (:cid 1 :cval (random-number 100 200)))
+            (tl-forall i (list 1 2 3) 
+              (tl-exists (c c-table) 
+                  (:cid i :cval (random-number 100 200)))
+              (tl-forall j (list 1 2) 
+                (tl-exists (d d-table) 
+                    (:did (list i j) :dval (random-string 10))
+                  (tl-forall k (list 10 11 12) 
+                    (tl-forall n (list 20 21 22)  
+                      (tl-and (tl-exists (f f-table) 
+                                  (:fid (list i j k n) :fval (tl-get :dval d))))))))))))
   (terpri)
-  (synth :output (synth :doc (synth :java (synth :java-implementation (tl-db gg) #'identity))) 0))
+  (synth :output (synth :doc (synth :java (synth :java-implementation gg #'identity))) 0))
 
 (defmacro tl-get (place object)
   `(getf (cadr ,object) ,place))
@@ -194,25 +197,25 @@
   (:java-implementation (cont &rest args) 
                    (apply cont (apply #'java-concat (synth-all :java-implementation records #'identity)) args)))
 
-(defun tl-db (records)
-  (tl-db% (mapcar (lambda (record) (tl-record (car record) (cadr record)))
-                  records)))
+(defmacro tl-db (&rest records)
+  `(tl-db% (mapcar (lambda (record) (tl-record (car record) (cadr record)))
+                  (tl-and ,@records))))
 
-(defprim tl-http-get (url)
-  (:pretty () (list 'tl-http-get (list :url (synth :pretty url))))
-  (:java-implementation (cont &rest args) 
-                   (apply cont (java-call name) args))
-  (:type () (integer-type)))
+;; (defprim tl-http-get (url)
+;;   (:pretty () (list 'tl-http-get (list :url (synth :pretty url))))
+;;   (:java-implementation (cont &rest args) 
+;;                    (apply cont (java-call name) args))
+;;   (:type () (integer-type)))
 
 (pprint (synth :string (synth :doc (synth :java (synth :java-implementation create-indicator #'identity)))))
 (pprint (synth :string (synth :doc (synth :java (synth :java-implementation (create-indicator (expr:const 1)) #'identity)))))
 
 
-(let ((gen (tl-generate 5 (ind indicators) (:id (random-number 10 20) :name (random-string 10))
-             (tl-generate 2 (par parameters) (:id (tl-get :id ind) :name (random-string 10))
-               (tl-generate 2 (boh bohs) (:id (tl-get :id par) :name (random-string 10)))))))
-  (pprint gen)
-  (pprint (listp gen))
-  (pprint (synth :output (synth :doc (synth :java (synth :java-implementation (tl-db gen) #'identity))) 0)))
+;; (let ((gen (tl-generate 5 (ind indicators) (:id (random-number 10 20) :name (random-string 10))
+;;              (tl-generate 2 (par parameters) (:id (tl-get :id ind) :name (random-string 10))
+;;                (tl-generate 2 (boh bohs) (:id (tl-get :id par) :name (random-string 10)))))))
+;;   (pprint gen)
+;;   (pprint (listp gen))
+;;   (pprint (synth :output (synth :doc (synth :java (synth :java-implementation (tl-db gen) #'identity))) 0)))
 
 

@@ -61,7 +61,7 @@
                                      (:file "form")))
 
                
-               ;; (:file "test")
+               (:file "test")
                (:file "backgen")
                ;; (:file "guigen")
                ))
