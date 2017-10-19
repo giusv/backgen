@@ -127,7 +127,7 @@
 
 (defpackage :sql
   (:use :cl :lol :utils :grammar :doc)
-  (:export :insert :select))
+  (:export :sql-const :sql-insert :sql-select :sql-concat))
 
 (defpackage :url
   (:use :cl :lol :utils :parser :grammar :doc :java)
@@ -135,18 +135,16 @@
            :backward-chain :multi :forward-chain :queried
            :url))
 
-
-
-
 (defpackage :type
   (:use :cl :lol :utils :parser :grammar :java :typescript :latex) 
   (:export :integer-type
            :boolean-type
+           :character-type
            :string-type
            :date-type
            :entity-type
            :transfer-type
-           :format-type
+           :format-type 
            :collection-type
            :parametric-type
            :function-type))
@@ -168,13 +166,6 @@
            :generate-dao
            :dto
            :*entities* :*relationships* :*formats* :*queries* :*daos*))
-
-
-
-
-
-
-
 
 (defpackage :server
   (:use :cl :lol :utils :grammar :type :java :latex)
@@ -243,12 +234,14 @@
 
 
 (defpackage :test
-     (:use :cl :lol :utils :doc :grammar :java :type :data :sql))
+  (:use :cl :lol :utils :doc :grammar :java :type :data :sql)
+  (:export :defdb :*database*
+           :tl-forall :tl-exists :tl-and :tl-get :tl-record))
 
 (defpackage :documentation
      (:use :cl :lol :utils :doc :grammar :latex))
 
 (defpackage :backgen
-  (:use :cl :lol :utils :doc :grammar :java :type :typescript :data :latex :gui :documentation))
+  (:use :cl :lol :utils :doc :grammar :java :type :typescript :data :latex :gui :test :documentation))
 
 

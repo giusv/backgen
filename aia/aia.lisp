@@ -3,4 +3,5 @@
   (load (mkstr basedir "queries.lisp"))
   (load (mkstr basedir "errors.lisp"))
   (load (mkstr basedir "formats.lisp"))
-  (load (mkstr basedir "services.lisp")))
+  (load (mkstr basedir "services.lisp"))
+  (load (mkstr basedir "database.lisp")))

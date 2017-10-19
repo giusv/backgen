@@ -62,6 +62,14 @@
 
                
                (:file "test")
+               ;; (:module "aia"
+               ;;          :serial t
+               ;;          :components ((:file "entities")
+               ;;                       (:file "queries")
+               ;;                       (:file "errors")
+               ;;                       (:file "formats")
+               ;;                       (:file "services")
+               ;;                       (:file "database")))
                (:file "backgen")
                ;; (:file "guigen")
                ))

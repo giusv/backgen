@@ -1,10 +1,10 @@
-;; (defent dwh-indicatori
-;;     (entity 'dwh-indicatori 
-;;             :primary (attribute :id (string-type 20))
-;;             :fields (list (attribute :name (string-type 20) :desc "Nome dell'indicatore")
-;;                           (attribute :source-code (string-type 200) :desc "Codice sorgente scritto dall'utente")
-;;                           (attribute :object-code (string-type 200) :desc "Codice oggetto prodotto dal compilatore")
-;;                           (attribute :start-date (string-type 8) :desc "Data inizio validita"))))
+(defent dwh-indicatori
+    (entity 'dwh-indicatori 
+            :primary (attribute :id (string-type 20))
+            :fields (list (attribute :name (string-type 20) :desc "Nome dell'indicatore")
+                          (attribute :source-code (string-type 200) :desc "Codice sorgente scritto dall'utente")
+                          (attribute :object-code (string-type 200) :desc "Codice oggetto prodotto dal compilatore")
+                          (attribute :start-date (string-type 8) :desc "Data inizio validita"))))
 
 ;; (defent parameter-entity
 ;;     (entity 'parameter
@@ -138,7 +138,7 @@
                           (attribute :d-flg-beneficiario (character-type) :desc "se e' beneficiario di un pagamento")
                           (attribute :d-flg-patente-invalida (character-type) :desc "se e' stato verificato come conducente con patente invalida (o senza patente)")
                           (attribute :d-grado-invalid (character-type) :desc "classifica sulla percentuale invalidita' (non nota, assente, bassa, media, alta)")
-                          (attribute :m-num-imprese (character-type0) :desc "numero di imprese a cui il soggetto e' collegato")
+                          (attribute :m-num-imprese (string-type 10) :desc "numero di imprese a cui il soggetto e' collegato")
                           (attribute :m-senza-seg (integer-type) :desc "numero di richieste senza seguito (nel caso ci siano piu' richieste dallo stesso richiedente)")
                           (attribute :m-num-veic (integer-type) :desc "numero di distinti veicoli coinvolto")
                           (attribute :m-num-rich (integer-type) :desc "numero di richieste a cui il soggetto e' collegato")

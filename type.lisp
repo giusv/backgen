@@ -11,7 +11,7 @@
   (:pretty () (list 'character-type (list :size size)))
   (:java-type () (java-primitive-type 'char))
   (:ts-type () (ts-primitive-type 'char))
-  (:sql-type () (doc:text "CHARACTER(1)"))
+  (:sql-type () (doc:text "CHAR(1)"))
   (:latex-type () (normal "character")))
 
 

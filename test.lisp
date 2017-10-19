@@ -152,21 +152,21 @@
                                                               (group values 2)))))))
      (cons ,name (append ,@formulas))))
 
-(let ((gg (tl-db 
-            (tl-exists (a a-table) 
-                  (:cid 1 :cval (random-number 100 200)))
-            (tl-forall i (list 1 2 3) 
-              (tl-exists (c c-table) 
-                  (:cid i :cval (random-number 100 200)))
-              (tl-forall j (list 1 2) 
-                (tl-exists (d d-table) 
-                    (:did (list i j) :dval (random-string 10))
-                  (tl-forall k (list 10 11 12) 
-                    (tl-forall n (list 20 21 22)  
-                      (tl-and (tl-exists (f f-table) 
-                                  (:fid (list i j k n) :fval (tl-get :dval d))))))))))))
-  (terpri)
-  (synth :output (synth :doc (synth :java (synth :java-implementation gg #'identity))) 0))
+;; (let ((gg (tl-db 
+;;             (tl-exists (a a-table) 
+;;                   (:cid 1 :cval (random-number 100 200)))
+;;             (tl-forall i (list 1 2 3) 
+;;               (tl-exists (c c-table) 
+;;                   (:cid i :cval (random-number 100 200)))
+;;               (tl-forall j (list 1 2) 
+;;                 (tl-exists (d d-table) 
+;;                     (:did (list i j) :dval (random-string 10))
+;;                   (tl-forall k (list 10 11 12) 
+;;                     (tl-forall n (list 20 21 22)  
+;;                       (tl-and (tl-exists (f f-table) 
+;;                                   (:fid (list i j k n) :fval (tl-get :dval d))))))))))))
+;;   (terpri)
+;;   (synth :output (synth :doc (synth :java (synth :java-implementation gg #'identity))) 0))
 
 (defmacro tl-get (place object)
   `(getf (cadr ,object) ,place))
@@ -177,28 +177,27 @@
                           (apply #'list ,name
                                  (append ,@generators))))))
 
-(defprim tl-random-number (start end)
-  (:pretty () (list 'tl-random-number (list :start start :end end)))
-  (:java-implementation (cont &rest args) 
-                   (apply cont (random-number start end) args)))
+;; (defprim tl-random-number (start end)
+;;   (:pretty () (list 'tl-random-number (list :start start :end end)))
+;;   (:java-implementation (cont &rest args) 
+;;                    (apply cont (random-number start end) args)))
 
-(defprim tl-random-string (length)
-  (:pretty () (list 'tl-random-string (list :length length)))
-  (:java-implementation (cont &rest args) 
-                   (apply cont (random-string length) args)))
+;; (defprim tl-random-string (length)
+;;   (:pretty () (list 'tl-random-string (list :length length)))
+;;   (:java-implementation (cont &rest args) 
+;;                    (apply cont (random-string length) args)))
 
-(defprim tl-record (table values)
-  (:pretty () (list 'tl-record (list :table table :values values)))
-  (:java-implementation (cont &rest args) 
-                   (apply cont (java-const (synth :string (synth :sql (apply #'insert table values)))) args)))
+;; (defprim tl-record (table values)
+;;   (:pretty () (list 'tl-record (list :table table :values values)))
+;;   (:java-implementation (cont &rest args) 
+;;                    (apply cont (java-const (synth :string (synth :sql (apply #'insert table values)))) args)))
 
 (defprim tl-db% (records)
   (:pretty () (list 'tl-db% (list :records (synth-all :pretty records))))
-  (:java-implementation (cont &rest args) 
-                   (apply cont (apply #'java-concat (synth-all :java-implementation records #'identity)) args)))
+  (:sql-implementation () (apply #'sql-concat records)))
 
 (defmacro tl-db (&rest records)
-  `(tl-db% (mapcar (lambda (record) (tl-record (car record) (cadr record)))
+  `(tl-db% (mapcar (lambda (record) (apply #'sql-insert (car record) (cadr record)))
                   (tl-and ,@records))))
 
 ;; (defprim tl-http-get (url)
@@ -219,3 +218,6 @@
 ;;   (pprint (synth :output (synth :doc (synth :java (synth :java-implementation (tl-db gen) #'identity))) 0)))
 
 
+
+(defmacro defdb (&rest records)
+  `(defparameter *database* (tl-db ,@records)))

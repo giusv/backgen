@@ -12,7 +12,7 @@
   (:ejb (package) (let ((bean-name (synth :name this)))
                     (java-unit bean-name
                                (java-package (symb package '|.ejb|))
-                               (java-import '|javax.ejb| '|EJB| '|Stateless|)
+                               (java-import '|javax.ejb| '|EJB| '|Stateless| '|LocalBean|)
                                (java-import '|javax.persistence| '|EntityManager| '|PersistenceContext|)
                                (java-import '|javax.inject| '|Inject|)
                                (java-import (symb package '|.dto|) '|*|) 
@@ -23,7 +23,8 @@
                                (java-import '|java.util| '|List|)
                                (java-import '|java.util| '|Arrays|)
                                (java-with-annotations 
-                                (list (java-annotation '|Stateless|))
+                                (list (java-annotation '|Stateless|)
+                                      (java-annotation '|LocalBean|))
                                 (java-class bean-name 
                                             :public t
                                             ;; :interfaces (list (symb name "-BEAN"))

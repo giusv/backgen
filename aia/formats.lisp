@@ -26,11 +26,3 @@
               (jsprop :start-date "Data inizio" (jsstring))
               ;; (jsprop :parameters "parametri " (jsarray parameter-format))
               ))
-
-(defent dwh-indicatori
-    (entity 'dwh-indicatori 
-            :primary (attribute :id (string-type 20))
-            :fields (list (attribute :name (string-type 20) :desc "Nome dell'indicatore")
-                          (attribute :source-code (string-type 200) :desc "Codice sorgente scritto dall'utente")
-                          (attribute :object-code (string-type 200) :desc "Codice oggetto prodotto dal compilatore")
-                          (attribute :start-date (string-type 8) :desc "Data inizio validita"))))
