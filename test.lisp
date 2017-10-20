@@ -136,10 +136,7 @@
                          (tl-require ,post))))) 
           (setf (gethash ',name *tests*) ,name)))
 
-(deftest create-indicator ((id (integer-type))) 
-  (tl-equal id (expr:const 1)) 
-  (tl-invoke-service 'indicators)
-  (tl-equal id (expr:const 1)))
+
 
 (defmacro tl-forall (i range &body formulas)
   `(apply #'append (loop for ,i in ,range collect (tl-and ,@formulas))))
@@ -152,30 +149,16 @@
                                                               (group values 2)))))))
      (cons ,name (append ,@formulas))))
 
-;; (let ((gg (tl-db 
-;;             (tl-exists (a a-table) 
-;;                   (:cid 1 :cval (random-number 100 200)))
-;;             (tl-forall i (list 1 2 3) 
-;;               (tl-exists (c c-table) 
-;;                   (:cid i :cval (random-number 100 200)))
-;;               (tl-forall j (list 1 2) 
-;;                 (tl-exists (d d-table) 
-;;                     (:did (list i j) :dval (random-string 10))
-;;                   (tl-forall k (list 10 11 12) 
-;;                     (tl-forall n (list 20 21 22)  
-;;                       (tl-and (tl-exists (f f-table) 
-;;                                   (:fid (list i j k n) :fval (tl-get :dval d))))))))))))
-;;   (terpri)
-;;   (synth :output (synth :doc (synth :java (synth :java-implementation gg #'identity))) 0))
-
 (defmacro tl-get (place object)
   `(getf (cadr ,object) ,place))
-(defmacro tl-generate (n (name table) (&rest values) &body generators)
-  `(apply #'append (loop for i from 1 to ,n collect
-                        (let ((,name (list ',table (list ,@(apply #'append (mapcar (lambda (pair) (list (car pair) (cadr pair)))
-                                                                                   (group values 2)))))))
-                          (apply #'list ,name
-                                 (append ,@generators))))))
+
+
+;; (defmacro tl-generate (n (name table) (&rest values) &body generators)
+;;   `(apply #'append (loop for i from 1 to ,n collect
+;;                         (let ((,name (list ',table (list ,@(apply #'append (mapcar (lambda (pair) (list (car pair) (cadr pair)))
+;;                                                                                    (group values 2)))))))
+;;                           (apply #'list ,name
+;;                                  (append ,@generators))))))
 
 ;; (defprim tl-random-number (start end)
 ;;   (:pretty () (list 'tl-random-number (list :start start :end end)))
@@ -206,6 +189,10 @@
 ;;                    (apply cont (java-call name) args))
 ;;   (:type () (integer-type)))
 
+(deftest create-indicator ((id (integer-type))) 
+  (tl-equal id (expr:const 1)) 
+  (tl-invoke-service 'indicators)
+  (tl-equal id (expr:const 1)))
 (pprint (synth :string (synth :doc (synth :java (synth :java-implementation create-indicator #'identity)))))
 (pprint (synth :string (synth :doc (synth :java (synth :java-implementation (create-indicator (expr:const 1)) #'identity)))))
 
@@ -217,7 +204,27 @@
 ;;   (pprint (listp gen))
 ;;   (pprint (synth :output (synth :doc (synth :java (synth :java-implementation (tl-db gen) #'identity))) 0)))
 
-
-
 (defmacro defdb (&rest records)
   `(defparameter *database* (tl-db ,@records)))
+
+(let* ((group-id (list "com" "extent"))
+       (artifact-id "app")
+       (basedir #p"D:/Dati/Profili/m026980/workspace/") 
+       (package (append* group-id artifact-id))
+       (package-symb (apply #'symb (interleave package ".")))
+       (project-basedir (merge-pathnames (make-pathname :directory (list :relative artifact-id)) basedir))
+       (main-basedir (merge-pathnames (make-pathname :directory (list :relative "src" "main")) project-basedir)) 
+       (test-basedir (merge-pathnames (make-pathname :directory (apply #'list :relative "test" package)) main-basedir)) 
+       (resources-basedir (merge-pathnames (make-pathname :directory (list :relative "resources")) main-basedir)) 
+       (webapp-basedir (merge-pathnames (make-pathname :directory (list :relative "webapp")) main-basedir)) 
+       (webinf-basedir (merge-pathnames (make-pathname :directory (list :relative "WEB-INF")) webapp-basedir)) 
+       (metainf-basedir (merge-pathnames (make-pathname :directory (list :relative "META-INF")) resources-basedir)) 
+       (app-tests (loop for value being the hash-values of *tests* collect value)))
+  (pprint test-basedir)  
+  (mapcar (lambda (test) 
+            (let ((filename (mkstr test-basedir (upper-camel (synth :name test)) ".java")))
+              
+              (pprint filename)
+              (write-file filename
+                          (synth :string (synth :doc (synth :java (synth :java-implementation test #'identity)))))))
+          app-tests))

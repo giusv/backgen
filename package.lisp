@@ -182,15 +182,15 @@
            :rest-get% :rest-get
            :rest-post% :rest-post
            :rest-put :rest-delete
-           :with-fields
-           :concat% :concat
-           :empty :create-entity% :create-entity 
-           :update-entity% :update-entity
-           :exec-query% :exec-query
-           :find-entity% :find-entity
-           :create-transfer% :create-transfer
-           :mu% :mu :mapcomm% :mapcomm :fork
-           :respond
+           ;; :with-fields
+           ;; :concat% :concat
+           ;; :create-entity% :create-entity 
+           ;; :update-entity% :update-entity
+           ;; :exec-query% :exec-query
+           ;; :find-entity% :find-entity
+           ;; :create-transfer% :create-transfer
+           ;; :mu% :mu :mapcomm% :mapcomm :fork
+           ;; :respond
            :bl-let% :bl-let
            :bl-create-entity% :bl-create-entity :bl-find-entity :bl-delete-entity
            :bl-lambda% :bl-lambda
@@ -241,7 +241,11 @@
 (defpackage :documentation
      (:use :cl :lol :utils :doc :grammar :latex))
 
+(defpackage :conf
+  (:use :cl :lol :utils :doc :server :grammar :java :type :typescript :data :latex :gui :test :documentation :xml)
+  (:export :pom :web :beans :persistence))
+
 (defpackage :backgen
-  (:use :cl :lol :utils :doc :grammar :java :type :typescript :data :latex :gui :test :documentation))
+  (:use :cl :lol :utils :doc :server :grammar :java :type :typescript :data :latex :gui :test :documentation :conf))
 
 

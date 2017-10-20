@@ -1,13 +1,23 @@
 (in-package :backgen)
 
-(load #p"D:/giusv/lisp/backgen/aia/aia.lisp")
+;; (load #p"D:/giusv/lisp/backgen/aia/aia.lisp")
+;; (load #p"D:/giusv/lisp/backgen/app/app.lisp")
 
 ;; (pprint (synth :pretty (generate-dao dwh-indicatori)))
 
-(let* ((basedir #p"D:/Dati/Profili/m026980/workspace/indytest/src/main/")
-       (package (list "com" "extent" "indytest"))
+(let* ((group-id (list "com" "extent"))
+       (artifact-id "app")
+       (basedir #p"D:/Dati/Profili/m026980/workspace/") 
+
+       (package (append* group-id artifact-id))
        (package-symb (apply #'symb (interleave package ".")))
-       (package-basedir (merge-pathnames (make-pathname :directory (apply #'list :relative "java" package)) basedir)) 
+       (project-basedir (merge-pathnames (make-pathname :directory (list :relative artifact-id)) basedir))
+       (main-basedir (merge-pathnames (make-pathname :directory (list :relative "src" "main")) project-basedir)) 
+       (java-basedir (merge-pathnames (make-pathname :directory (apply #'list :relative "java" package)) main-basedir)) 
+       (resources-basedir (merge-pathnames (make-pathname :directory (list :relative "resources")) main-basedir)) 
+       (webapp-basedir (merge-pathnames (make-pathname :directory (list :relative "webapp")) main-basedir)) 
+       (webinf-basedir (merge-pathnames (make-pathname :directory (list :relative "WEB-INF")) webapp-basedir)) 
+       (metainf-basedir (merge-pathnames (make-pathname :directory (list :relative "META-INF")) resources-basedir)) 
        (app-entities (loop for value being the hash-values of *entities* collect value))
        (app-daos (mapcar #'generate-dao app-entities)) 
        (app-dtos (mapcar #'dto app-entities)) 
@@ -17,47 +27,51 @@
        (app-ejbs (mapcar #'server:generate-ejb app-services))
        (app-ddls (apply #'doc:postpend (doc:semi) t (remove nil (synth-all :ddl app-entities))))
        (app-db *database*))
- 
-  ;; (process (mkstr basedir (string-downcase (synth :name app-module)) ".module.ts") app-module)
-  ;; (process (mkstr basedir (string-downcase (synth :name app)) ".component.ts") app )
-  ;; (mapcar (lambda (component) 
-  ;;           (process (mkstr basedir (string-downcase (synth :name component)) ".component.ts") component))
-  ;;         app-components)
-  ;; (pprint (synth-all :pretty app-ejbs))
-  (pprint package-basedir)
-  
+  (pprint java-basedir)
+  (let ((filename (mkstr metainf-basedir "persistence.xml")))
+    (pprint filename)
+    (write-file filename
+                (synth :string (synth :doc (persistence nil)))))
+  (let ((filename (mkstr project-basedir "pom.xml"))) 
+    (pprint filename)
+    (write-file filename
+                (synth :string (synth :doc (pom group-id artifact-id)))))
+  (let ((filename (mkstr webinf-basedir "web.xml"))) 
+    (pprint filename)
+    (write-file filename
+                (synth :string (synth :doc (web group-id artifact-id app-services)))))
   (mapcar (lambda (entity) 
-            (let ((filename (mkstr package-basedir "model/" (upper-camel (synth :name entity)) ".java"))) 
+            (let ((filename (mkstr java-basedir "model/" (upper-camel (synth :name entity)) ".java"))) 
               (pprint filename)
               (write-file filename
                           (synth :string (synth :doc (synth :java (synth :entity entity package-symb)))))))
           app-entities)
   (mapcar (lambda (dao) 
-            (let ((filename (mkstr package-basedir "dao/" (upper-camel (synth :name dao)) ".java"))) 
+            (let ((filename (mkstr java-basedir "dao/" (upper-camel (synth :name dao)) ".java"))) 
               (pprint filename)
               (write-file filename
                           (synth :string (synth :doc (synth :java (synth :dao dao package-symb)))))))
           app-daos)
   (mapcar (lambda (dto) 
-            (let ((filename (mkstr package-basedir "dto/" (upper-camel (synth :name dto)) ".java"))) 
+            (let ((filename (mkstr java-basedir "dto/" (upper-camel (synth :name dto)) ".java"))) 
               (pprint filename)
               (write-file filename
                           (synth :string (synth :doc (synth :java (synth :dto dto package-symb)))))))
           app-dtos)
   (mapcar (lambda (ejb) 
-            (let ((filename (mkstr package-basedir "ejb/" (upper-camel (synth :name ejb)) ".java"))) 
+            (let ((filename (mkstr java-basedir "ejb/" (upper-camel (synth :name ejb)) ".java"))) 
               (pprint filename)
               (write-file filename
                           (synth :string (synth :doc (synth :java (synth :ejb ejb package-symb)))))))
           app-ejbs)
   (mapcar (lambda (error) 
-            (let ((filename (mkstr package-basedir "exception/" (upper-camel (synth :name error)) ".java"))) 
+            (let ((filename (mkstr java-basedir "exception/" (upper-camel (synth :name error)) ".java"))) 
               (pprint filename)
               (write-file filename
                           (synth :string (synth :doc (synth :java (synth :java-implementation error package-symb)))))))
           app-exceptions) 
   (mapcar (lambda (format) 
-            (let ((filename (mkstr package-basedir "vo/" (upper-camel (symb (synth :name (synth :format format)) '|-V-O|)) ".java"))) 
+            (let ((filename (mkstr java-basedir "vo/" (upper-camel (symb (synth :name (synth :format format)) '|-V-O|)) ".java"))) 
               (pprint filename)
               (write-file filename
                           (synth :string (synth :doc (synth :java (synth :java-implementation format package-symb))))
@@ -65,16 +79,16 @@
                           )))
           app-formats)
   (mapcar (lambda (service) 
-            (let ((filename (mkstr package-basedir "service/" (upper-camel (synth :name service)) ".java"))) 
+            (let ((filename (mkstr java-basedir "service/" (upper-camel (synth :name service)) ".java"))) 
               (pprint filename)
               (write-file filename
                           (synth :string (synth :doc (synth :java (synth :java-implementation service package-symb)))))))
           app-services)
-  (let ((filename (mkstr basedir "resources/create.sql"))) 
+  (let ((filename (mkstr resources-basedir "create.sql"))) 
     (pprint filename)
     (write-file filename
                 (synth :string app-ddls)))
-  (let ((filename (mkstr basedir "resources/data.sql"))) 
+  (let ((filename (mkstr resources-basedir "data.sql"))) 
     (pprint filename)
     (write-file filename
                 (synth :string (synth :sql (synth :sql-implementation app-db))))))
@@ -295,43 +309,4 @@
 ;; ;; (pprint (parse (var-init) '((name init))))
 ;; ;;; "backgen" goes here. Hacks and glory await!
 
-;; (let ((maven (xml:node '|project| 
-;;      :|xmlns| "http://maven.apache.org/POM/4.0.0" :|xmlns:xsi| "http://www.w3.org/2001/XMLSchema-instance" 
-;;      :|xsi:schemaLocation| "http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd"
-;;      (xml:node '|modelVersion| (xml:simple "4.0.0")) 
-;;      (xml:node '|groupId| (xml:simple "com.extent")) 
-;;      (xml:node '|artifactId| (xml:simple "backgen"))
-;;      (xml:node '|packaging| (xml:simple "war")) 
-;;      (xml:node '|version| (xml:simple "0.0.1-SNAPSHOT")) 
-;;      (xml:node '|name| (xml:simple "backgen Maven Webapp")) 
-;;      (xml:node '|url| (xml:simple "http://maven.apache.org")) 
-;;      (xml:node '|dependencies|
-;;           (xml:node '|dependency|
-;;                (xml:node '|groupId| (xml:simple "junit")) 
-;;                (xml:node '|artifactId| (xml:simple "junit")) 
-;;                (xml:node '|version| (xml:simple "3.8.1")) 
-;;                (xml:node '|scope| (xml:simple "test")))
-;;           (xml:node '|dependency|
-;;                (xml:node '|groupId| (xml:simple "javax.servlet")) 
-;;                (xml:node '|artifactId| (xml:simple "javax.servlet-api")) 
-;;                (xml:node '|version| (xml:simple "3.1.0")) 
-;;                (xml:node '|scope| (xml:simple "provided")))
-;;           (xml:node '|dependency|
-;;                (xml:node '|groupId| (xml:simple "javax")) 
-;;                (xml:node '|artifactId| (xml:simple "javaee-api")) 
-;;                (xml:node '|version| (xml:simple "7.0")))
-;;           (xml:node '|dependency|
-;;                (xml:node '|groupId| (xml:simple "org.apache.derby")) 
-;;                (xml:node '|artifactId| (xml:simple "derby")) 
-;;                (xml:node '|version| (xml:simple "10.8.3.0"))))
-;;      (xml:node '|build|
-;;           (xml:node '|finalName| (xml:simple "backgen")) 
-		
-;;           (xml:node '|plugins|
-;;                (xml:node '|plugin|
-;;                     (xml:node '|artifactId| (xml:simple "maven-compiler-plugin")) 
-;;                     (xml:node '|version| (xml:simple "3.0")) 
-;;                     (xml:node '|configuration|
-;;                          (xml:node '|source| (xml:simple "1.8")) 
-;;                          (xml:node '|target| (xml:simple "1.8")))))))))
-;;   (synth :output (synth :doc maven) 0))
+

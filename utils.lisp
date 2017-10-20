@@ -17,7 +17,7 @@
   (let ((consonants "bcdfghjklmnpqrstvwxyz")
 	(vowels "aeiou"))
     (concatenate 'string 
-		 (loop for i from 0 to length
+		 (loop for i from 0 to (- length 1)
 		    collecting (if (evenp i) 
 				   (elt consonants (random 21))
 				   (elt vowels (random 5)))))))

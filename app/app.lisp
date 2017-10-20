@@ -1,0 +1,7 @@
+(let ((basedir "D:/giusv/lisp/backgen/app/" ))
+  (load (mkstr basedir "entities.lisp"))
+  (load (mkstr basedir "queries.lisp"))
+  (load (mkstr basedir "errors.lisp"))
+  (load (mkstr basedir "formats.lisp"))
+  (load (mkstr basedir "services.lisp"))
+  (load (mkstr basedir "database.lisp")))

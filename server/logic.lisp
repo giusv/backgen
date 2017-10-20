@@ -24,13 +24,6 @@
      (bl-let% (list ,@(mapcar (lambda (binding) `(bl-binding ',(car binding) ,(cadr binding)))
                                       bindings)) ,@expr)))
 
-
-;; (:java-implementation (cont &rest args) 
-;;                    (apply cont (java-chain (java-dynamic (symb (synth :name entity) "-d-a-o"))
-;;                                            (apply #'java-call (symb 'create "-" (synth :name entity))
-;;                                                       (synth-plist-merge (lambda (binding) (synth :java-implementation (cadr bindings) #'identity))
-;;                                                                          bindings)))
-;;                           args))
 (defprim bl-create-entity% (entity bindings)
   (:pretty () (list 'create-entity (list :entity entity :bindings (synth-plist :pretty bindings)))) 
   (:java-implementation (cont &rest args) 
