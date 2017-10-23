@@ -60,18 +60,16 @@
                                    :function (synth :pretty function)
                                    :post (synth :pretty post))))
   (:java-implementation (cont &rest args) 
-                   (apply cont ;; (synth :java-implementation function #'identity)
-                          (java-method (doc:textify (lower-camel name)) 
-                                       (mapcar (lambda (input)
-                                                 (java-pair (synth :name input)
-                                                            (synth :java-type (synth :type input))))
-                                               (synth :inputs function))
-                                       (synth :java-type (synth :type (synth :expr function)))
-                                       (synth :java-implementation pre #'java-statement)
-                                       (synth :java-implementation (synth :expr function) #'identity)
-                                       (synth :java-implementation post #'java-statement)
-                                       )
-                          args))
+                        (apply cont (java-method (doc:textify (lower-camel name)) 
+                                                 (mapcar (lambda (input)
+                                                           (java-pair (synth :name input)
+                                                                      (synth :java-type (synth :type input))))
+                                                         (synth :inputs function))
+                                                 (synth :java-type (synth :type (synth :expr function)))
+                                                 (synth :java-implementation pre #'java-statement)
+                                                 (synth :java-implementation (synth :expr function) #'identity)
+                                                 (synth :java-implementation post #'java-statement))
+                               args))
   ;; (:type () (synth :type expr))
   )
 
@@ -123,6 +121,29 @@
                    (apply cont (java-call name) args))
   (:type () (integer-type)))
 
+(defprim tl-suite (name cases)
+  (:pretty () (list 'tl-suite (list :name name 
+                                    :cases (synth-all :pretty cases))))
+  (:java-implementation (package) 
+                        (java-unit name
+                                   (java-package (symb package '|.test|)) 
+                                   (java-class name
+                                               :public t 
+                                               :fields nil
+                                               :methods (mapcar (lambda (case)
+                                                                  (java-with-annotations
+                                                                   (list (java-annotation '|Test|))
+                                                                   (synth :java-implementation case #'identity)))
+                                                                (append* cases))))))
+
+(defparameter *suites* (make-hash-table))
+(defmacro defsuite (name &rest cases)
+  `(progn (defparameter ,name 
+            (tl-suite ',name
+                      ,@cases)) 
+         (setf (gethash ',name *suites*) ,name)))
+
+
 (defparameter *tests* (make-hash-table))
 (defmacro deftest (name inputs pre expr post)
   `(progn (defun ,name ,(mapcar #'car inputs)
@@ -133,7 +154,7 @@
                        (tl-ensure ,pre)
                        (tl-lambda% (list ,@(mapcar #'car inputs)) ,expr)
                        (tl-let ((response ,expr))
-                         (tl-require ,post))))) 
+                         (tl-require ,post)))))
           (setf (gethash ',name *tests*) ,name)))
 
 
@@ -193,9 +214,17 @@
   (tl-equal id (expr:const 1)) 
   (tl-invoke-service 'indicators)
   (tl-equal id (expr:const 1)))
-(pprint (synth :string (synth :doc (synth :java (synth :java-implementation create-indicator #'identity)))))
-(pprint (synth :string (synth :doc (synth :java (synth :java-implementation (create-indicator (expr:const 1)) #'identity)))))
 
+;; (pprint (synth :string (synth :doc (synth :java (synth :java-implementation create-indicator #'identity)))))
+;; (pprint (synth :string (synth :doc (synth :java (synth :java-implementation (create-indicator (expr:const 1)) #'identity)))))
+
+;; (deftest indicator-sequence
+;;     (tl-with-db (tl-forall ...)
+;;                 (tl-orelse (verify-indicator 1)
+;;                            (tl-let ((id (create-indicator 1)))
+;;                              (verify-indicator 1)))))
+(defsuite indicator-suite 
+    (mapcar #'create-indicator (mapcar #'expr:const (list 1 2 3 4))))
 
 ;; (let ((gen (tl-generate 5 (ind indicators) (:id (random-number 10 20) :name (random-string 10))
 ;;              (tl-generate 2 (par parameters) (:id (tl-get :id ind) :name (random-string 10))
@@ -219,12 +248,24 @@
        (webapp-basedir (merge-pathnames (make-pathname :directory (list :relative "webapp")) main-basedir)) 
        (webinf-basedir (merge-pathnames (make-pathname :directory (list :relative "WEB-INF")) webapp-basedir)) 
        (metainf-basedir (merge-pathnames (make-pathname :directory (list :relative "META-INF")) resources-basedir)) 
-       (app-tests (loop for value being the hash-values of *tests* collect value)))
-  (pprint test-basedir)  
-  (mapcar (lambda (test) 
-            (let ((filename (mkstr test-basedir (upper-camel (synth :name test)) ".java")))
-              
+       (app-tests (loop for value being the hash-values of *tests* collect value))
+       (app-suites (loop for value being the hash-values of *suites* collect value)))
+  (pprint test-basedir)
+  (let ((filename (mkstr test-basedir "Common.java")))
+    (pprint filename)
+    (write-file filename
+                (synth :string 
+                       (synth :doc
+                              (synth :java
+                                     (java-unit 'common
+                                                (java-package (symb package-symb '|.test|)) 
+                                                (java-class 'common
+                                                            :public t 
+                                                            :fields nil
+                                                            :methods (synth-all :java-implementation app-tests #'identity))))))))
+  (mapcar (lambda (suite) 
+            (let ((filename (mkstr test-basedir (upper-camel (synth :name suite)) ".java"))) 
               (pprint filename)
               (write-file filename
-                          (synth :string (synth :doc (synth :java (synth :java-implementation test #'identity)))))))
-          app-tests))
+                          (synth :string (synth :doc (synth :java (synth :java-implementation suite package-symb)))))))
+          app-suites))

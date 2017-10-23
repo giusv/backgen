@@ -235,8 +235,9 @@
 
 (defpackage :test
   (:use :cl :lol :utils :doc :grammar :java :type :data :sql)
-  (:export :defdb :*database*
-           :tl-forall :tl-exists :tl-and :tl-get :tl-record))
+  (:export :defdb :*database* :deftest :defsuite
+           :tl-variab :tl-lambda% :tl-call :tl-binding :tl-let% :tl-test :tl-test-instance :tl-seq% :tl-test-binding :tl-ensure :tl-require :tl-equal :tl-invoke-service :tl-suite :tl-db% ))
+
 
 (defpackage :documentation
      (:use :cl :lol :utils :doc :grammar :latex))
