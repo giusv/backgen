@@ -52,7 +52,12 @@
                                    (synth :schema query2))))
                 (reduce #'(lambda (acc attr) (remove attr acc :count 1)) 
                         attributes
-                        :initial-value union))))
+                        :initial-value union)))
+  (:sql () (doc:hcat+
+            (synth :sql query1)
+            (doc:text "INNER JOIN")
+            (synth :sql query2)
+            (doc:text "ON ~a.~a = ~a.~a" (upper (synth :name query1)) (upper (car attributes)) (upper (synth :name query2)) (upper (car attributes))))))
 
 ;; (pprint (synth :pretty 
 ;;                (let ((trips (relation 'trips))

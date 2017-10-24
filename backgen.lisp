@@ -6,7 +6,7 @@
 ;; (pprint (synth :pretty (generate-dao dwh-indicatori)))
 
 (let* ((group-id (list "com" "extent"))
-       (artifact-id "app")
+       (artifact-id "backgen")
        (basedir #p"D:/Dati/Profili/m026980/workspace/") 
 
        (package (append* group-id artifact-id))

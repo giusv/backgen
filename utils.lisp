@@ -85,7 +85,7 @@
 (defun lower (item &optional (separator "_"))
   (let ((words (interleave (split-str (mkstr item)) separator)))
 
-    (format nil "~(~a~)~{~a~}" (car words) (cdr words))))
+    (format nil "~(~a~)~{~(~a~)~}" (car words) (cdr words))))
 
 (defun upper (item &optional (separator "_"))
   (let ((words (interleave (split-str (mkstr item)) separator)))

@@ -1,4 +1,4 @@
-
+(in-package :backgen)
 
 (server:defresource indicator-item
     (server:rest-item 'indicator ((indicator (url:path-parameter 'indicator (integer-type)))) 
@@ -6,9 +6,6 @@
                        (server:rest-get ()
                                         (server:bl-let ((ent (server:bl-find-entity dwh-indicatori indicator)))
                                           ent)))))
-
-
-
 
 (server:defresource indicators-collection
     (server:rest-collection 

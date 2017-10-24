@@ -140,7 +140,7 @@
 (defmacro defsuite (name &rest cases)
   `(progn (defparameter ,name 
             (tl-suite ',name
-                      ,@cases)) 
+                      ,@cases))
          (setf (gethash ',name *suites*) ,name)))
 
 

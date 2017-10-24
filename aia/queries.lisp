@@ -1,3 +1,4 @@
+(in-package :backgen)
 (defquery indicator-by-name ((name (string-type 20))) dwh-indicatori
           (with-queries ((inds (relation dwh-indicatori))
                          ;; (pars (relation parameter-entity))
@@ -14,3 +15,9 @@
 (defquery all-indicators () dwh-indicatori
           (with-queries ((inds (relation dwh-indicatori)))
             (project inds)))
+
+(defquery all-stdlib-entries () stdlib-entries
+          (with-queries ((ents (relation stdlib-entries))
+                         (pars (relation stdlib-entry-parameters)))
+            (project (equijoin ents pars :stdlib-entries-id))))
+

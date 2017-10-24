@@ -1,3 +1,4 @@
+(in-package :backgen)
 (defent dwh-indicatori
     (entity 'dwh-indicatori 
             :primary (attribute :id (string-type 20))
@@ -208,3 +209,18 @@
                           (attribute :m-gg-da-decorrenza (integer-type) :desc "minimo di giorni trascorsi da decorrenza polizza per veicoli coinvolti")
                           (attribute :m-gg-a-scadenza (integer-type) :desc "minimo di giorni che mancano per la scadenza polizza per veicoli coinvolti")
                           (attribute :ultimo-agg (date-type) :desc "data ultimo aggiornamento"))))
+(defent stdlib-entries
+    (entity 'stdlib-entries
+            :primary (attribute :stdlib-entry-id (integer-type))
+            :fields (list (attribute :name (string-type 40))
+                          (attribute :type (string-type 20))
+                          (attribute :body (string-type 4000)))))
+(defent stdlib-entry-parameters
+    (entity 'stdlib-entry-parameters
+            :primary (attribute :stdlib-entry-parameter-id (integer-type))
+            :fields (list (attribute :name (string-type 50))
+                          (attribute :type (string-type 20)))))
+(defrel stdlib-parameters
+    (relationship 'stdlib-parameters stdlib-entries stdlib-entry-parameters :one-to-many))
+
+

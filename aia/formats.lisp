@@ -1,4 +1,4 @@
-
+(in-package :backgen)
 ;; (deformat parameter-format  "Formato JSON del valore di un parametro relativo a un indicatore"
 ;;     (jsobject 'parameter
 ;;               (jsprop :parameter-id "Identificativo univoco del parametro" (jsstring))
