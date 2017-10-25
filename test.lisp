@@ -196,8 +196,19 @@
 ;;   (:java-implementation (cont &rest args) 
 ;;                    (apply cont (java-const (synth :string (synth :sql (apply #'insert table values)))) args)))
 
+
+;; stdlib.add(new StdLibEntry(
+;; 				"coinvolto",
+;; 				Type.BOOLEAN,
+;; 				ListUtils.cons(new Identifier(new Identifier(new Word(
+;; 						"soggetto", Tag.ID)), Type.SOGGETTO), ListUtils.cons(
+;; 						new Identifier(new Identifier(new Word("sinistro",
+;; 								Tag.ID)), Type.STRING),
+;; 						new ArrayList<Identifier>())),
+;; 				"function coinvolto(soggetto,sinistro) {return \"(D_FLG_COINVOLTO = 'S')\"}"));
+
 (defprim tl-db% (records)
-  (:pretty () (list 'tl-db% (list :records (synth-all :pretty records))))
+  (:pretty () (list 'tl-db% (list :records records)))
   (:sql-implementation () (apply #'sql-concat records)))
 
 (defmacro tl-db (&rest records)
@@ -253,16 +264,11 @@
   (pprint test-basedir)
   (let ((filename (mkstr test-basedir "Common.java")))
     (pprint filename)
-    (write-file filename
-                (synth :string 
-                       (synth :doc
-                              (synth :java
-                                     (java-unit 'common
-                                                (java-package (symb package-symb '|.test|)) 
-                                                (java-class 'common
-                                                            :public t 
-                                                            :fields nil
-                                                            :methods (synth-all :java-implementation app-tests #'identity))))))))
+    (write-file filename (synth :string (synth :doc (synth :java (java-unit 'common (java-package (symb package-symb '|.test|)) 
+                                                                            (java-class 'common
+                                                                                        :public t 
+                                                                                        :fields nil
+                                                                                        :methods (synth-all :java-implementation app-tests #'identity))))))))
   (mapcar (lambda (suite) 
             (let ((filename (mkstr test-basedir (upper-camel (synth :name suite)) ".java"))) 
               (pprint filename)

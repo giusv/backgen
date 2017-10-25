@@ -8,10 +8,6 @@
 ;;       (tl-exists (sogg ind-stat-sogg-sini) 
 ;;           (:ind-stat-sogg-sini-id i :id-sini i :id-sogg 5 :d-flg-leso "s"))))
 
-
-
-
-
 (defun range (start end)
   (loop for i from start to end collect i))
 
@@ -26,8 +22,8 @@
   `(tl-forall i (range ,n ,n)
      (tl-exists (entry stdlib-entries)
          (:stdlib-entry-id ,n :name  ,(format nil "~a" (lower fname "")) :type "string" :body,(format nil "function ~a(op1,op2,strict)
-{if (strict) { return \"(\" + op1 + \" ~a \" + op2 + \"); } else { return \"((\" + op1 + \" ~a \" + op2 + \") OR (\" + op1 + \"IS NULL) OR (\" + op2 + \"IS NULL))\"; }}" (lower fname "") op op) 
- )
+{if (strict) { return \"(\" + op1 + \" ~a \" + op2 + \"); } else { return \"((\" + op1 + \" ~a \" + op2 + \") OR (\" + op1 + \"IS NULL) OR (\" + op2 + \"IS NULL))\"; }}" (lower fname "") op op))
+
        (tl-exists (par stdlib-entry-parameters)
            (:stdlib-entry-parameter-id (uniq i 1) :stdlib-entry-id ,n :name "op1" :type "null"))
        (tl-exists (par stdlib-entry-parameters) (:stdlib-entry-parameter-id (uniq i 2) :stdlib-entry-id ,n :name "op2" :type "null")))))
@@ -104,14 +100,14 @@
   
   (tl-forall i (range 27 27)
     (tl-exists (entry stdlib-entries)
-        (:stdlib-entry-id 27 :name "querysoggetti" :type "number" :body "function querysoggetti(input,query) {var q = \"SELECT B.ID_SINI, B.D_DATA_ACCAD FROM IND_STAT_SOGG_SINI A INNER JOIN IND_STAT_SINI B ON A.ID_SINI = B.ID_SINI WHERE A.ID_SOGG = \" + input + \" AND \" + query;print(q);result = em.createNativeQuery(q).getResultList();print(\"result = \" + result);return result;}")
+        (:stdlib-entry-id 27 :name "querysoggetti" :type "number" :body "function querysoggetti(input,query) {var q = \"SELECT B.ID_SINI, B.D_DATA_ACCAD FROM IND_STAT_SOGG_SINI A INNER JOIN IND_STAT_SINI B ON A.ID_SINI = B.ID_SINI WHERE A.ID_SOGG = \" + input + (query!=null? (\" AND \" + query) : \"\");print(q);result = em.createNativeQuery(q).getResultList();print(\"result = \" + result);return result;}")
       (tl-exists (par stdlib-entry-parameters)
           (:stdlib-entry-parameter-id (uniq i 1) :stdlib-entry-id 27 :name "table" :type "null"))
       (tl-exists (par stdlib-entry-parameters) (:stdlib-entry-parameter-id (uniq i 2) :stdlib-entry-id 27 :name "query" :type "string"))))
   
   (tl-forall i (range 28 28)
     (tl-exists (entry stdlib-entries)
-        (:stdlib-entry-id 28 :name "queryveicoli" :type "number" :body "function queryveicoli(input,query) {var q = \"SELECT * FROM IND_STAT_TRG_VEIC_SINI A INNER JOIN IND_STAT_SINI B ON A.ID_SINI = B.ID_SINI WHERE ID_TRG_VEIC = \" + input + \" AND \" + query;print(q);result = em.createNativeQuery(q).getResultList();print(\"result = \" + result);return result;}")
+        (:stdlib-entry-id 28 :name "queryveicoli" :type "number" :body "function queryveicoli(input,query) {var q = \"SELECT * FROM IND_STAT_TRG_VEIC_SINI A INNER JOIN IND_STAT_SINI B ON A.ID_SINI = B.ID_SINI WHERE ID_TRG_VEIC = \" + input + (query!=null? (\" AND \" + query) : \"\");print(q);result = em.createNativeQuery(q).getResultList();print(\"result = \" + result);return result;}")
       (tl-exists (par stdlib-entry-parameters)
           (:stdlib-entry-parameter-id (uniq i 1) :stdlib-entry-id 28 :name "table" :type "null"))
       (tl-exists (par stdlib-entry-parameters) (:stdlib-entry-parameter-id (uniq i 2) :stdlib-entry-id 28 :name "query" :type "string"))))
@@ -141,4 +137,6 @@
         (:stdlib-entry-id 36 :name "not" :type "string" :body "function not(op1) {return \"(NOT \" + op1 +\")\";}")
       (tl-exists (par stdlib-entry-parameters)
           (:stdlib-entry-parameter-id (uniq i 1) :stdlib-entry-id 36 :name "op1" :type "null")))))
+
+
 
