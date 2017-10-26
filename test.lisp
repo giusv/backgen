@@ -243,7 +243,7 @@
 ;;   (pprint gen)
 ;;   (pprint (listp gen))
 ;;   (pprint (synth :output (synth :doc (synth :java (synth :java-implementation (tl-db gen) #'identity))) 0)))
-
+(defparameter *database* nil)
 (defmacro defdb (&rest records)
   `(defparameter *database* (tl-db ,@records)))
 

@@ -235,6 +235,7 @@
 (defpackage :test
   (:use :cl :lol :utils :doc :grammar :java :type :data :sql)
   (:export :defdb :*database* :deftest :defsuite
+           :tl-forall :tl-exists :l-and :tl-get
            :tl-variab :tl-lambda% :tl-call :tl-binding :tl-let% :tl-test :tl-test-instance :tl-seq% :tl-test-binding :tl-ensure :tl-require :tl-equal :tl-invoke-service :tl-suite :tl-db% ))
 
 (defpackage :documentation
