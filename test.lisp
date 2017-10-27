@@ -254,7 +254,7 @@
        (package-symb (apply #'symb (interleave package ".")))
        (project-basedir (merge-pathnames (make-pathname :directory (list :relative artifact-id)) basedir))
        (main-basedir (merge-pathnames (make-pathname :directory (list :relative "src" "main")) project-basedir)) 
-       (test-basedir (merge-pathnames (make-pathname :directory (apply #'list :relative "test" package)) main-basedir)) 
+       (test-basedir (merge-pathnames (make-pathname :directory (apply #'list :relative "test" package)) project-basedir)) 
        (resources-basedir (merge-pathnames (make-pathname :directory (list :relative "resources")) main-basedir)) 
        (webapp-basedir (merge-pathnames (make-pathname :directory (list :relative "webapp")) main-basedir)) 
        (webinf-basedir (merge-pathnames (make-pathname :directory (list :relative "WEB-INF")) webapp-basedir)) 

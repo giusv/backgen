@@ -23,11 +23,15 @@
            (:stdlib-entry-parameter-id (uniq i 1) :stdlib-entry-id ,n :name "op1" :type "null"))
        (tl-exists (par stdlib-entry-parameters) (:stdlib-entry-parameter-id (uniq i 2) :stdlib-entry-id ,n :name "op2" :type "null")))))
 (defdb
+    ;;; 
     (tl-forall i (list 1 2 3 4 5) 
       (tl-exists (sini ind-stat-sini) 
           (:ind-stat-sini-id i :id-sini i))
       (tl-exists (sogg ind-stat-sogg-sini) 
-          (:ind-stat-sogg-sini-id i :id-sini i :id-sogg 5 :d-flg-leso "s"))))
+          (:ind-stat-sogg-sini-id i :id-sini i :id-sogg 5 :d-flg-leso "s"))
+      (tl-exists (veic ind-stat-trg-veic-sini) 
+          (:ind-stat-trg-veic-sini-id i :id-sini i :id-targa 5 :d-flg-targa-incoerente "s"))))
+
 ;; (defdb 
 ;;     (tl-forall i (range 3 3)
 ;;       (tl-exists (entry stdlib-entries)

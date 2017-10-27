@@ -62,15 +62,7 @@
 
                
                (:file "test")
-               (:module "aia"
-                        :serial t
-                        :components ((:file "entities")
-                                     (:file "queries")
-                                     (:file "errors")
-                                     (:file "formats")
-                                     (:file "services")
-                                     (:file "database")))
-               ;; (:module "app"
+               ;; (:module "aia"
                ;;          :serial t
                ;;          :components ((:file "entities")
                ;;                       (:file "queries")
@@ -78,6 +70,14 @@
                ;;                       (:file "formats")
                ;;                       (:file "services")
                ;;                       (:file "database")))
+               (:module "app"
+                        :serial t
+                        :components ((:file "entities")
+                                     (:file "queries")
+                                     (:file "errors")
+                                     (:file "formats")
+                                     (:file "services")
+                                     (:file "database")))
                (:file "conf")
                (:file "backgen")
                ;; (:file "guigen")
