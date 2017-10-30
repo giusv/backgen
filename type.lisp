@@ -18,6 +18,7 @@
 (defprim integer-type ()
   (:pretty () (list 'integer-type))
   (:java-type () (java-primitive-type 'long))
+  (:java-type () (java-object-type 'big-decimal))
   (:ts-type () (ts-primitive-type 'number))
   (:sql-type () (doc:text "NUMBER"))
   (:latex-type () (normal "number")))

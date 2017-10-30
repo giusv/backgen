@@ -24,7 +24,11 @@
               (node '|dependency|
                     (node '|groupId| (simple "javax")) 
                     (node '|artifactId| (simple "javaee-api")) 
-                    (node '|version| (simple "7.0"))))
+                    (node '|version| (simple "7.0")))
+              (node '|dependency|
+                    (node '|groupId| (simple "org.jboss.resteasy")) 
+                    (node '|artifactId| (simple "resteasy-client")) 
+                    (node '|version| (simple "3.1.4.Final"))))
         (node '|build|
               (node '|finalName| (simple (mkstr artifact-id))) 
                       
@@ -89,3 +93,6 @@
                           :|value| "3")
                     (node '|property| :|name| "hibernate.show_sql"
                           :|value| "true")))))
+;; (defun rest-application (services)
+;;   (java-unit 'rest-application 
+;;              (java-class 'rest-application)))

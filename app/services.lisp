@@ -14,7 +14,7 @@
       (rest-post% trip-format 
                   (bl-let ((name (bl-get :name trip-format))
                            (entity (bl-create-entity trip-entity 
-                                                    :name name ))) 
+                                                     :name name ))) 
                     ;; (bl-value-object entity)
                     entity))
       (rest-get ((name (url:query-parameter 'name (string-type 20))))

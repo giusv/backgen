@@ -6,7 +6,7 @@
 ;; (pprint (synth :pretty (generate-dao dwh-indicatori)))
 
 (let* ((group-id (list "com" "extent"))
-       (artifact-id "backgen")
+       (artifact-id "app")
        (basedir #p"D:/Dati/Profili/m026980/workspace/") 
 
        (package (append* group-id artifact-id))
@@ -40,6 +40,10 @@
     (pprint filename)
     (write-file filename
                 (synth :string (synth :doc (web group-id artifact-id app-services)))))
+  (let ((filename (mkstr webinf-basedir "beans.xml"))) 
+    (pprint filename)
+    (write-file filename
+                (synth :string (synth :doc (beans)))))
   (mapcar (lambda (entity) 
             (let ((filename (mkstr java-basedir "model/" (upper-camel (synth :name entity)) ".java"))) 
               (pprint filename)
@@ -78,6 +82,10 @@
                           ;; (synth :string (synth :doc (synth :java (synth :req format))))
                           )))
           app-formats)
+  ;; (let ((filename (mkstr metainf-basedir "application.java")))
+  ;;   (pprint filename)
+  ;;   (write-file filename
+  ;;               (synth :string (synth :doc (rest-application app-services)))))
   (mapcar (lambda (service) 
             (let ((filename (mkstr java-basedir "service/" (upper-camel (synth :name service)) ".java"))) 
               (pprint filename)
@@ -87,11 +95,13 @@
   (let ((filename (mkstr resources-basedir "create.sql"))) 
     (pprint filename)
     (write-file filename
-                (synth :string app-ddls)))
-  (let ((filename (mkstr resources-basedir "data.sql"))) 
-    (pprint filename)
-    (write-file filename
-                (synth :string (synth :sql (synth :sql-implementation app-db))))))
+                (synth :string 
+                       (vcat (synth :sql (sql-create-sequence 'hibernate-sequence 101 1)) 
+                             app-ddls)))
+    (let ((filename (mkstr resources-basedir "data.sql"))) 
+      (pprint filename)
+      (write-file filename
+                  (synth :string (synth :sql (synth :sql-implementation app-db)))))))
 
 
 ;; (let ((test (server:bl-let ((entity1 (server:bl-create-entity dwh-indicatori 

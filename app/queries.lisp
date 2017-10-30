@@ -4,7 +4,7 @@
             (project (restrict trips
                       (expr:+equal+ (expr:attr trips 'name)
                                     name))
-                     :id :name :start-date :end-date)))
+                     :name :start-date :end-date)))
 
 (defquery all-trips () trip-entity
           (with-queries ((trips (relation trip-entity)))

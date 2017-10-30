@@ -33,7 +33,7 @@
   (:sql () (doc:parens (doc:hcat+
                         (doc:text "SELECT")
                         (if attributes 
-                            (apply #'doc:punctuate (doc:comma) nil (mapcar #'doc:textify (mapcar #'car (synth :schema this))))
+                            (apply #'doc:punctuate (doc:comma) nil (mapcar #'doc:textify (mapcar #'upper (mapcar #'car (synth :schema this)))))
                             (doc:text "*"))
                         (doc:text "FROM")
                         (synth :sql query)))))

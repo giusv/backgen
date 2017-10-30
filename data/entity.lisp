@@ -21,9 +21,9 @@
                                       annotations)
                                 (java-statement (java-pair name (synth :java-type type) :private t))
                                 :newline t))
-  (:accessors () (list (java-method (doc:text "get~a" (upper-camel name)) nil (synth :java-type type)
+  (:accessors () (list (java-method (mkstr "GET-" (upper-camel name)) nil (synth :java-type type)
                                   (java-return (java-dynamic name)))
-                       (java-method (doc:text "set~a" (upper-camel name)) (list (java-pair name (synth :java-type type))) (java-primitive-type 'void)
+                       (java-method (mkstr "SET-" (upper-camel name)) (list (java-pair name (synth :java-type type))) (java-primitive-type 'void)
                                   (java-statement (java-assign (java-chain (java-dynamic 'this) 
                                                         (java-dynamic name))
                                               (java-dynamic name))))))
@@ -33,7 +33,9 @@
 
 (defprim primary-key (attribute)
   (:pretty () (list 'primary-key (list :attribute (synth :pretty attribute)))) 
-  (:entity () (synth :entity attribute (java-annotation '|Id|)))
+  (:entity () (synth :entity attribute 
+                     (java-annotation '|Id|)
+                     (java-annotation '|GeneratedValue| (java-assign (java-dynamic 'strategy) (java-chain (java-static 'generation-type) (java-enum 'auto))))))
   (:accessors () (synth :accessors attribute))
   (:paramdecl () (synth :paramdecl attribute))
   (:ddl () (doc:hcat (synth :ddl attribute) (doc:text " NOT NULL PRIMARY KEY"))))
@@ -78,7 +80,7 @@
                     :fields (synth-all :pretty fields)))
   (:entity (package) (java-unit name
                                 (java-package (symb package '|.model|))
-                                (java-import '|javax.persistence| '|Column| '|Entity| '|Id| '|Table| '|ManyToOne| '|OneToMany| '|OneToOne| '|ManyToMany| '|NamedNativeQueries| '|NamedNativeQuery|)
+                                (java-import '|javax.persistence| '|Column| '|Entity| '|Id| '|Table| '|ManyToOne| '|OneToMany| '|OneToOne| '|ManyToMany| '|NamedNativeQueries| '|NamedNativeQuery| '|GeneratedValue| '|GenerationType|)
                                 (java-import '|java.util| '|List| '|Date|)
                                 (java-with-annotations 
                                  (list 

@@ -130,11 +130,12 @@
                                    (java-class name
                                                :public t 
                                                :fields nil
-                                               :methods (mapcar (lambda (case)
-                                                                  (java-with-annotations
-                                                                   (list (java-annotation '|Test|))
-                                                                   (synth :java-implementation case #'identity)))
-                                                                (append* cases))))))
+                                               :methods nil ;; (list (java-method (mapcar (lambda (case)
+                                                        ;;                   (java-with-annotations
+                                                        ;;                    (list (java-annotation '|Test|))
+                                                        ;;                    (synth :java-implementation case #'identity)))
+                                                        ;;                 (append* cases))))
+                                               ))))
 
 (defparameter *suites* (make-hash-table))
 (defmacro defsuite (name &rest cases)
@@ -243,18 +244,19 @@
 ;;   (pprint gen)
 ;;   (pprint (listp gen))
 ;;   (pprint (synth :output (synth :doc (synth :java (synth :java-implementation (tl-db gen) #'identity))) 0)))
+
 (defparameter *database* nil)
 (defmacro defdb (&rest records)
   `(defparameter *database* (tl-db ,@records)))
 
 (let* ((group-id (list "com" "extent"))
-       (artifact-id "app")
+       (artifact-id "test")
        (basedir #p"D:/Dati/Profili/m026980/workspace/") 
        (package (append* group-id artifact-id))
        (package-symb (apply #'symb (interleave package ".")))
        (project-basedir (merge-pathnames (make-pathname :directory (list :relative artifact-id)) basedir))
        (main-basedir (merge-pathnames (make-pathname :directory (list :relative "src" "main")) project-basedir)) 
-       (test-basedir (merge-pathnames (make-pathname :directory (apply #'list :relative "test" package)) project-basedir)) 
+       (test-basedir (merge-pathnames (make-pathname :directory (apply #'list :relative "src" "test" "java" package)) project-basedir)) 
        (resources-basedir (merge-pathnames (make-pathname :directory (list :relative "resources")) main-basedir)) 
        (webapp-basedir (merge-pathnames (make-pathname :directory (list :relative "webapp")) main-basedir)) 
        (webinf-basedir (merge-pathnames (make-pathname :directory (list :relative "WEB-INF")) webapp-basedir)) 

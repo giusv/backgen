@@ -202,22 +202,26 @@
   (:java () (apply #'vcat (synth-all :java (apply #'append* statements)))))
 
 (defprim java-method (name parameters rtype &rest args)
-  (:pretty () (list 'java-method (list :name name 
-                                       :parameters (synth-all :pretty parameters) 
-                                       :rtype rtype
-                                       :throws (synth-all :pretty (getf (rest-key args) :throws))
-                                       :statements (synth-all :pretty (rest-plain args))))) 
-  (:java ()  (vcat (hcat (text "public ") 
-                         (synth :java rtype)
-                         (blank)
-                         name
-                         (parens (apply #'punctuate (comma) t (synth-all :java parameters)))
-                         (aif (getf (rest-key args) :throws) 
-                              (hcat+ (text " throws") 
-                                     (apply #'punctuate (comma) t (synth-all :java it))))) 
-                   (braces 
-                    (nest 4 (apply #'vcat (synth-all :java (rest-plain args))))
-                    :newline t))))
+  (:pretty () (list 'java-method (let ((key-args (rest-key args)))
+                                   (list :name name 
+                                         :parameters (synth-all :pretty parameters) 
+                                         :rtype rtype
+                                         :modifier (getf key-args :modifier)
+                                         :static (getf key-args :static)
+                                         :throws (synth-all :pretty (getf key-args :throws))
+                                         :statements (synth-all :pretty (rest-plain args)))))) 
+  (:java ()  (let  ((key-args (rest-key args))) 
+               (vcat (hcat+ (aif (getf key-args :modifier) (textify (string-downcase it))
+                                 (text "public")) 
+                            (synth :java rtype) 
+                            (textify name)
+                            (parens (apply #'punctuate (comma) t (synth-all :java parameters)))
+                            (aif (getf key-args :throws) 
+                                 (hcat+ (text "throws") 
+                                        (apply #'punctuate (comma) t (synth-all :java it))))) 
+                     (braces 
+                      (nest 4 (apply #'vcat (synth-all :java (rest-plain args))))
+                      :newline t)))))
 
 (defprim java-signature (name parameters rtype)
   (:pretty () (list 'java-signature (list :name name 

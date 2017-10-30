@@ -108,7 +108,7 @@
                                      (apply #'java-array (mapcar 
                                                           (lambda (type) (java-const (mkstr type))) 
                                                           mtypes)))))
-          (java-method (doc:text "get~a" (upper-camel (synth :name chunk)))
+          (java-method (mkstr "GET-" (upper-camel (synth :name chunk)))
                        (synth-all :declaration (append queries (synth :path-parameters path)) t)
                        (java-object-type 'response)
                        (let* ((bean-name (symb bean "-E-J-B"))
@@ -164,7 +164,7 @@
                                      (apply #'java-array (mapcar 
                                                           (lambda (type) (java-const (mkstr type))) 
                                                           mtypes)))))
-          (java-method (doc:text "post~a" (upper-camel (singular (synth :name chunk)))) 
+          (java-method (mkstr "POST-" (upper-camel (singular (synth :name chunk)))) 
                        (append* (synth-all :declaration (synth :path-parameters path) t)
                                 (java-pair (synth :name format) (synth :java-type (synth :type format))))
                        (java-type 'response)
@@ -218,7 +218,7 @@
                                                                                 (lambda (type) (java-const (mkstr type))) 
                                                                                 mtypes)))))
                                 (let ((name (symb (synth :name format) "-J-T-O"))) 
-                                  (java-method (doc:text "put~a" (upper-camel (synth :name chunk))) 
+                                  (java-method (mkstr"PUT-" (upper-camel (synth :name chunk))) 
                                                (append* (synth-all :declaration (synth :path-parameters path) t)
                                                         (java-pair (synth :name format) (java-type name)))
                                                (java-type 'response)

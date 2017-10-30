@@ -127,7 +127,7 @@
 
 (defpackage :sql
   (:use :cl :lol :utils :grammar :doc)
-  (:export :sql-const :sql-insert :sql-select :sql-concat))
+  (:export :sql-const :sql-insert :sql-select :sql-concat :sql-create-sequence))
 
 (defpackage :url
   (:use :cl :lol :utils :parser :grammar :doc :java)
@@ -246,6 +246,6 @@
   (:export :pom :web :beans :persistence))
 
 (defpackage :backgen
-  (:use :cl :lol :utils :doc :server :grammar :java :type :typescript :data :latex :gui :test :documentation :conf))
+  (:use :cl :lol :utils :doc :server :grammar :java :type :typescript :data :latex :gui :test :sql :documentation :conf))
 
 

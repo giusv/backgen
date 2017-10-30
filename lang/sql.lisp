@@ -14,6 +14,10 @@
                                       (if fields (apply #'punctuate (comma) nil (synth-all :sql fields))
                                           (doc:text "*")))))))
 
+(defprim sql-create-sequence (name start increment)
+  (:pretty () (list 'sql-create-sequence (list :name name :start start :increment increment)))
+  (:sql () (doc:hcat+ (doc:text "CREATE SEQUENCE ~a START WITH ~a INCREMENT BY ~a;" (upper name) start increment))))
+
 (defprim sql-insert (into &rest pairs)
   (:pretty () (list 'sql-insert (list :into into :pairs (synth-plist :pretty pairs))))
   (:sql () (doc:hcat (apply #'doc:hcat+
