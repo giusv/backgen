@@ -18,7 +18,6 @@
   `(let* ,(mapcar #`(,(car a1) (tl-variab (gensym (mkstr ',(car a1))) ,(cadr a1))) inputs) 
      (tl-lambda% (list ,@(mapcar #'car inputs)) ,expr)))
 
-
 (defun closure-equal (x y)
   (equal (synth :pretty x) (synth :pretty y)))
 
@@ -60,7 +59,7 @@
                                    :function (synth :pretty function)
                                    :post (synth :pretty post))))
   (:java-implementation (cont &rest args) 
-                        (apply cont (java-method (doc:textify (lower-camel name)) 
+                        (apply cont (java-method name 
                                                  (mapcar (lambda (input)
                                                            (java-pair (synth :name input)
                                                                       (synth :java-type (synth :type input))))
@@ -96,14 +95,14 @@
 (defprim tl-ensure (assertion)
   (:pretty () (list 'tl-ensure (list :assertion (synth :pretty assertion))))
   (:java-implementation (cont &rest args) 
-                   (apply cont (java-call 'assert (synth :java-implementation assertion #'identity)) args))
+                   (apply cont (java-assert (synth :java-implementation assertion #'identity) "error in precondition") args))
   ;; (:type () (synth :type expr))
   )
 
 (defprim tl-require (assertion)
   (:pretty () (list 'tl-require (list :assertion (synth :pretty assertion))))
   (:java-implementation (cont &rest args) 
-                   (apply cont (java-call 'require (synth :java-implementation assertion #'identity)) args))
+                   (apply cont (java-assert (synth :java-implementation assertion #'identity) "error in postcondition") args))
   ;; (:type () (synth :type expr))
   )
 
@@ -113,13 +112,30 @@
                    (apply cont (java-equal (synth :java-implementation expr1 #'identity)
                                            (synth :java-implementation expr2 #'identity)) args))
   ;; (:type () (synth :type expr))
-  )
+  ) 
 
 (defprim tl-invoke-service (name)
   (:pretty () (list 'tl-invoke-service (list :name name)))
   (:java-implementation (cont &rest args) 
                    (apply cont (java-call name) args))
   (:type () (integer-type)))
+
+(let* ((id (expr:const 1)) 
+      (u (url `(b ? q = a & r = { ,id })))) 
+  (pprint (synth :pretty u))
+  (synth :output (synth :url u) 0))
+
+(defprim tl-http-get (url &key (mtype '|application/json|))
+  (:pretty () (list 'tl-http-get (list :url (synth :pretty url) :mtypes mtypes)))
+  (:java-implementation (cont &rest args) 
+                        (progn (pprint (synth :pretty url))
+                               (apply cont (java-chain (java-dynamic 'client)
+                                                       (java-call 'target (java-const (synth :string (synth :url url))))
+                                                       (java-call 'request (java-const (mkstr mtype)))
+                                                       (java-call 'get))
+                          
+                                      args)))
+  (:type () (response-type )))
 
 (defprim tl-suite (name cases)
   (:pretty () (list 'tl-suite (list :name name 
@@ -224,7 +240,9 @@
 
 (deftest create-indicator ((id (integer-type))) 
   (tl-equal id (expr:const 1)) 
-  (tl-invoke-service 'indicators)
+  (tl-http-get (url `(b ? q = a & r = { ,id })) ;; (url `(b / a ? q = a ))
+;; (url `(app / services / { id }))
+)
   (tl-equal id (expr:const 1)))
 
 ;; (pprint (synth :string (synth :doc (synth :java (synth :java-implementation create-indicator #'identity)))))
@@ -249,31 +267,4 @@
 (defmacro defdb (&rest records)
   `(defparameter *database* (tl-db ,@records)))
 
-(let* ((group-id (list "com" "extent"))
-       (artifact-id "test")
-       (basedir #p"D:/Dati/Profili/m026980/workspace/") 
-       (package (append* group-id artifact-id))
-       (package-symb (apply #'symb (interleave package ".")))
-       (project-basedir (merge-pathnames (make-pathname :directory (list :relative artifact-id)) basedir))
-       (main-basedir (merge-pathnames (make-pathname :directory (list :relative "src" "main")) project-basedir)) 
-       (test-basedir (merge-pathnames (make-pathname :directory (apply #'list :relative "src" "test" "java" package)) project-basedir)) 
-       (resources-basedir (merge-pathnames (make-pathname :directory (list :relative "resources")) main-basedir)) 
-       (webapp-basedir (merge-pathnames (make-pathname :directory (list :relative "webapp")) main-basedir)) 
-       (webinf-basedir (merge-pathnames (make-pathname :directory (list :relative "WEB-INF")) webapp-basedir)) 
-       (metainf-basedir (merge-pathnames (make-pathname :directory (list :relative "META-INF")) resources-basedir)) 
-       (app-tests (loop for value being the hash-values of *tests* collect value))
-       (app-suites (loop for value being the hash-values of *suites* collect value)))
-  (pprint test-basedir)
-  (let ((filename (mkstr test-basedir "Common.java")))
-    (pprint filename)
-    (write-file filename (synth :string (synth :doc (synth :java (java-unit 'common (java-package (symb package-symb '|.test|)) 
-                                                                            (java-class 'common
-                                                                                        :public t 
-                                                                                        :fields nil
-                                                                                        :methods (synth-all :java-implementation app-tests #'identity))))))))
-  (mapcar (lambda (suite) 
-            (let ((filename (mkstr test-basedir (upper-camel (synth :name suite)) ".java"))) 
-              (pprint filename)
-              (write-file filename
-                          (synth :string (synth :doc (synth :java (synth :java-implementation suite package-symb)))))))
-          app-suites))
+

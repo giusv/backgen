@@ -185,9 +185,9 @@
 (defun java-field-with-accessors (annotations name type)
   (java-concat (java-with-annotations annotations
                                       (java-statement (java-pair name type :private t)))
-               (java-method (doc:text "get~a" (upper-camel name)) nil type
+               (java-method (symb "GET-" name) nil type
                             (java-return (java-dynamic name)))
-               (java-method (doc:text "set~a" (upper-camel name))
+               (java-method (symb "SET-" name)
                             (list (java-pair name type)) (java-primitive-type 'void)
                             (java-statement (java-assign (java-chain (java-dynamic 'this) 
                                                                      (java-dynamic name))
@@ -214,7 +214,7 @@
                (vcat (hcat+ (aif (getf key-args :modifier) (textify (string-downcase it))
                                  (text "public")) 
                             (synth :java rtype) 
-                            (textify name)
+                            (textify (lower-camel name))
                             (parens (apply #'punctuate (comma) t (synth-all :java parameters)))
                             (aif (getf key-args :throws) 
                                  (hcat+ (text "throws") 
@@ -269,6 +269,8 @@
                        (empty))
                   (text "~a" (lower-camel name))
                   (parens (apply #'punctuate (comma) nil (synth-all :java (rest-plain args)))))))
+
+
 (defprim java-static (name)
   (:pretty () (list 'java-static (list :name name))) 
   (:java () (text "~a" (upper-camel name))))
@@ -342,6 +344,12 @@
                                  (synth :java expression)
                                  (semi))
                 (hcat (text "return") (semi)))))
+
+(defprim java-assert (assertion &optional message)
+  (:pretty () (list 'java-assert (list :assertion assertion :message message))) 
+  (:java () (hcat (text "assert ")
+                   (synth :java assertion)
+                   (if message (text " : \"~a\"" message)))))
 
 (defprim java-for (index start end body)
   (:pretty () (list 'java-for (list :index index

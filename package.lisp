@@ -96,7 +96,7 @@
            :java-object
            :java-annotation :java-with-annotations :java-class :java-interface :java-method :java-signature 
            :java-import :java-package :java-new :java-call :java-static :java-dynamic :java-enum :java-chain :java-constructor :java-arrow 
-           :java-concat :java-unit :java-template :java-assign :java-return :java-throw :java-statement
+           :java-concat :java-unit :java-template :java-assign :java-return :java-assert :java-throw :java-statement
            :java-null :java-nil 
            :java-try :java-catch% :java-catch
            :java-switch :java-case :java-break
@@ -133,7 +133,7 @@
   (:use :cl :lol :utils :parser :grammar :doc :java)
   (:export :void :static-chunk :dynamic-chunk :expression-chunk :path-parameter :query-parameter :login-parameter 
            :backward-chain :multi :forward-chain :queried
-           :url))
+           :url :parse-url))
 
 (defpackage :type
   (:use :cl :lol :utils :parser :grammar :java :typescript :latex) 
@@ -147,7 +147,8 @@
            :format-type 
            :collection-type
            :parametric-type
-           :function-type))
+           :function-type
+           :response-type))
 
 
 (defpackage :data
@@ -233,10 +234,13 @@
            :link :navbar))
 
 (defpackage :test
-  (:use :cl :lol :utils :doc :grammar :java :type :data :sql)
-  (:export :defdb :*database* :deftest :defsuite
+  (:use :cl :lol :utils :doc :grammar :parser :java :type :data :sql :url)
+  (:export :defdb :*database* :deftest :defsuite :*tests* :*suites*
            :tl-forall :tl-exists :l-and :tl-get
-           :tl-variab :tl-lambda% :tl-call :tl-binding :tl-let% :tl-test :tl-test-instance :tl-seq% :tl-test-binding :tl-ensure :tl-require :tl-equal :tl-invoke-service :tl-suite :tl-db% ))
+           :tl-variab :tl-lambda% :tl-call :tl-binding :tl-let% 
+           :tl-test :tl-test-instance :tl-seq% :tl-test-binding :tl-ensure
+           :tl-require :tl-equal :tl-invoke-service :tl-suite :tl-db% 
+           :tl-http-get))
 
 (defpackage :documentation
      (:use :cl :lol :utils :doc :grammar :latex))

@@ -77,9 +77,14 @@
   (:ts-type () (ts-object-type (synth :name format))))
 
 (defprim collection-type (type)
-  (:pretty () (list 'array-type (list :type (synth :pretty type))))
+  (:pretty () (list 'collection-type (list :type (synth :pretty type))))
   (:java-type () (java-template-type 'list (synth :java-type type)))
   (:ts-type () (ts-array-type (synth :ts-type type))))
+
+(defprim response-type ()
+  (:pretty () (list 'response-type ))
+  (:java-type () (java-object-type 'response))
+  (:ts-type () (ts-object-type 'response)))
 
 (defprim function-type (return-type arg-types)
   (:pretty () (list 'function-type (list :return-type (synth :pretty return-type) :arg-types (synth-all :pretty arg-types))))

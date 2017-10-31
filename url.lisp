@@ -41,12 +41,12 @@
   ;;           (doc:text "(parametro path)")))
   (:url () (dynamic-chunk name type :validators validators)))
 
-(defprim query-parameter (name type &key validators default)
-  (:pretty () (list 'query-parameter (list :name name :type (synth :pretty type) :default (synth :pretty default) :validators (synth-all :pretty validators))))
+(defprim query-parameter (name type &key validators value)
+  (:pretty () (list 'query-parameter (list :name name :type (synth :pretty type) :value value :validators (synth-all :pretty validators))))
   (:url () (doc:hcat (doc:text "~a" (string-downcase name)) 
                      (if value 
-                         (doc:hcat (equals) (synth :url value))
-                         (empty))))
+                         (doc:hcat (doc:equals) (synth :url value))
+                         (doc:empty))))
   ;; (:req () (html:taglist 
   ;;           (html:span-color (string-downcase name))
   ;;           (doc:text "(parametro query)")))
@@ -102,8 +102,8 @@
 				     ((sym '}))) 
 			     (result value))
 			   (do-with ((value (item))) 
-		       (result (const value))))))
-    (result (query-parameter name value))))
+		       (result (expr:const value))))))
+    (result (query-parameter name nil :value value))))
 (defun parse-chunk ()
   (choose (do-with (((sym '{))
 		    (seg (item))
@@ -139,13 +139,17 @@
 ;; (merge-urls :seg1 (seg3 / seg4))
 (defmacro url (u)
   `(parse (parse-url) ,u))
+
 ;;(synth output (synth :url (chain 'a (multi (chain 'b) (chain 'c)))) 0)
 ;; (synth output (synth :url (multi (chain 'b) (chain 'c))) 0)
 ;;(parse (parse-url) '(a </> b))
 
 ;; (synth output (synth :url (parse (parse-url) '({ a }))) 0)
 ;; (synth output (synth :url (parse (parse-url) `(b ? q = a & r = { ,(value (button 'ok nil)) }))) 0)
-;; (pprint (synth :pretty (parse (parse-url) `(b ? q = a & r = { ,(value (button 'ok nil)) }))))
+(let* ((id (expr:const 1)) 
+      (u (url `(b ? q = a & r = { ,id })))) 
+  (pprint (synth :pretty u))
+  (synth :output (synth :url u) 0))
 
  
 

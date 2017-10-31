@@ -43,7 +43,7 @@
 
 (defprim ejb-method (name parameters logic)
   (:pretty () (list 'ejb-method (list :name name :parameters (synth-all :pretty parameters) :logic (synth :pretty logic))))
-  (:java-implementation () (java-method (lower-camel name)
+  (:java-implementation () (java-method name
                                    parameters 
                                    (synth :java-type (synth :type logic))
                                    :throws (synth-all :type (synth :errors logic))

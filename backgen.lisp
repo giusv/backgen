@@ -104,6 +104,36 @@
                   (synth :string (synth :sql (synth :sql-implementation app-db)))))))
 
 
+(let* ((group-id (list "com" "extent"))
+       (artifact-id "test")
+       (basedir #p"D:/Dati/Profili/m026980/workspace/") 
+       (package (append* group-id artifact-id))
+       (package-symb (apply #'symb (interleave package ".")))
+       (project-basedir (merge-pathnames (make-pathname :directory (list :relative artifact-id)) basedir))
+       (main-basedir (merge-pathnames (make-pathname :directory (list :relative "src" "main")) project-basedir)) 
+       (test-basedir (merge-pathnames (make-pathname :directory (apply #'list :relative "src" "test" "java" package)) project-basedir)) 
+       (resources-basedir (merge-pathnames (make-pathname :directory (list :relative "resources")) main-basedir)) 
+       (webapp-basedir (merge-pathnames (make-pathname :directory (list :relative "webapp")) main-basedir)) 
+       (webinf-basedir (merge-pathnames (make-pathname :directory (list :relative "WEB-INF")) webapp-basedir)) 
+       (metainf-basedir (merge-pathnames (make-pathname :directory (list :relative "META-INF")) resources-basedir)) 
+       (app-tests (loop for value being the hash-values of *tests* collect value))
+       (app-suites (loop for value being the hash-values of *suites* collect value)))
+  (pprint test-basedir)
+  (let ((filename (mkstr test-basedir "Common.java")))
+    (pprint filename)
+    (write-file filename (synth :string (synth :doc (synth :java (java-unit 'common (java-package (symb package-symb '|.test|)) 
+                                                                            (java-class 'common
+                                                                                        :public t 
+                                                                                        :fields nil
+                                                                                        :methods (synth-all :java-implementation app-tests #'identity))))))))
+  (mapcar (lambda (suite) 
+            (let ((filename (mkstr test-basedir (upper-camel (synth :name suite)) ".java"))) 
+              (pprint filename)
+              (write-file filename
+                          (synth :string (synth :doc (synth :java (synth :java-implementation suite package-symb)))))))
+          app-suites))
+
+
 ;; (let ((test (server:bl-let ((entity1 (server:bl-create-entity dwh-indicatori 
 ;;                                                               :indicator-id (expr:const 1)))
 ;;                             (entity2 (server:bl-let ((entity3 (server:bl-create-entity dwh-indicatori 

@@ -37,7 +37,7 @@
                                    (dto-type (java-object-type dto-name))
                                    (dto (java-dynamic dto-name))
                                    (dto-list-type (java-template-type 'list dto-type))) 
-                              (java-method (lower-camel (synth :name query))
+                              (java-method (synth :name query)
                                            (mapcar (lambda (arg) (java-pair (synth :name arg) (synth :java-type (synth :type arg))))
                                                    args)
                                            (java-template-type 'list dto-type)
@@ -93,7 +93,7 @@
                           (dto-name (symb (synth :name entity) "-D-T-O")) 
                           (new-entity (java-dynamic new-entity-name))
                           (dto (java-dynamic dto-name)))
-                     (java-method (lower-camel 'create) 
+                     (java-method 'create 
                                   (list (java-pair dto-name (java-object-type dto-name)))
                                   (java-object-type dto-name)
                                   (java-concat
@@ -118,7 +118,7 @@
                           (dto-name (symb (synth :name entity) "-D-T-O")) 
                           (found-entity (java-dynamic found-entity-name))
                           (dto (java-dynamic dto-name)))
-                     (java-method (lower-camel 'find) 
+                     (java-method 'find 
                                   (list (java-pair 'id (synth :java-type (integer-type))))
                                   (java-object-type dto-name)
                                   (java-concat
@@ -144,7 +144,7 @@
   (:java-implementation (entity) 
                    (let* ((deleted-entity-name (synth :name entity)) 
                           (deleted-entity (java-dynamic deleted-entity-name)))
-                     (java-method (lower-camel 'delete) 
+                     (java-method 'delete 
                                   (list (java-pair 'id (synth :java-type (integer-type))))
                                   (java-primitive-type 'void)
                                   (java-concat

@@ -24,12 +24,12 @@
        (tl-exists (par stdlib-entry-parameters) (:stdlib-entry-parameter-id (uniq i 2) :stdlib-entry-id ,n :name "op2" :type "null")))))
 (defdb
     ;;; 
-    (tl-forall i (list 1 2 3 4 5) 
-      (tl-exists (sini ind-stat-sini) 
+    (tl-forall i (range 1 1000) 
+      (tl-exists (sini gv-ind-stat-sini) 
           (:ind-stat-sini-id i :id-sini i))
-      (tl-exists (sogg ind-stat-sogg-sini) 
+      (tl-exists (sogg gv-ind-stat-sogg-sini) 
           (:ind-stat-sogg-sini-id i :id-sini i :id-sogg 5 :d-flg-leso "s"))
-      (tl-exists (veic ind-stat-trg-veic-sini) 
+      (tl-exists (veic gv-ind-stat-trg-veic-sini) 
           (:ind-stat-trg-veic-sini-id i :id-sini i :id-targa 5 :d-flg-targa-incoerente "s"))))
 
 ;; (defdb 

@@ -3,7 +3,7 @@
 (defprim const (lit)
   (:pretty () (list 'const (list :lit lit)))
   (:req () (doc (doc:double-quotes (doc:text "~a" lit))))
-  ;; (:url () (doc:text "~a" lit))
+  (:url () (doc:text "~a" lit))
   ;; (:chunk () lit)
   (:string () (synth :template this))
   (:template () (cond ((stringp lit) (doc:text "~a" lit))
