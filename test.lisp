@@ -169,12 +169,19 @@
             (let* ,(mapcar #`(,(car a1) (tl-variab (gensym (mkstr ',(car a1))) ,(cadr a1))) inputs) 
               (tl-test ',name
                        (tl-ensure ,pre)
-                       (tl-lambda% (list ,@(mapcar #'car inputs)) ,expr)
-                       (tl-let ((response ,expr))
-                         (tl-require ,post)))))
+                       (tl-lambda% (list ,@(mapcar #'car inputs))
+                                   (let ((that (gensym "this")))
+                                     (tl-let ((that ,expr))
+                                     that)))
+                       (tl-require ,post))))
           (setf (gethash ',name *tests*) ,name)))
 
-
+(deftest create-indicator ((id (integer-type))) 
+  (tl-equal id (expr:const 1)) 
+  (tl-http-get (url `(b ? q = a & r = { ,id })) ;; (url `(b / a ? q = a ))
+               ;; (url `(app / services / { id }))
+               )
+  (tl-equal id (expr:const 1)))
 
 (defmacro tl-forall (i range &body formulas)
   `(apply #'append (loop for ,i in ,range collect (tl-and ,@formulas))))
@@ -238,12 +245,7 @@
 ;;                    (apply cont (java-call name) args))
 ;;   (:type () (integer-type)))
 
-(deftest create-indicator ((id (integer-type))) 
-  (tl-equal id (expr:const 1)) 
-  (tl-http-get (url `(b ? q = a & r = { ,id })) ;; (url `(b / a ? q = a ))
-;; (url `(app / services / { id }))
-)
-  (tl-equal id (expr:const 1)))
+
 
 ;; (pprint (synth :string (synth :doc (synth :java (synth :java-implementation create-indicator #'identity)))))
 ;; (pprint (synth :string (synth :doc (synth :java (synth :java-implementation (create-indicator (expr:const 1)) #'identity)))))
