@@ -52,12 +52,12 @@
   `(let* ,(mapcar #`(,(car a1) (tl-variab ',(car a1) (synth :type ,(cadr a1)))) bindings)
      (tl-let% (list ,@(mapcar (lambda (binding) `(tl-binding ',(car binding) ,(cadr binding)))
                               bindings)) ,@expr)))
-
-(defprim tl-test (name pre function post)
+(defprim tl-test (name pre function post result)
   (:pretty () (list 'tl-test (list :name name 
                                    :pre (synth :pretty pre)
                                    :function (synth :pretty function)
-                                   :post (synth :pretty post))))
+                                   :post (synth :pretty post)
+                                   :result (synth :pretty result))))
   (:java-implementation (cont &rest args) 
                         (apply cont (java-method name 
                                                  (mapcar (lambda (input)
@@ -66,11 +66,29 @@
                                                          (synth :inputs function))
                                                  (synth :java-type (synth :type (synth :expr function)))
                                                  (synth :java-implementation pre #'java-statement)
-                                                 (synth :java-implementation (synth :expr function) #'identity)
+                                                 (synth :java-implementation (synth :expr function) #'(lambda (expr) (java-statement (java-pair (synth :name result) (synth :java-type (synth :type (synth :expr function))) :init expr)))) 
                                                  (synth :java-implementation post #'java-statement))
                                args))
   ;; (:type () (synth :type expr))
   )
+
+;; (defprim tl-test (name body result)
+;;   (:pretty () (list 'tl-test (list :name name 
+;;                                    :body (synth :pretty body)
+;;                                    :result (synth :pretty result))))
+;;   (:java-implementation (cont &rest args) 
+;;                         (let ((result (gensym "result"))
+;;                               (result-type (synth :java-type (synth :type (synth :expr function)))))
+;;                           (apply cont (java-method name 
+;;                                                    (mapcar (lambda (input)
+;;                                                              (java-pair (synth :name input)
+;;                                                                         (synth :java-type (synth :type input))))
+;;                                                            (synth :inputs function))
+;;                                                    result-type
+;;                                                    (synth :java-implementation body #'java-statement)
+;;                                                    (synth :java-implementation result #'java-return))
+;;                                  args)))
+;;   (:type () (synth :type result)))
 
 (defprim tl-test-instance (name &rest inputs)
   (:pretty () (list 'tl-test-instance (list :name name :inputs (synth-all :pretty inputs))))
@@ -135,7 +153,7 @@
                                                        (java-call 'get))
                           
                                       args)))
-  (:type () (response-type )))
+  (:type () (response-type)))
 
 (defprim tl-suite (name cases)
   (:pretty () (list 'tl-suite (list :name name 
@@ -166,22 +184,35 @@
   `(progn (defun ,name ,(mapcar #'car inputs)
             (tl-test-instance ',name ,@(mapcar #'car inputs)))
           (defparameter ,name 
-            (let* ,(mapcar #`(,(car a1) (tl-variab (gensym (mkstr ',(car a1))) ,(cadr a1))) inputs) 
-              (tl-test ',name
-                       (tl-ensure ,pre)
-                       (tl-lambda% (list ,@(mapcar #'car inputs))
-                                   (let ((that (gensym "this")))
-                                     (tl-let ((that ,expr))
-                                     that)))
-                       (tl-require ,post))))
+            (let* ,(mapcar #`(,(car a1) (tl-variab (gensym (mkstr ',(car a1))) ,(cadr a1))) 
+                           inputs)
+              (let ((this (tl-variab (gensym "RESPONSE") (synth :type ,expr))))
+                (tl-test ',name
+                         (tl-ensure ,pre)
+                         (tl-lambda% (list ,@(mapcar #'car inputs)) ,expr)
+                         (tl-require ,post)
+                         this))))
           (setf (gethash ',name *tests*) ,name)))
+
+;; (defmacro deftest (name inputs pre expr post)
+;;   `(progn (defun ,name ,(mapcar #'car inputs)
+;;             (tl-test-instance ',name ,@(mapcar #'car inputs)))
+;;           (defparameter ,name 
+;;             (let* ,(mapcar #`(,(car a1) (tl-variab (gensym (mkstr ',(car a1))) ,(cadr a1))) inputs) 
+;;               (tl-test ',name
+;;                        (tl-seq% (list (tl-ensure ,pre)
+;;                                       (tl-let ((that ,expr)
+;;                                                )
+;;                                         that))))))
+;;           (setf (gethash ',name *tests*) ,name)))
 
 (deftest create-indicator ((id (integer-type))) 
   (tl-equal id (expr:const 1)) 
-  (tl-http-get (url `(b ? q = a & r = { ,id })) ;; (url `(b / a ? q = a ))
-               ;; (url `(app / services / { id }))
-               )
-  (tl-equal id (expr:const 1)))
+  (tl-let ((a (tl-http-get (url `(b ? q = a & r = { ,id })) ;; (url `(b / a ? q = a ))
+                           ;; (url `(app / services / { id }))
+                           )))
+    a)
+  (tl-equal this (expr:const 1)))
 
 (defmacro tl-forall (i range &body formulas)
   `(apply #'append (loop for ,i in ,range collect (tl-and ,@formulas))))
