@@ -5,6 +5,17 @@
 
 ;; (pprint (synth :pretty (generate-dao dwh-indicatori)))
 
+
+;; (let ((hello-world 
+;;        (java-class 'hello-world :public t
+;;                    :methods (list (java-method 'main 
+;;                                                (list (java-pair 'args (java-array-type (java-object-type 'string))))
+;;                                                (java-primitive-type 'void)
+;;                                                :static t 
+;;                                                (java-statement (java-chain (java-static 'system)
+;;                                                                            (java-dynamic 'out)
+;;                                                                            (java-call 'println (java-const "Hello, world!")))))))))
+;;   (pprint (synth :output (synth :doc (synth :java hello-world)) 0)))
 (let* ((group-id (list "com" "extent"))
        (artifact-id "app")
        (basedir #p"D:/Dati/Profili/m026980/workspace/") 
@@ -101,7 +112,9 @@
     (let ((filename (mkstr resources-basedir "data.sql"))) 
       (pprint filename)
       (write-file filename
-                  (synth :string (synth :sql (synth :sql-implementation app-db)))))))
+                  ;; (synth :string (synth :sql (synth :sql-implementation app-db)))
+                 (tl-ddl app-db)))))
+
 
 
 (let* ((group-id (list "com" "extent"))
@@ -132,6 +145,8 @@
               (write-file filename
                           (synth :string (synth :doc (synth :java (synth :java-implementation suite package-symb)))))))
           app-suites))
+
+
 
 
 ;; (let ((test (server:bl-let ((entity1 (server:bl-create-entity dwh-indicatori 

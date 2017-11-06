@@ -262,6 +262,20 @@
 ;; 						new ArrayList<Identifier>())),
 ;; 				"function coinvolto(soggetto,sinistro) {return \"(D_FLG_COINVOLTO = 'S')\"}"));
 
+
+(defun tl-ddl (db)
+  (loop for record in db do 
+       (let ((name (car record))
+             (values (group (cadr record) 2)))
+         (format t "INSERT INTO ~a VALUES (~{~a~^,~}) VALUES (~{~a~^,~});~%" (upper name) (mapcar #'upper (mapcar #'car values))
+                  (mapcar #'(lambda (value)
+                              (typecase value
+                                (number value)
+                                (string (format nil "'~a'" value))
+                                (t (format nil "NULL")))) 
+                          (mapcar #'cadr values))))))
+
+
 (defprim tl-db% (records)
   (:pretty () (list 'tl-db% (list :records records)))
   (:sql-implementation () (apply #'sql-concat records)))
@@ -270,6 +284,8 @@
   `(tl-db% (mapcar (lambda (record) (apply #'sql-insert (car record) (cadr record)))
                   (tl-and ,@records))))
 
+(defun tl-range (start end)
+  (loop for i from start to end collect i))
 ;; (defprim tl-http-get (url)
 ;;   (:pretty () (list 'tl-http-get (list :url (synth :pretty url))))
 ;;   (:java-implementation (cont &rest args) 
@@ -298,6 +314,8 @@
 
 (defparameter *database* nil)
 (defmacro defdb (&rest records)
-  `(defparameter *database* (tl-db ,@records)))
+  `(defparameter *database* ,@records))
+;; (defmacro defdb (&rest records)
+;;   `(defparameter *database* (tl-db ,@records)))
 
 

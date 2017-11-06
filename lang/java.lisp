@@ -213,6 +213,8 @@
   (:java ()  (let  ((key-args (rest-key args))) 
                (vcat (hcat+ (aif (getf key-args :modifier) (textify (string-downcase it))
                                  (text "public")) 
+                            (aif (getf key-args :static) 
+                                 (text "static"))
                             (synth :java rtype) 
                             (textify (lower-camel name))
                             (parens (apply #'punctuate (comma) t (synth-all :java parameters)))
