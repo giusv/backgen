@@ -22,15 +22,26 @@
            (:stdlib-entry-parameter-id (uniq i 1) :stdlib-entry-id ,n :name "op1" :type "null"))
        (tl-exists (par stdlib-entry-parameters) (:stdlib-entry-parameter-id (uniq i 2) :stdlib-entry-id ,n :name "op2" :type "null")))))
 
-(defdb
-    (tl-forall i (tl-range 1 20000) 
-      (tl-exists (sini gv-ind-stat-sini) 
-          (:ind-stat-sini-id i :id-sini i))
-      (tl-exists (sogg gv-ind-stat-sogg-sini) 
-          (:ind-stat-sogg-sini-id i :id-sini i :id-sogg (mod i 5) :d-flg-leso "s"))
-      (tl-exists (veic gv-ind-stat-trg-veic-sini) 
-          (:ind-stat-trg-veic-sini-id i :id-sini i :id-targa (mod i 5) :d-flg-targa-incoerente "s"))))
+(let ((n 10)
+      (m 20))
+  (defdb
+      (tl-forall i (tl-range 1 n) 
+        (tl-exists (sini gv-ind-stat-sini) 
+            (:ind-stat-sini-id i :id-sini i))
+        (tl-exists (sogg gv-ind-stat-sogg-sini) 
+            (:ind-stat-sogg-sini-id i :id-sini i :id-sogg (mod i (/ n m)) :d-flg-leso "s"))
+        (tl-exists (veic gv-ind-stat-trg-veic-sini) 
+            (:ind-stat-trg-veic-sini-id i :id-sini i :id-targa (mod i (/ n m)) :d-flg-targa-incoerente "s")))))
 
+;; (defdb
+;;     (tl-forall i (tl-range 1 3) 
+;;       (tl-exists (sinistro ind-stat-sini) 
+;;           (:id-sini i))
+;;       (tl-forall j (list 1 2) 
+;;         (tl-exists (soggetto ind-stat-sogg) 
+;;             (:id-sini i :id-sogg j :flg-leso "s")))
+;;       (tl-exists (veicolo ind-stat-veic) 
+;;           (:id-sini i :id-targa (random-string 7) :flg-targa-incoerente "s"))))
 ;; (defdb 
 ;;     (tl-forall i (tl-range 3 3)
 ;;       (tl-exists (entry stdlib-entries)

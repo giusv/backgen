@@ -2,21 +2,21 @@
 
 (defprim dynamic% (name param element)
   (:pretty () (list 'dynamic (list :name name :param param :element (synth :pretty element))))
-  (:brief (path namelist) (let ((newpath (backward-chain (dynamic-chunk name) path)))
+  (:brief (path namelist) (let ((newpath (backward-chain (path-parameter name) path)))
                    (bold 
                     (normal "~a (URL: " (upper-camel name #\Space)) 
                     (normal "#~a" (synth :string (synth :url newpath) 0))
                     (verbatim (synth :url newpath))
                     (normal ")"))))
 
-  (:req (path namelist) (let ((newpath (backward-chain (dynamic-chunk name) path)))
+  (:req (path namelist) (let ((newpath (backward-chain (path-parameter name) path)))
                  (section 
                   (seq (normal "~a (URL: " (upper-camel name #\Space)) 
                        (verbatim (synth :url newpath))
                        (normal ")"))
                   (synth :req element newpath (append* namelist name)))))
   (:reqlist (path namelist) 
-            (let ((newpath (backward-chain (dynamic-chunk name) path))) 
+            (let ((newpath (backward-chain (path-parameter name) path))) 
               (cons (synth :req this path namelist)
                     (synth :reqlist element newpath (append* namelist name)))))
   (:template () (html:tag name (doc:empty)))

@@ -2,13 +2,13 @@
 
 (defprim static% (name queries element)
   (:pretty () (list 'static (list :name name :queries queries :element (synth :pretty element))))
-  (:brief (path namelist) (let ((newpath (url:backward-chain (url:static-chunk name) path)))
+  (:brief (path namelist) (let ((newpath (url:backward-chain (url:chunk name) path)))
                             (bold 
                              (seq (normal "~a (URL: " (upper-camel name #\Space)) 
                                   (verbatim (doc (synth :url newpath)))
                                   (doc:text ")")))))
 
-  (:req (path namelist) (let ((newpath (url:backward-chain (url:static-chunk name) path)))
+  (:req (path namelist) (let ((newpath (url:backward-chain (url:chunk name) path)))
                           (section 
                            (seq (normal "~a (URL: " (upper-camel name #\Space)) 
                                 (html:code :id (synth :string (synth :url newpath) 0) 
@@ -16,7 +16,7 @@
                                 (doc:text ")"))
                            (synth :req element newpath (append* namelist name)))))
   (:reqlist (path namelist) 
-            (let ((newpath (url:backward-chain (url:static-chunk name) path))) 
+            (let ((newpath (url:backward-chain (url:chunk name) path))) 
               (cons (synth :req this path namelist)
                     (synth :reqlist element newpath (append* namelist name)))))
   (:template () (html:tag name (doc:empty)))

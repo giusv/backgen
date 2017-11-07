@@ -272,7 +272,7 @@
            ;; (pprint values) 
            ;; (terpri)
          
-           (format t "INSERT INTO ~a VALUES (~{~a~^,~}) VALUES (~{~a~^,~});~%" 
+           (format t "INSERT INTO ~a (~{~a~^,~}) VALUES (~{~a~^,~});~%" 
                    (upper name)
                    (mapcar #'upper (mapcar #'car values))
                    ;; (mapcar #'upper (mapcar #'cadr values))

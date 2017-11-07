@@ -131,7 +131,7 @@
 
 (defpackage :url
   (:use :cl :lol :utils :parser :grammar :doc :java)
-  (:export :void :static-chunk :dynamic-chunk :expression-chunk :path-parameter :query-parameter :login-parameter 
+  (:export :void :chunk :path-parameter :query-parameter :login-parameter 
            :backward-chain :multi :forward-chain :queried
            :url :parse-url))
 

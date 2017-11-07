@@ -5,22 +5,16 @@
   ;; (:last () "default";; (error "no last elements in (void)")
   ;;        )
   (:path-parameters () nil))
-(defprim static-chunk (name)
+
+(defprim chunk (name)
+  (:pretty () (list 'chunk (list :name name)))
   (:url () (doc:text "~a" (string-downcase name)))
-  (:pretty () (list 'static-chunk (list :name name)))
   ;; (:last () name)
   (:path-parameters () nil))
 
-(defprim dynamic-chunk (name type &key validators)
-  (:pretty () (list 'dynamic-chunk (list :name name :type type :validators (synth-all :pretty validators))))
-  (:url () (doc:braces (doc:text "~a" (string-downcase name))))
-  ;; (:last () name)
-  (:path-parameters () (list (path-parameter name type :validators validators))))
-
-;; (defprim expression-chunk (exp)
-;;   (:url () (doc:braces (synth :chunk exp)))
-;;   (:pretty () (list 'expression-chunk (list :exp exp)))
-;;   (:last () (error "no last elements in expression chunks")))
+;; (defprim path-parameter (name type &key validators)
+;;   (:pretty () (list 'path-parameter (list :name name :type type :validators (synth-all :pretty validators))))
+;;   )
 
 (defprim path-parameter (name type &key validators)
   (:pretty () (list 'path-parameter (list :name name :type (synth :pretty type) :validators (synth-all :pretty validators))))
@@ -29,17 +23,20 @@
                 (let ((pair (java-pair (symb (lower-camel name) "-ID") (synth :java-type type)))) 
                   (if full
                       (java-with-annotations (cons (java-annotation '|PathParam| (java-object :|value| (java-const (lower-camel name))))
-                                                 (synth-all :annotation validators))
-                                           pair
-                                           :newline nil)
+                                                   (synth-all :annotation validators))
+                                             pair
+                                             :newline nil)
                       pair)))
   (:java-implementation (cont &rest args) (apply cont 
-                                            (java:java-dynamic (symb (lower-camel name) "-ID"))
-                                            args))
+                                                 (java:java-dynamic (symb (lower-camel name) "-ID"))
+                                                 args))
   ;; (:req () (html:taglist 
   ;;           (html:span-color (string-downcase name))
   ;;           (doc:text "(parametro path)")))
-  (:url () (dynamic-chunk name type :validators validators)))
+  ;; (:url () (path-parameter name type :validators validators))
+  (:url () (doc:braces (doc:text "~a" (string-downcase name))))
+  ;; (:last () name)
+  (:path-parameters () (list this)))
 
 (defprim query-parameter (name type &key validators value)
   (:pretty () (list 'query-parameter (list :name name :type (synth :pretty type) :value value :validators (synth-all :pretty validators))))
@@ -112,9 +109,9 @@
 	  (choose (do-with ((seg (item))
 			    ((sym '?))
 			    (pars (sepby1 (parse-query-parameter) (sym '&))))
-		    (result (apply #'queried (static-chunk seg) pars)))
+		    (result (apply #'queried (chunk seg) pars)))
 		  (do-with ((seg (item)))
-		    (result (static-chunk seg))))))
+		    (result (chunk seg))))))
 
 (defun parse-url ()
   (do-with ((segs (sepby (choose (do-with (((sym '<))
