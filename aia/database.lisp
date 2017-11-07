@@ -23,7 +23,7 @@
        (tl-exists (par stdlib-entry-parameters) (:stdlib-entry-parameter-id (uniq i 2) :stdlib-entry-id ,n :name "op2" :type "null")))))
 
 (defdb
-    (tl-forall i (tl-range 1 2) 
+    (tl-forall i (tl-range 1 20000) 
       (tl-exists (sini gv-ind-stat-sini) 
           (:ind-stat-sini-id i :id-sini i))
       (tl-exists (sogg gv-ind-stat-sogg-sini) 

@@ -264,16 +264,24 @@
 
 
 (defun tl-ddl (db)
-  (loop for record in db do 
-       (let ((name (car record))
-             (values (group (cadr record) 2)))
-         (format t "INSERT INTO ~a VALUES (~{~a~^,~}) VALUES (~{~a~^,~});~%" (upper name) (mapcar #'upper (mapcar #'car values))
-                  (mapcar #'(lambda (value)
-                              (typecase value
-                                (number value)
-                                (string (format nil "'~a'" value))
-                                (t (format nil "NULL")))) 
-                          (mapcar #'cadr values))))))
+  (with-output-to-string (*standard-output*) 
+    (loop for record in db do 
+         ;; (pprint record)
+         (let ((name (car record))
+               (values (group (cadr record) 2)))
+           ;; (pprint values) 
+           ;; (terpri)
+         
+           (format t "INSERT INTO ~a VALUES (~{~a~^,~}) VALUES (~{~a~^,~});~%" 
+                   (upper name)
+                   (mapcar #'upper (mapcar #'car values))
+                   ;; (mapcar #'upper (mapcar #'cadr values))
+                   (mapcar #'(lambda (value)
+                               (typecase value
+                                 (number value)
+                                 (string (format nil "'~a'" value))
+                                 (t (format nil "NULL")))) 
+                           (mapcar #'cadr values)))))))
 
 
 (defprim tl-db% (records)
@@ -286,6 +294,8 @@
 
 (defun tl-range (start end)
   (loop for i from start to end collect i))
+
+
 ;; (defprim tl-http-get (url)
 ;;   (:pretty () (list 'tl-http-get (list :url (synth :pretty url))))
 ;;   (:java-implementation (cont &rest args) 
