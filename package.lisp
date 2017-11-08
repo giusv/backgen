@@ -132,7 +132,7 @@
 (defpackage :url
   (:use :cl :lol :utils :parser :grammar :doc :java)
   (:export :void :chunk :path-parameter :query-parameter :login-parameter 
-           :backward-chain :multi :forward-chain :queried
+           :backward-chain :multi :forward-chain :queried :protocolled
            :url :parse-url))
 
 (defpackage :type

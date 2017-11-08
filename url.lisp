@@ -6,6 +6,17 @@
   ;;        )
   (:path-parameters () nil))
 
+(defprim protocolled (name pose)
+  (:pretty () (list 'protocolled (list :name name :url (synth :pretty pose))))
+  (:url () (doc:hcat (text "~a://" (string-downcase name)) (synth :url pose)))
+  (:path-parameters () nil))
+
+(defprim host (&rest segments)
+  (:pretty () (list 'host (list :segments segments)))
+  (:url () (text "~{~a~^.~}" (mapcar #'string-downcase segments)))
+  (:path-parameters () nil))
+
+
 (defprim chunk (name)
   (:pretty () (list 'chunk (list :name name)))
   (:url () (doc:text "~a" (string-downcase name)))
@@ -26,7 +37,7 @@
                                                    (synth-all :annotation validators))
                                              pair
                                              :newline nil)
-                      pair)))
+                                           pair)))
   (:java-implementation (cont &rest args) (apply cont 
                                                  (java:java-dynamic (symb (lower-camel name) "-ID"))
                                                  args))
@@ -51,9 +62,9 @@
                 (let ((pair (java-pair (lower-camel name) (synth :java-type type)))) 
                   (if full
                       (java-with-annotations (cons (java-annotation '|QueryParam| (java-object :|value| (java-const (lower-camel name))))
-                                                 (synth-all :annotation validators))
-                                           pair
-                                           :newline nil)
+                                                   (synth-all :annotation validators))
+                                             pair
+                                             :newline nil)
                       pair)))
   (:java-implementation (cont &rest args) (apply cont (java:java-dynamic name) args))
   ;; (:type () (doc:text "query"))
@@ -99,13 +110,13 @@
 				     ((sym '}))) 
 			     (result value))
 			   (do-with ((value (item))) 
-		       (result (expr:const value))))))
+                             (result (expr:const value))))))
     (result (query-parameter name nil :value value))))
 (defun parse-chunk ()
   (choose (do-with (((sym '{))
 		    (seg (item))
 		    ((sym '}))) 
-	    (result (expression-chunk seg)))
+	    (result (chunk seg)))
 	  (choose (do-with ((seg (item))
 			    ((sym '?))
 			    (pars (sepby1 (parse-query-parameter) (sym '&))))
@@ -113,7 +124,7 @@
 		  (do-with ((seg (item)))
 		    (result (chunk seg))))))
 
-(defun parse-url ()
+(defun parse-relative-url ()
   (do-with ((segs (sepby (choose (do-with (((sym '<))
 					   (poses (sepby (parse-url) (sym '&)))
 					   ((sym '>)))
@@ -122,6 +133,23 @@
 			 (sym '/)))) 
     ;; (result (reduce #'forward-chain segs :from-end t))
     (result (reduce #'forward-chain segs :from-end t))))
+(defun parse-host ()
+  (do-with ((segs (sepby (item)
+                          (sym '%)))) 
+    (result (apply #'host segs))))
+
+(defun parse-absolute-url ()
+  (do-with ((host (parse-host))
+            ((sym '/))
+            (rel (parse-relative-url))) 
+    (result (protocolled 'http (forward-chain host rel)))))
+
+;; (defun parse-url ()
+;;  (parse-absolute-url))
+
+(defun parse-url ()
+ (choose (parse-absolute-url)
+         (parse-relative-url)))
 
 (defmacro merge-urls (head tail)
   ;; (reduce #'forward-chain head :from-end t :initial-value (url tail))
@@ -143,9 +171,10 @@
 
 ;; (synth output (synth :url (parse (parse-url) '({ a }))) 0)
 ;; (synth output (synth :url (parse (parse-url) `(b ? q = a & r = { ,(value (button 'ok nil)) }))) 0)
+(synth :output (synth :url (parse (parse-url) `(www % test % it))) 0)
+(terpri)
 (let* ((id (expr:const 1)) 
-      (u (url `(b ? q = a & r = { ,id })))) 
-  (pprint (synth :pretty u))
+       (u (url `(www % test % it / b ? q = a & r = { ,id })))) 
   (synth :output (synth :url u) 0))
 
  

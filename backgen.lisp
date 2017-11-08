@@ -114,7 +114,16 @@
       (write-file filename
                   ;; (synth :string (synth :sql (synth :sql-implementation app-db)))
                  (tl-ddl app-db)))))
+(defun common (package-symb app-tests) 
+  (java-unit 'common 
+             (java-package package-symb) 
+             (java-import '|javax.ws.rs.core| '|Response|)
+  (java-import '|javax.ws.rs.client| '|Client| '|ClientBuilder|)
 
+             (java-class 'common
+                         :public t 
+                         :fields nil
+                         :methods (synth-all :java-implementation app-tests #'identity))))
 
 
 (let* ((group-id (list "com" "extent"))
@@ -134,11 +143,7 @@
   (pprint test-basedir)
   (let ((filename (mkstr test-basedir "Common.java")))
     (pprint filename)
-    (write-file filename (synth :string (synth :doc (synth :java (java-unit 'common (java-package (symb package-symb '|.test|)) 
-                                                                            (java-class 'common
-                                                                                        :public t 
-                                                                                        :fields nil
-                                                                                        :methods (synth-all :java-implementation app-tests #'identity))))))))
+    (write-file filename (synth :string (synth :doc (synth :java (common package-symb app-tests))))))
   (mapcar (lambda (suite) 
             (let ((filename (mkstr test-basedir (upper-camel (synth :name suite)) ".java"))) 
               (pprint filename)

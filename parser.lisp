@@ -54,7 +54,7 @@
 	(fail))))
 
 (defun sym (m)
-  (do-with ((a (sat #'(lambda (x) (eq m x)))))
+  (do-with ((a (sat #'(lambda (x) (equalp (symbol-name m) (symbol-name x))))))
     (result a)))
 
 (defmacro choose-among (&rest choices)
@@ -102,7 +102,7 @@
 
 (defun pair ()
   (sat #'(lambda (x) (and (consp x) 
-			  (eq (length x) 2)))))
+			  (eql (length x) 2)))))
 ;; (defun key-pair ()
 ;;   (sat #'(lambda (x) (and (consp x) 
 ;; 			  (eq (length x) 2)
@@ -116,9 +116,9 @@
 
 (defun atomic ()
   (sat #'(lambda (x) (and (atom x) 
-			  (not (eq x '&optional))
-			  (not (eq x '&rest))
-			  (not (eq x '&key))))))
+			  (not (eql x '&optional))
+			  (not (eql x '&rest))
+			  (not (eql x '&key))))))
 
 ;; (defun ttt ()
 ;;   (do-with ((name (atomic))

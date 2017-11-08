@@ -12,12 +12,12 @@
 (defprim java-pair (name type &key init const private)
   (:pretty () (list 'java-pair (list :name name :type (synth :pretty type) :init (synth :pretty init) :const const))) 
   (:java () (hcat (if private (text "private ") (empty))
-                        (if const (text "const ") (empty))
-                        (synth :java type) 
-                        (text " ~a" (lower-camel name))
-                        (if init 
-                            (hcat (text " = ") (synth :java init))
-                            (empty)))))
+                  (if const (text "const ") (empty))
+                  (synth :java type) 
+                  (text " ~a" (lower-camel name))
+                  (if init 
+                      (hcat (text " = ") (synth :java init))
+                      (empty)))))
 
 (defprim java-const (lit)
   (:pretty () (list 'java-const (list :lit lit))) 

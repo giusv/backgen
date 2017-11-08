@@ -44,7 +44,9 @@
   (:pretty () (list 'tl-let (list :bindings (synth-all :pretty bindings) :expr (synth :pretty expr))))
   (:java-implementation (cont &rest args) 
                    (java-concat (synth-all :java-implementation bindings #'identity)
-                                (apply #'synth :java-implementation expr cont args)))
+                                (apply cont (synth :java-implementation expr #'identity) args)
+                                ;; (apply #'synth :java-implementation expr cont args)
+                                ))
   (:type () (synth :type expr)))
 
 
@@ -138,29 +140,44 @@
                    (apply cont (java-call name) args))
   (:type () (integer-type)))
 
-(let* ((id (expr:const 1)) 
-      (u (url `(b ? q = a & r = { ,id })))) 
-  (pprint (synth :pretty u))
-  (synth :output (synth :url u) 0))
+;; (let* ((id (expr:const 1)) 
+;;       (u (url `(b / a )
+;;               ;; `(b ? q = a & r = { ,id })
+;;               ))) 
+;;   (pprint (synth :pretty u))
+;;   (synth :output (synth :url u) 0))
 
 (defprim tl-http-get (url &key (mtype '|application/json|))
   (:pretty () (list 'tl-http-get (list :url (synth :pretty url) :mtypes mtypes)))
   (:java-implementation (cont &rest args) 
-                        (progn (pprint (synth :pretty url))
-                               (apply cont (java-chain (java-dynamic 'client)
-                                                       (java-call 'target (java-const (synth :string (synth :url url))))
-                                                       (java-call 'request (java-const (mkstr mtype)))
-                                                       (java-call 'get))
-                          
-                                      args)))
+                        (java-concat 
+                         (java-statement (java-pair 'client (java-object-type 'client) :init (java-chain (java-static 'client-builder) (java-call 'new-client))))
+                         ;; (java-if (java-null (java-const 1)) (java-return) (java-return))
+                         (apply cont (java-chain (java-dynamic 'client)
+                                                 (java-call 'target (java-const (synth :string (synth :url url))))
+                                                 (java-call 'request (java-const (mkstr mtype)))
+                                                 (java-call 'get)) args)))
   (:type () (response-type)))
+
+(defprim tl-http-status (response)
+  (:pretty () (list 'tl-http-status (list :response (synth :pretty response))))
+  (:java-implementation (cont &rest args) 
+                        (java-chain (synth :name response) (java-call 'get-status) 
+                         (java-statement (java-pair 'client (java-object-type 'client) :init (java-chain (java-static 'client-builder) (java-call 'new-client))))
+                         ;; (java-if (java-null (java-const 1)) (java-return) (java-return))
+                         (apply cont (java-chain (java-dynamic 'client)
+                                                 (java-call 'target (java-const (synth :string (synth :url url))))
+                                                 (java-call 'request (java-const (mkstr mtype)))
+                                                 (java-call 'get)) args)))
+  (:type () (response-type)))
+
 
 (defprim tl-suite (name cases)
   (:pretty () (list 'tl-suite (list :name name 
                                     :cases (synth-all :pretty cases))))
   (:java-implementation (package) 
                         (java-unit name
-                                   (java-package (symb package '|.test|)) 
+                                   (java-package package) 
                                    (java-class name
                                                :public t 
                                                :fields nil
@@ -208,7 +225,7 @@
 
 (deftest create-indicator ((id (integer-type))) 
   (tl-equal id (expr:const 1)) 
-  (tl-let ((a (tl-http-get (url `(b ? q = a & r = { ,id })) ;; (url `(b / a ? q = a ))
+  (tl-let ((a (tl-http-get (url `(www % test % it / b / a ? q = a ))
                            ;; (url `(app / services / { id }))
                            )))
     a)
