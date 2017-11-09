@@ -236,11 +236,11 @@
 (defpackage :test
   (:use :cl :lol :utils :doc :grammar :parser :java :type :data :sql :url)
   (:export :defdb :*database* :deftest :defsuite :*tests* :*suites*
-           :tl-forall :tl-exists :l-and :tl-get :tl-ddl :tl-range
-           :tl-variab :tl-lambda% :tl-call :tl-binding :tl-let% 
+           :tl-forall :tl-exists :l-and :tl-retrieve :tl-get :tl-ddl :tl-range
+           :tl-variab :tl-lambda% :tl-call :tl-binding :tl-let% :tl-let
            :tl-test :tl-test-instance :tl-seq% :tl-test-binding :tl-ensure
            :tl-require :tl-equal :tl-invoke-service :tl-suite :tl-db% 
-           :tl-http-get))
+           :tl-http-get :tl-http-status :tl-http-body))
 
 (defpackage :documentation
      (:use :cl :lol :utils :doc :grammar :latex))
@@ -250,6 +250,6 @@
   (:export :pom :web :beans :persistence))
 
 (defpackage :backgen
-  (:use :cl :lol :utils :doc :server :grammar :java :type :typescript :data :latex :gui :test :sql :documentation :conf))
+  (:use :cl :lol :utils :doc :server :grammar :java :type :typescript :data :latex :gui :test :sql :documentation :conf :url))
 
 

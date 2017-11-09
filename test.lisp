@@ -69,28 +69,11 @@
                                                  (synth :java-type (synth :type (synth :expr function)))
                                                  (synth :java-implementation pre #'java-statement)
                                                  (synth :java-implementation (synth :expr function) #'(lambda (expr) (java-statement (java-pair (synth :name result) (synth :java-type (synth :type (synth :expr function))) :init expr)))) 
-                                                 (synth :java-implementation post #'java-statement))
+                                                 (synth :java-implementation post (lambda (cond) (java-statement (java-assert cond "error in postcondition"))))
+                                                 (java-return (java-dynamic (synth :name result))))
                                args))
   ;; (:type () (synth :type expr))
   )
-
-;; (defprim tl-test (name body result)
-;;   (:pretty () (list 'tl-test (list :name name 
-;;                                    :body (synth :pretty body)
-;;                                    :result (synth :pretty result))))
-;;   (:java-implementation (cont &rest args) 
-;;                         (let ((result (gensym "result"))
-;;                               (result-type (synth :java-type (synth :type (synth :expr function)))))
-;;                           (apply cont (java-method name 
-;;                                                    (mapcar (lambda (input)
-;;                                                              (java-pair (synth :name input)
-;;                                                                         (synth :java-type (synth :type input))))
-;;                                                            (synth :inputs function))
-;;                                                    result-type
-;;                                                    (synth :java-implementation body #'java-statement)
-;;                                                    (synth :java-implementation result #'java-return))
-;;                                  args)))
-;;   (:type () (synth :type result)))
 
 (defprim tl-test-instance (name &rest inputs)
   (:pretty () (list 'tl-test-instance (list :name name :inputs (synth-all :pretty inputs))))
@@ -122,7 +105,7 @@
 (defprim tl-require (assertion)
   (:pretty () (list 'tl-require (list :assertion (synth :pretty assertion))))
   (:java-implementation (cont &rest args) 
-                   (apply cont (java-assert (synth :java-implementation assertion #'identity) "error in postcondition") args))
+                   (apply #'synth :java-implementation assertion cont args))
   ;; (:type () (synth :type expr))
   )
 
@@ -140,12 +123,13 @@
                    (apply cont (java-call name) args))
   (:type () (integer-type)))
 
-;; (let* ((id (expr:const 1)) 
-;;       (u (url `(b / a )
-;;               ;; `(b ? q = a & r = { ,id })
-;;               ))) 
-;;   (pprint (synth :pretty u))
-;;   (synth :output (synth :url u) 0))
+(defprim tl-get (place object)
+  (:pretty () (list 'tl-get (list :place place :object (synth :pretty object))))
+  (:java-implementation (cont &rest args) 
+                        (let ((logic (java-chain :as (synth :java-type (synth :type this))
+                                                 (java-dynamic (synth :name object)) (java-call (symb 'get "-" place)))))
+                          (apply cont logic args)))
+  (:type () (synth :property-type (synth :type object) place)))
 
 (defprim tl-http-get (url &key (mtype '|application/json|))
   (:pretty () (list 'tl-http-get (list :url (synth :pretty url) :mtypes mtypes)))
@@ -162,36 +146,39 @@
 (defprim tl-http-status (response)
   (:pretty () (list 'tl-http-status (list :response (synth :pretty response))))
   (:java-implementation (cont &rest args) 
-                        (java-chain (synth :name response) (java-call 'get-status) 
-                         (java-statement (java-pair 'client (java-object-type 'client) :init (java-chain (java-static 'client-builder) (java-call 'new-client))))
-                         ;; (java-if (java-null (java-const 1)) (java-return) (java-return))
-                         (apply cont (java-chain (java-dynamic 'client)
-                                                 (java-call 'target (java-const (synth :string (synth :url url))))
-                                                 (java-call 'request (java-const (mkstr mtype)))
-                                                 (java-call 'get)) args)))
-  (:type () (response-type)))
+                        (apply cont (java-chain (java-dynamic (synth :name response)) (java-call 'get-status)) args))
+  (:type () (integer-type)))
+
+(defprim tl-http-body (response class)
+  (:pretty () (list 'tl-http-body (list :response (synth :pretty response))))
+  (:java-implementation (cont &rest args) 
+                        (progn
+                          (pprint (synth :pretty response))
+                          (apply cont (java-chain (java-dynamic (synth :name response))
+                                                  (java-call 'read-entity (java-chain (synth :java-type (synth :type class)) (java-dynamic 'class)))) args)))
+  (:type () (synth :type class)))
 
 
-(defprim tl-suite (name cases)
-  (:pretty () (list 'tl-suite (list :name name 
-                                    :cases (synth-all :pretty cases))))
-  (:java-implementation (package) 
-                        (java-unit name
-                                   (java-package package) 
-                                   (java-class name
-                                               :public t 
-                                               :fields nil
-                                               :methods nil ;; (list (java-method (mapcar (lambda (case)
-                                                        ;;                   (java-with-annotations
-                                                        ;;                    (list (java-annotation '|Test|))
-                                                        ;;                    (synth :java-implementation case #'identity)))
-                                                        ;;                 (append* cases))))
-                                               ))))
+ (defprim tl-suite (name cases)
+   (:pretty () (list 'tl-suite (list :name name 
+                                     :cases (synth-all :pretty cases))))
+   (:java-implementation (package) 
+                         (java-unit name
+                                    (java-package package) 
+                                    (java-class name
+                                                :public t 
+                                                :fields nil
+                                                :methods nil ;; (list (java-method (mapcar (lambda (case)
+                                                         ;;                   (java-with-annotations
+                                                         ;;                    (list (java-annotation '|Test|))
+                                                         ;;                    (synth :java-implementation case #'identity)))
+                                                         ;;                 (append* cases))))
+                                                ))))
 
-(defparameter *suites* (make-hash-table))
-(defmacro defsuite (name &rest cases)
-  `(progn (defparameter ,name 
-            (tl-suite ',name
+ (defparameter *suites* (make-hash-table))
+ (defmacro defsuite (name &rest cases)
+   `(progn (defparameter ,name 
+             (tl-suite ',name
                       ,@cases))
          (setf (gethash ',name *suites*) ,name)))
 
@@ -223,13 +210,7 @@
 ;;                                         that))))))
 ;;           (setf (gethash ',name *tests*) ,name)))
 
-(deftest create-indicator ((id (integer-type))) 
-  (tl-equal id (expr:const 1)) 
-  (tl-let ((a (tl-http-get (url `(www % test % it / b / a ? q = a ))
-                           ;; (url `(app / services / { id }))
-                           )))
-    a)
-  (tl-equal this (expr:const 1)))
+
 
 (defmacro tl-forall (i range &body formulas)
   `(apply #'append (loop for ,i in ,range collect (tl-and ,@formulas))))
@@ -242,7 +223,7 @@
                                                               (group values 2)))))))
      (cons ,name (append ,@formulas))))
 
-(defmacro tl-get (place object)
+(defmacro tl-retrieve (place object)
   `(getf (cadr ,object) ,place))
 
 
@@ -320,21 +301,9 @@
 ;;   (:type () (integer-type)))
 
 
-
-;; (pprint (synth :string (synth :doc (synth :java (synth :java-implementation create-indicator #'identity)))))
-;; (pprint (synth :string (synth :doc (synth :java (synth :java-implementation (create-indicator (expr:const 1)) #'identity)))))
-
-;; (deftest indicator-sequence
-;;     (tl-with-db (tl-forall ...)
-;;                 (tl-orelse (verify-indicator 1)
-;;                            (tl-let ((id (create-indicator 1)))
-;;                              (verify-indicator 1)))))
-(defsuite indicator-suite 
-    (mapcar #'create-indicator (mapcar #'expr:const (list 1 2 3 4))))
-
 ;; (let ((gen (tl-generate 5 (ind indicators) (:id (random-number 10 20) :name (random-string 10))
-;;              (tl-generate 2 (par parameters) (:id (tl-get :id ind) :name (random-string 10))
-;;                (tl-generate 2 (boh bohs) (:id (tl-get :id par) :name (random-string 10)))))))
+;;              (tl-generate 2 (par parameters) (:id (tl-retrieve :id ind) :name (random-string 10))
+;;                (tl-generate 2 (boh bohs) (:id (tl-retrieve :id par) :name (random-string 10)))))))
 ;;   (pprint gen)
 ;;   (pprint (listp gen))
 ;;   (pprint (synth :output (synth :doc (synth :java (synth :java-implementation (tl-db gen) #'identity))) 0)))

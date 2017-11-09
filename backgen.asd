@@ -69,7 +69,8 @@
                                      (:file "errors")
                                      (:file "formats")
                                      (:file "services")
-                                     (:file "database")))
+                                     (:file "database")
+                                     (:file "tests")))
                
                ;; (:module "app"
                ;;          :serial t
