@@ -54,6 +54,7 @@
   `(let* ,(mapcar #`(,(car a1) (tl-variab ',(car a1) (synth :type ,(cadr a1)))) bindings)
      (tl-let% (list ,@(mapcar (lambda (binding) `(tl-binding ',(car binding) ,(cadr binding)))
                               bindings)) ,@expr)))
+
 (defprim tl-test (name pre function post result)
   (:pretty () (list 'tl-test (list :name name 
                                    :pre (synth :pretty pre)
@@ -68,19 +69,16 @@
                                                          (synth :inputs function))
                                                  (synth :java-type (synth :type (synth :expr function)))
                                                  (synth :java-implementation pre #'java-statement)
-                                                 (synth :java-implementation (synth :expr function) #'(lambda (expr) (java-statement (java-pair (synth :name result) (synth :java-type (synth :type (synth :expr function))) :init expr)))) 
+                                                 (synth :java-implementation (synth :expr function) #'(lambda (expr) (java-statement (java-pair (synth :name result) (synth :java-type (synth :type this)) :init expr)))) 
                                                  (synth :java-implementation post (lambda (cond) (java-statement (java-assert cond "error in postcondition"))))
                                                  (java-return (java-dynamic (synth :name result))))
                                args))
-  ;; (:type () (synth :type expr))
-  )
+  (:type () (synth :type (synth :expr function))))
 
 (defprim tl-test-instance (name &rest inputs)
   (:pretty () (list 'tl-test-instance (list :name name :inputs (synth-all :pretty inputs))))
   (:java-implementation (cont &rest args) 
-                   (apply cont (apply #'java-call name (synth-all :java-implementation inputs #'identity)) args))
-  ;; (:type () (synth :type expr))
-  )
+                   (apply cont (apply #'java-call name (synth-all :java-implementation inputs #'identity)) args)))
 
 (defprim tl-seq% (&rest test-bindings)
   (:pretty () (list 'tl-seq% (list :test-bindings (synth-all :pretty test-bindings))))
@@ -98,24 +96,19 @@
 (defprim tl-ensure (assertion)
   (:pretty () (list 'tl-ensure (list :assertion (synth :pretty assertion))))
   (:java-implementation (cont &rest args) 
-                   (apply cont (java-assert (synth :java-implementation assertion #'identity) "error in precondition") args))
-  ;; (:type () (synth :type expr))
-  )
+                   (apply cont (java-assert (synth :java-implementation assertion #'identity) "error in precondition") args)))
 
 (defprim tl-require (assertion)
   (:pretty () (list 'tl-require (list :assertion (synth :pretty assertion))))
   (:java-implementation (cont &rest args) 
-                   (apply #'synth :java-implementation assertion cont args))
-  ;; (:type () (synth :type expr))
-  )
+                   (apply #'synth :java-implementation assertion cont args)))
 
 (defprim tl-equal (expr1 expr2)
   (:pretty () (list 'tl-equal (list :expr1 (synth :pretty expr1) :expr2 (synth :pretty expr2))))
   (:java-implementation (cont &rest args) 
                    (apply cont (java-equal (synth :java-implementation expr1 #'identity)
                                            (synth :java-implementation expr2 #'identity)) args))
-  ;; (:type () (synth :type expr))
-  ) 
+  (:type () (java-primitive-type 'boolean))) 
 
 (defprim tl-invoke-service (name)
   (:pretty () (list 'tl-invoke-service (list :name name)))
@@ -127,7 +120,7 @@
   (:pretty () (list 'tl-get (list :place place :object (synth :pretty object))))
   (:java-implementation (cont &rest args) 
                         (let ((logic (java-chain :as (synth :java-type (synth :type this))
-                                                 (java-dynamic (synth :name object)) (java-call (symb 'get "-" place)))))
+                                                 (synth :java-implementation object #'identity) (java-call (symb 'get "-" place)))))
                           (apply cont logic args)))
   (:type () (synth :property-type (synth :type object) place)))
 
@@ -157,7 +150,6 @@
                           (apply cont (java-chain (java-dynamic (synth :name response))
                                                   (java-call 'read-entity (java-chain (synth :java-type (synth :type class)) (java-dynamic 'class)))) args)))
   (:type () (synth :type class)))
-
 
  (defprim tl-suite (name cases)
    (:pretty () (list 'tl-suite (list :name name 
@@ -227,6 +219,16 @@
   `(getf (cadr ,object) ,place))
 
 
+(defun tl-random-timestamp (t1 t2)
+  (tl-timestamp (+ t1 (random (- t2 t1)))))
+
+(defun tl-timestamp (time)
+  (multiple-value-bind
+	(second minute hour date month year day-of-week dst-p tz) (decode-universal-time time)
+    (list 'to_timestamp (format nil "~2,'0d/~2,'0d/~4,'0d ~2,'0d\:~2,'0d\:~2,'0d" date month year hour minute second) "DD/MM/YYYY HH:MI:SS")))
+
+
+
 ;; (defmacro tl-generate (n (name table) (&rest values) &body generators)
 ;;   `(apply #'append (loop for i from 1 to ,n collect
 ;;                         (let ((,name (list ',table (list ,@(apply #'append (mapcar (lambda (pair) (list (car pair) (cadr pair)))
@@ -260,11 +262,16 @@
 ;; 						new ArrayList<Identifier>())),
 ;; 				"function coinvolto(soggetto,sinistro) {return \"(D_FLG_COINVOLTO = 'S')\"}"));
 
-
+(defun sqlify (value)
+  (typecase value
+    (number value)
+    (string (format nil "'~a'" value))
+    (list (format nil "~a(~{~a~^,~})" (car value) (mapcar #'sqlify (cdr value))))
+    (t (format nil "NULL"))))
 (defun tl-ddl (db)
   (with-output-to-string (*standard-output*) 
     (loop for record in db do 
-         ;; (pprint record)
+       ;; (pprint record)
          (let ((name (car record))
                (values (group (cadr record) 2)))
            ;; (pprint values) 
@@ -274,12 +281,7 @@
                    (upper name)
                    (mapcar #'upper (mapcar #'car values))
                    ;; (mapcar #'upper (mapcar #'cadr values))
-                   (mapcar #'(lambda (value)
-                               (typecase value
-                                 (number value)
-                                 (string (format nil "'~a'" value))
-                                 (t (format nil "NULL")))) 
-                           (mapcar #'cadr values)))))))
+                   (mapcar #'sqlify (mapcar #'cadr values)))))))
 
 
 (defprim tl-db% (records)
@@ -309,8 +311,11 @@
 ;;   (pprint (synth :output (synth :doc (synth :java (synth :java-implementation (tl-db gen) #'identity))) 0)))
 
 (defparameter *database* nil)
-(defmacro defdb (&rest records)
+(defmacro defdb (&body records)
   `(defparameter *database* ,@records))
+
+;; (defun defdb (records)
+;;   (defparameter *database* records))
 ;; (defmacro defdb (&rest records)
 ;;   `(defparameter *database* (tl-db ,@records)))
 

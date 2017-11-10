@@ -22,16 +22,61 @@
            (:stdlib-entry-parameter-id (uniq i 1) :stdlib-entry-id ,n :name "op1" :type "null"))
        (tl-exists (par stdlib-entry-parameters) (:stdlib-entry-parameter-id (uniq i 2) :stdlib-entry-id ,n :name "op2" :type "null")))))
 
-(let ((n 10)
-      (m 20))
-  (defdb
-      (tl-forall i (tl-range 1 n) 
-        (tl-exists (sini gv-ind-stat-sini) 
-            (:ind-stat-sini-id i :id-sini i))
-        (tl-exists (sogg gv-ind-stat-sogg-sini) 
-            (:ind-stat-sogg-sini-id i :id-sini i :id-sogg (mod i (/ n m)) :d-flg-leso "s"))
-        (tl-exists (veic gv-ind-stat-trg-veic-sini) 
-            (:ind-stat-trg-veic-sini-id i :id-sini i :id-targa (mod i (/ n m)) :d-flg-targa-incoerente "s")))))
+;; (tl-forall i (tl-range 1 n) 
+;;         (tl-exists (sini gv-ind-stat-sini) 
+;;             (:ind-stat-sini-id i :id-sini i))
+;;         (tl-exists (sogg gv-ind-stat-sogg-sini) 
+;;             (:ind-stat-sogg-sini-id i :id-sini i :id-sogg (mod i (/ n m)) :d-flg-leso "s"))
+;;         (tl-exists (veic gv-ind-stat-trg-veic-sini) 
+;;             (:ind-stat-trg-veic-sini-id i :id-sini i :id-targa (mod i (/ n m)) :d-flg-targa-incoerente "s")))
+(defun tl-oneof (values)
+  (nth (random (length values)) values))
+
+
+(defmacro sogg-records (id-sini id-sogg date days occurrences &body flags)
+  `(tl-exists (sini gv-ind-stat-sini) 
+       (:ind-stat-sini-id ,id-sini :id-sini ,id-sini :d-data-accad (tl-timestamp ,date))
+     (tl-exists (sogg gv-ind-stat-sogg-sini) 
+         (:ind-stat-sogg-sini-id ,id-sogg :id-sini ,id-sini :id-sogg ,id-sogg))
+     (tl-forall i (tl-range 1 ,occurrences)
+       (tl-exists (sini gv-ind-stat-sini) 
+           (:ind-stat-sini-id (uniq ,id-sini i) :id-sini (uniq ,id-sini i)  
+                              :d-data-accad (tl-random-timestamp (- ,date (* ,days 86400)) ,date))
+         (tl-exists (sogg gv-ind-stat-sogg-sini) 
+             (:ind-stat-sogg-sini-id (uniq (tl-retrieve :id-sini sini) i) :id-sini (tl-retrieve :id-sini sini) :id-sogg ,id-sogg ,@flags))))))
+
+(defmacro tl-someof (&rest vals)
+  (let ((len (length vals)))
+    `(apply #'append (loop for i from 1 to ,len collect (list (nth (random ,len) ,vals) "s")))))
+
+(defmacro sco1-true (id-sini id-sogg date days occurrences)
+  `(sogg-records ,id-sini ,id-sogg ,date ,days ,occurrences ,@(tl-someof :d-flg-coinvolto :d-flg-leso :d-flg-richiedente :d-flg-proprietario :d-flg-contraente :d-flg-deceduto :d-flg-testimone :d-flg-responsabile)))
+
+;; (defun sco1-true (id-sini id-sogg date days occurrences)
+;;   (let ((sco1-flags (list :d-flg-coinvolto :d-flg-leso :d-flg-richiedente :d-flg-proprietario :d-flg-contraente :d-flg-deceduto :d-flg-testimone :d-flg-responsabile)))
+
+;;     (sogg-records id-sini id-sogg date days occurrences (tl-someof :d-flg-coinvolto :d-flg-leso :d-flg-richiedente :d-flg-proprietario :d-flg-contraente :d-flg-deceduto :d-flg-testimone :d-flg-responsabile)
+;;                   ;; (tl-someof sco1-flags "s")
+;;                   )))
+
+
+(let* ((sco1-days 180)
+       (sco1-occurrences 3)
+       (end-date (get-universal-time))
+       (start-date (- end-date (* sco1-days 86400))))
+  (defdb 
+      (sco1-true 1 1000 end-date sco1-days sco1-occurrences)
+      ;; (tl-forall i (tl-range 1 1) 
+      ;;   (tl-exists (sini gv-ind-stat-sini) 
+      ;;       (:ind-stat-sini-id i :id-sini i :d-data-accad (tl-timestamp end-date)))
+      ;;   (tl-exists (sogg gv-ind-stat-sogg-sini) 
+      ;;       (:ind-stat-sogg-sini-id i :id-sini i :id-sogg i :d-flg-leso "s"))
+      ;;   (tl-forall j (tl-range 1 sco1-occurrences)
+      ;;     (tl-exists (sini gv-ind-stat-sini) 
+      ;;         (:ind-stat-sini-id (uniq i j) :id-sini (uniq i j) :d-flg-leso "s" :d-data-accad (tl-random-timestamp start-date end-date)))))
+      ))
+
+
 
 ;; (defdb
 ;;     (tl-forall i (tl-range 1 3) 

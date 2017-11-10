@@ -4,8 +4,7 @@
   (tl-equal id (expr:const 1)) 
   (tl-let ((a (tl-http-get (url `(www % test % it / b / a ? q = a )))))
     a)
-  (tl-let ((b (tl-http-body this indicator-format)))
-    (tl-equal (tl-get :indicator-id b) (expr:const "200"))))
+  (tl-equal (tl-get :indicator-id (tl-http-body this indicator-format)) (expr:const "200")))
 
 
 

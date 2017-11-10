@@ -89,7 +89,7 @@
   (:pretty () (list 'bl-get (list :place place :object (synth :pretty object))))
   (:java-implementation (cont &rest args) 
           (let ((logic (java-chain :as (synth :java-type (synth :type this))
-                                   (java-dynamic (synth :name object)) (java-call (symb 'get "-" place)))))
+                                   (synth :java-implementation object #'identity) (java-call (symb 'get "-" place)))))
             (apply cont logic args)))
   (:errors () nil)
   (:entities () nil)
