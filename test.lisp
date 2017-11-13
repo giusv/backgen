@@ -215,6 +215,11 @@
                                                               (group values 2)))))))
      (cons ,name (append ,@formulas))))
 
+;; (defmacro tl-exists ((name table) values &body formulas)
+;;   `(let ((,name (list ',table (apply #'append (mapcar (lambda (pair) (list (car pair) (cadr pair)))
+;;                                                       (group (list ,@values) 2))))))
+;;      (cons ,name (append ,@formulas))))
+
 (defmacro tl-retrieve (place object)
   `(getf (cadr ,object) ,place))
 
