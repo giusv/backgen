@@ -210,7 +210,7 @@
 (defmacro tl-and (&body formulas)
   `(apply #'append (list ,@formulas)))
 
-(defmacro tl-exists ((name table) (&rest values) &body formulas)
+(defmacro tl-exists ((name table) values &body formulas)
   `(let ((,name (list ',table (list ,@(apply #'append (mapcar (lambda (pair) (list (car pair) (cadr pair)))
                                                               (group values 2)))))))
      (cons ,name (append ,@formulas))))

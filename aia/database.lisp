@@ -29,11 +29,24 @@
 ;;             (:ind-stat-sogg-sini-id i :id-sini i :id-sogg (mod i (/ n m)) :d-flg-leso "s"))
 ;;         (tl-exists (veic gv-ind-stat-trg-veic-sini) 
 ;;             (:ind-stat-trg-veic-sini-id i :id-sini i :id-targa (mod i (/ n m)) :d-flg-targa-incoerente "s")))
-(defun tl-oneof (values)
-  (nth (random (length values)) values))
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (defun tl-oneof (values)
+    (nth (random (length values)) values)))
 
 
-(defmacro sogg-records (id-sini id-sogg date days occurrences &body flags)
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (defun tl-someof (flags n val)
+    (pprint flags) (if (eql n 0)
+           nil 
+           (let ((flag (tl-oneof flags)))
+             (apply #'list flag val (tl-someof (remove flag flags) (- n 1) val))))))
+
+;; (defmacro tl-someof (flags val)
+;;   (let ((len (length flags)))
+;;     `(apply #'append (remove-duplicates (loop for i from 1 to ,len collect (list (nth (random ,len) ,flags) ,val)) :test (lambda (f1 f2) (eql (car f1) (car f2)))))))
+
+(tl-someof  (list :d-flg-coinvolto :d-flg-leso :d-flg-richiedente :d-flg-proprietario :d-flg-contraente :d-flg-deceduto :d-flg-testimone :d-flg-responsabile) 2 "s")
+(defmacro sogg-records (id-sini id-sogg date days occurrences flags)
   `(tl-exists (sini gv-ind-stat-sini) 
        (:ind-stat-sini-id ,id-sini :id-sini ,id-sini :d-data-accad (tl-timestamp ,date))
      (tl-exists (sogg gv-ind-stat-sogg-sini) 
@@ -43,29 +56,22 @@
            (:ind-stat-sini-id (uniq ,id-sini i) :id-sini (uniq ,id-sini i)  
                               :d-data-accad (tl-random-timestamp (- ,date (* ,days 86400)) ,date))
          (tl-exists (sogg gv-ind-stat-sogg-sini) 
-             (:ind-stat-sogg-sini-id (uniq (tl-retrieve :id-sini sini) i) :id-sini (tl-retrieve :id-sini sini) :id-sogg ,id-sogg ,@flags))))))
-
-(defmacro tl-someof (&rest vals)
-  (let ((len (length vals)))
-    `(apply #'append (loop for i from 1 to ,len collect (list (nth (random ,len) ,vals) "s")))))
+             ,(append `(:ind-stat-sogg-sini-id (uniq (tl-retrieve :id-sini sini) i) :id-sini (tl-retrieve :id-sini sini) :id-sogg ,id-sogg) (tl-someof flags occurrences "s"))
+           )))))
 
 (defmacro sco1-true (id-sini id-sogg date days occurrences)
-  `(sogg-records ,id-sini ,id-sogg ,date ,days ,occurrences ,@(tl-someof :d-flg-coinvolto :d-flg-leso :d-flg-richiedente :d-flg-proprietario :d-flg-contraente :d-flg-deceduto :d-flg-testimone :d-flg-responsabile)))
+  `(sogg-records ,id-sini ,id-sogg ,date ,days ,occurrences (:d-flg-coinvolto :d-flg-leso :d-flg-richiedente :d-flg-proprietario :d-flg-contraente :d-flg-deceduto :d-flg-testimone :d-flg-responsabile)))
 
-;; (defun sco1-true (id-sini id-sogg date days occurrences)
-;;   (let ((sco1-flags (list :d-flg-coinvolto :d-flg-leso :d-flg-richiedente :d-flg-proprietario :d-flg-contraente :d-flg-deceduto :d-flg-testimone :d-flg-responsabile)))
+(defmacro sco1-false (id-sini id-sogg date days occurrences)
+  `(sogg-records ,id-sini ,id-sogg ,date ,days ,(- occurrences 1) :d-flg-coinvolto :d-flg-leso :d-flg-richiedente :d-flg-proprietario :d-flg-contraente :d-flg-deceduto :d-flg-testimone :d-flg-responsabile))
 
-;;     (sogg-records id-sini id-sogg date days occurrences (tl-someof :d-flg-coinvolto :d-flg-leso :d-flg-richiedente :d-flg-proprietario :d-flg-contraente :d-flg-deceduto :d-flg-testimone :d-flg-responsabile)
-;;                   ;; (tl-someof sco1-flags "s")
-;;                   )))
-
-
-(let* ((sco1-days 180)
+(macrolet* ((sco1-days 180)
        (sco1-occurrences 3)
        (end-date (get-universal-time))
        (start-date (- end-date (* sco1-days 86400))))
   (defdb 
       (sco1-true 1 1000 end-date sco1-days sco1-occurrences)
+      ;; (sco1-false 1 1000 end-date sco1-days sco1-occurrences)
       ;; (tl-forall i (tl-range 1 1) 
       ;;   (tl-exists (sini gv-ind-stat-sini) 
       ;;       (:ind-stat-sini-id i :id-sini i :d-data-accad (tl-timestamp end-date)))
