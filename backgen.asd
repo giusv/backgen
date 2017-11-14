@@ -25,6 +25,7 @@
                (:file "url")
                (:file "query")
                (:file "documentation")
+               (:file "pgen")
                (:module "data"
                         :serial t
                         :components ((:file "json")

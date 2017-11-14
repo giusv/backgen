@@ -232,11 +232,13 @@
            :description :description%
            :panel
            :link :navbar))
+(defpackage :pgen
+  (:use :cl :lol :utils :doc :grammar :java))
 
 (defpackage :test
   (:use :cl :lol :utils :doc :grammar :parser :java :type :data :sql :url)
   (:export :defdb :*database* :deftest :defsuite :*tests* :*suites*
-           :tl-forall :tl-exists :l-and :tl-retrieve :tl-get :tl-ddl :tl-range :tl-random-timestamp :tl-timestamp
+           :tl-forall :tl-exists :l-and :tl-retrieve :tl-get :tl-ddl :tl-range :tl-random-timestamp :tl-timestamp :tl-and
            :tl-variab :tl-lambda% :tl-call :tl-binding :tl-let% :tl-let
            :tl-test :tl-test-instance :tl-seq% :tl-test-binding :tl-ensure
            :tl-require :tl-equal :tl-invoke-service :tl-suite :tl-db% 

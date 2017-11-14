@@ -26,9 +26,9 @@
 ;;         (tl-exists (sini gv-ind-stat-sini) 
 ;;             (:ind-stat-sini-id i :id-sini i))
 ;;         (tl-exists (sogg gv-ind-stat-sogg-sini) 
-;;             (:ind-stat-sogg-sini-id i :id-sini i :id-sogg (mod i (/ n m)) :d-flg-leso "s"))
+;;             (:ind-stat-sogg-sini-id i :id-sini i :id-sogg (mod i (/ n m)) :d-flg-leso "1"))
 ;;         (tl-exists (veic gv-ind-stat-trg-veic-sini) 
-;;             (:ind-stat-trg-veic-sini-id i :id-sini i :id-targa (mod i (/ n m)) :d-flg-targa-incoerente "s")))
+;;             (:ind-stat-trg-veic-sini-id i :id-sini i :id-targa (mod i (/ n m)) :d-flg-targa-incoerente "1")))
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (defun tl-oneof (values)
     (nth (random (length values)) values)))
@@ -51,49 +51,125 @@
 ;;   (let ((len (length flags)))
 ;;     `(apply #'append (remove-duplicates (loop for i from 1 to ,len collect (list (nth (random ,len) ,flags) ,val)) :test (lambda (f1 f2) (eql (car f1) (car f2)))))))
 
-;; (tl-someof (:d-flg-coinvolto :d-flg-leso :d-flg-richiedente :d-flg-proprietario :d-flg-contraente :d-flg-deceduto :d-flg-testimone :d-flg-responsabile) 2 "s")
+;; (tl-someof (:d-flg-coinvolto :d-flg-leso :d-flg-richiedente :d-flg-proprietario :d-flg-contraente :d-flg-deceduto :d-flg-testimone :d-flg-respons) 2 "1")
 
 
-;; (tl-someof (list :d-flg-coinvolto :d-flg-leso :d-flg-richiedente :d-flg-proprietario :d-flg-contraente :d-flg-deceduto :d-flg-testimone :d-flg-responsabile) 2 "s")
+;; (tl-someof (list :d-flg-coinvolto :d-flg-leso :d-flg-richiedente :d-flg-proprietario :d-flg-contraente :d-flg-deceduto :d-flg-testimone :d-flg-respons) 2 "1")
 
-(defmacro sogg-record (id-sini id-sogg date days occurrences flags)
+
+(defmacro sini-record (id-sini id-sogg date &rest flags)
   `(tl-exists (sini gv-ind-stat-sini) 
-       (:ind-stat-sini-id ,id-sini :id-sini ,id-sini :d-data-accad (tl-timestamp ,date))
-     (tl-exists (sogg gv-ind-stat-sogg-sini) 
-         (:ind-stat-sogg-sini-id ,id-sogg :id-sini ,id-sini :id-sogg ,id-sogg))
-     (tl-forall i (tl-range 1 ,occurrences)
-       (tl-exists (sini gv-ind-stat-sini) 
-           (:ind-stat-sini-id (uniq ,id-sini i) :id-sini (uniq ,id-sini i)  
-                              :d-data-accad (tl-random-timestamp (- ,date (* ,days 86400)) ,date))
-         (tl-exists (sogg gv-ind-stat-sogg-sini) 
-             (:ind-stat-sogg-sini-id (uniq (tl-retrieve :id-sini sini) i) :id-sini (tl-retrieve :id-sini sini) :id-sogg ,id-sogg
-                                     ,@flags))))))
+       (:id-sini ,id-sini :d-data-accad (tl-timestamp ,date))))
 
-(defmacro sco1-true (id-sini id-sogg date days occurrences)
-  `(sogg-record ,id-sini ,id-sogg ,date ,days ,occurrences ,(tl-someof #1=(list :d-flg-coinvolto :d-flg-leso :d-flg-richiedente :d-flg-proprietario :d-flg-contraente :d-flg-deceduto :d-flg-testimone :d-flg-responsabile) (random (length #1#)) "s")))
+(defmacro sogg-record (id-sini id-sogg date days &rest flags)
+  `(tl-exists (sogg gv-ind-stat-sogg-sini) 
+       (:id-sini ,id-sini :id-sogg ,id-sogg ,@flags)))
 
-;; (defmacro sco1-false (id-sini id-sogg date days occurrences)
-;;   `(sogg-records ,id-sini ,id-sogg ,date ,days ,(- occurrences 1) :d-flg-coinvolto :d-flg-leso :d-flg-richiedente :d-flg-proprietario :d-flg-contraente :d-flg-deceduto :d-flg-testimone :d-flg-responsabile))
+(defmacro sogg-records (id-sini id-sogg date days occurrences &rest flags)
+  `(tl-forall i (tl-range 1 ,occurrences)
+     (tl-exists (sini gv-ind-stat-sini) 
+         (:id-sini (uniq ,id-sini i)  
+                   :d-data-accad (tl-random-timestamp (- ,date (* ,days 86400)) ,date))
+       (tl-exists (sogg gv-ind-stat-sogg-sini) 
+           (:id-sini (tl-retrieve :id-sini sini) :id-sogg ,id-sogg
+                     ,@flags)))))
+
+;; (list :d-flg-coinvolto :d-flg-leso :d-flg-richiedente :d-flg-proprietario :d-flg-contraente :d-flg-deceduto :d-flg-testimone :d-flg-respons)
+
+
+(defmacro sco1 (id-sini id-sogg date days occurrences flags flag)
+  `(tl-and (sini-record ,id-sini ,id-sogg ,date
+                        ,flag "1" ,@(apply #'append (mapcar (lambda (flag) (list flag "0"))
+                                                            (remove flag flags))))
+           (sogg-record ,id-sini ,id-sogg ,date ,days 
+                        ,flag "1" ,@(apply #'append (mapcar (lambda (flag) (list flag "0"))
+                                                            (remove flag flags))))
+           (sogg-records ,id-sini ,id-sogg ,date ,days ,occurrences 
+                         ,flag "1" ,@(apply #'append (mapcar (lambda (flag) (list flag "0"))
+                                                             (remove flag flags))))
+
+           (sini-record (+ ,id-sini 1) (+ ,id-sogg 1) ,date 
+                        ,flag "1" ,@(apply #'append (mapcar (lambda (flag) (list flag "0"))
+                                                            (remove flag flags))))
+           (sogg-record (+ ,id-sini 1) (+ ,id-sogg 1) ,date ,days 
+                        ,flag "1" ,@(apply #'append (mapcar (lambda (flag) (list flag "0"))
+                                                            (remove flag flags))))
+           (sogg-records (+ ,id-sini 1) (+ ,id-sogg 1) ,date ,days (- ,occurrences 1)
+                         ,flag "1" ,@(apply #'append (mapcar (lambda (flag) (list flag "0"))
+                                                             (remove flag flags))))
+
+           (sini-record (+ ,id-sini 2) (+ ,id-sogg 2) ,date
+                        ,flag "1" ,@(apply #'append (mapcar (lambda (flag) (list flag "0"))
+                                                            (remove flag flags))))
+           (sogg-record (+ ,id-sini 2) (+ ,id-sogg 2) ,date ,days 
+                        ,flag "1" ,@(apply #'append (mapcar (lambda (flag) (list flag "0"))
+                                                            (remove flag flags))))
+           (sogg-records (+ ,id-sini 2) (+ ,id-sogg 2) ,date ,days (- ,occurrences 1) 
+                         ,flag "1" ,@(apply #'append (mapcar (lambda (flag) (list flag "0"))
+                                                             (remove flag flags))))
+           (sogg-records (+ ,id-sini 3) (+ ,id-sogg 2) ,date ,days 1
+                         ,flag nil ,@(apply #'append (mapcar (lambda (flag) (list flag "0"))
+                                                             (remove flag flags))))))
+
+(defmacro sco2 (id-sini id-sogg date days occurrences flags flag)
+  `(sco1 ,id-sini ,id-sogg ,date ,days ,occurrences ,flags ,flag))
+
+(defmacro sco3 (id-sini id-sogg date days occurrences threshold flags flag)
+  `(tl-and (sini-record ,id-sini ,id-sogg ,date
+                        :m-num-lesi ,threshold ,flag "1" ,@(apply #'append (mapcar (lambda (flag) (list flag "0"))
+                                                                                   (remove flag flags))))
+           (sogg-record ,id-sini ,id-sogg ,date ,days  
+                        ,flag "1" ,@(apply #'append (mapcar (lambda (flag) (list flag "0"))
+                                                            (remove flag flags))))
+
+           (sogg-records ,id-sini ,id-sogg ,date ,days ,occurrences 
+                         ,flag "1" ,@(apply #'append (mapcar (lambda (flag) (list flag "0"))
+                                                             (remove flag flags))))
+
+           (sini-record (+ ,id-sini 1) (+ ,id-sogg 1) ,date 
+                        :m-num-lesi ,threshold ,flag "1" ,@(apply #'append (mapcar (lambda (flag) (list flag "0"))
+                                                                                   (remove flag flags))))
+           (sogg-record (+ ,id-sini 1) (+ ,id-sogg 1) ,date ,days 
+                        ,flag "1" ,@(apply #'append (mapcar (lambda (flag) (list flag "0"))
+                                                            (remove flag flags))))
+           (sogg-records (+ ,id-sini 1) (+ ,id-sogg 1) ,date ,days (- ,occurrences 1)
+                         ,flag "1" ,@(apply #'append (mapcar (lambda (flag) (list flag "0"))
+                                                             (remove flag flags))))
+
+           (sini-record (+ ,id-sini 2) (+ ,id-sogg 2) ,date
+                        :m-num-lesi ,threshold ,flag "1" ,@(apply #'append (mapcar (lambda (flag) (list flag "0"))
+                                                                                   (remove flag flags))))
+           (sogg-record (+ ,id-sini 2) (+ ,id-sogg 2) ,date ,days 
+                         ,flag "1" ,@(apply #'append (mapcar (lambda (flag) (list flag "0"))
+                                                             (remove flag flags))))
+
+           (sogg-records (+ ,id-sini 2) (+ ,id-sogg 2) ,date ,days (- ,occurrences 1) 
+                         ,flag "1" ,@(apply #'append (mapcar (lambda (flag) (list flag "0"))
+                                                             (remove flag flags))))
+           (sogg-records (+ ,id-sini 3) (+ ,id-sogg 2) ,date ,days 1
+                         ,flag nil ,@(apply #'append (mapcar (lambda (flag) (list flag "0"))
+                                                             (remove flag flags))))
+           ))
 
 (let* ((sco1-days 180)
        (sco1-occurrences 3)
+       (sco2-days 180)
+       (sco2-occurrences 10)
+       (sco3-days 180)
+       (sco3-threshold 2)
+       (sco3-occurrences 10)
        (end-date (get-universal-time)))
   (defdb 
-    (sco1-true 1 1000 end-date sco1-days sco1-occurrences)
-    ;; (sco1-false 1 1000 end-date sco1-days sco1-occurrences)
-    ;; (tl-forall i (tl-range 1 1) 
-    ;;   (tl-exists (sini gv-ind-stat-sini) 
-    ;;       (:ind-stat-sini-id i :id-sini i :d-data-accad (tl-timestamp end-date)))
-    ;;   (tl-exists (sogg gv-ind-stat-sogg-sini) 
-    ;;       (:ind-stat-sogg-sini-id i :id-sini i :id-sogg i :d-flg-leso "s"))
-    ;;   (tl-forall j (tl-range 1 sco1-occurrences)
-    ;;     (tl-exists (sini gv-ind-stat-sini) 
-    ;;         (:ind-stat-sini-id (uniq i j) :id-sini (uniq i j) :d-flg-leso "s" :d-data-accad (tl-random-timestamp start-date end-date)))))
+    (sco1 101 1001 end-date sco1-days (- sco1-occurrences 1) (:d-flg-coinvolto :d-flg-leso :d-flg-richiedente :d-flg-proprietario :d-flg-contraente :d-flg-deceduto :d-flg-testimone :d-flg-respons) :d-flg-respons)
+    (sco2 201 2001 end-date sco2-days (- sco2-occurrences 1) (:d-flg-coinvolto :d-flg-leso :d-flg-richiedente :d-flg-proprietario :d-flg-contraente :d-flg-deceduto :d-flg-testimone :d-flg-respons) :d-flg-respons)
+    (sco3 301 3001 end-date sco3-days (- sco3-occurrences 1) sco3-threshold (:d-flg-coinvolto :d-flg-leso :d-flg-richiedente :d-flg-proprietario :d-flg-contraente :d-flg-deceduto :d-flg-testimone :d-flg-respons) :d-flg-respons)
     ))
 
-(pprint *database*)
+;; (pprint *database*)
 
 
+;; (symbol-macrolet ((lst '(1 2 3)))
+;;   (pprint lst))
 
 ;; (defdb
 ;;     (tl-forall i (tl-range 1 3) 
@@ -101,9 +177,9 @@
 ;;           (:id-sini i))
 ;;       (tl-forall j (list 1 2) 
 ;;         (tl-exists (soggetto ind-stat-sogg) 
-;;             (:id-sini i :id-sogg j :flg-leso "s")))
+;;             (:id-sini i :id-sogg j :flg-leso "1")))
 ;;       (tl-exists (veicolo ind-stat-veic) 
-;;           (:id-sini i :id-targa (random-string 7) :flg-targa-incoerente "s"))))
+;;           (:id-sini i :id-targa (random-string 7) :flg-targa-incoerente "1"))))
 ;; (defdb 
 ;;     (tl-forall i (tl-range 3 3)
 ;;       (tl-exists (entry stdlib-entries)
@@ -159,7 +235,7 @@
 ;;   (bool-entry 18 contraente d-flg-contraente s)
 ;;   (bool-entry 19 deceduto d-flg-deceduto s)
 ;;   (bool-entry 20 testimone d-flg-testimone s)
-;;   (bool-entry 21 responsabile d-flg-responsabile s)
+;;   (bool-entry 21 responsabile d-flg-respons s)
 ;;   (bool-entry 22 danneggiato d-flg-danneggiato s)
   
 ;;   (tl-forall i (tl-range 24 24)

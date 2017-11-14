@@ -230,7 +230,7 @@
 (defun tl-timestamp (time)
   (multiple-value-bind
 	(second minute hour date month year day-of-week dst-p tz) (decode-universal-time time)
-    (list 'to_timestamp (format nil "~2,'0d/~2,'0d/~4,'0d ~2,'0d\:~2,'0d\:~2,'0d" date month year hour minute second) "DD/MM/YYYY HH:MI:SS")))
+    (list 'to_timestamp (format nil "~2,'0d/~2,'0d/~4,'0d ~2,'0d\:~2,'0d\:~2,'0d" date month year hour minute second) "DD/MM/YYYY HH24:MI:SS")))
 
 
 
@@ -271,8 +271,9 @@
   (typecase value
     (number value)
     (string (format nil "'~a'" value))
+    (null (format nil "NULL"))
     (list (format nil "~a(~{~a~^,~})" (car value) (mapcar #'sqlify (cdr value))))
-    (t (format nil "NULL"))))
+    (t (error "value ~a not well typed" value))))
 (defun tl-ddl (db)
   (with-output-to-string (*standard-output*) 
     (loop for record in db do 
@@ -317,7 +318,7 @@
 
 (defparameter *database* nil)
 (defmacro defdb (&body records)
-  `(defparameter *database* ,@records))
+  `(defparameter *database* (tl-and ,@records)))
 
 ;; (defun defdb (records)
 ;;   (defparameter *database* records))

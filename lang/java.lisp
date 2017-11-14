@@ -9,6 +9,10 @@
   (:pretty () (list 'java-comment (list :text text))) 
   (:java () (text "//~a" (synth :string text))))
 
+;; (defprim java-doc (text)
+;;   (:pretty () (list 'java-comment (list :text text))) 
+;;   (:java () (text "//~a" (synth :string text))))
+
 (defprim java-pair (name type &key init const private)
   (:pretty () (list 'java-pair (list :name name :type (synth :pretty type) :init (synth :pretty init) :const const))) 
   (:java () (hcat (if private (text "private ") (empty))
