@@ -25,7 +25,7 @@
                (:file "url")
                (:file "query")
                (:file "documentation")
-               (:file "pgen")
+              
                (:module "data"
                         :serial t
                         :components ((:file "json")
@@ -81,7 +81,7 @@
                ;;                       (:file "formats")
                ;;                       (:file "services")
                ;;                       (:file "database")))
-              
+               (:file "pgen")
                (:file "backgen")
                ;; (:file "guigen")
                ))

@@ -52,6 +52,7 @@
 (list '(:id . "identificatore")
       '(:soggetto . "soggetto")
       '(:veicolo . "veicolo")
+      '(:sinistro . "sinistro")
       '(:colon . ":")
       '(:assign . "=")
       '(:comma . ",")
@@ -111,7 +112,7 @@
            (java-with-annotations 
             nil ;; (list (java-annotation2 '|SuppressWarnings| (java-const "unchecked"))
                 ;;   (java-annotation2 '|SuppressWarnings| (java-const "unused")))
-            (java-method (textify (lower-camel symbol)) (synth :parameters attribute) 
+            (java-method symbol (synth :parameters attribute) 
                        (aif (synth :type attribute)
                             it
                             (java-primitive-type 'void))
@@ -131,7 +132,7 @@
                                                                                                     ;; (mkstr case ", ")
                                                                                                     (mkstr "'" (aif (assoc case terminal-strings)
                                                                                                                     (cdr it)
-                                                                                                                    "file del file") "'" ", "))
+                                                                                                                    "fine del codice") "'" ", "))
                                                                                                   cases)
                                                                                           :initial-value (mkstr " nella produzione per " symbol ": atteso ")))
                                                                         (java-const "trovato ")
@@ -500,24 +501,37 @@
 ;;                                                  occorrenze-veicoli))))
 ;;                              occorrenze-sinistri)))
             
-
 (defproduction argomento 
     (with-bindings ((sogg (match (terminal :soggetto t-id)))
                     ((store sogg (java-new t-id sogg (java-chain (java-static 'type) (java-enum 'soggetto)))))
                     ((store (java-new t-id (java-new t-word (java-const "input") (java-chain (java-static 'tag) (java-enum 'input))))
                             (java-new t-id sogg (java-chain (java-static 'type) (java-enum 'soggetto))))))
-      (synthesize sogg)))
+      (synthesize (java-new t-id sogg (java-chain (java-static 'type) (java-enum 'soggetto))))))
 
 (defproduction argomento 
     (with-bindings ((veic (match (terminal :veicolo t-id)))
+                    ((store veic (java-new t-id veic (java-chain (java-static 'type) (java-enum 'veicolo)))))
                     ((store (java-new t-id (java-new t-word (java-const "input") (java-chain (java-static 'tag) (java-enum 'input))))
-                            (java-new t-id veic (java-chain (java-static 'type) (java-enum 'veicolo)))))
-                    ((store veic (java-new t-id veic (java-chain (java-static 'type) (java-enum 'veicolo))))))
-      (synthesize veic))
-  ;; (with-bindings ((veic (match (terminal :veicolo t-id)))
-  ;;                 ((store veic (java-new t-id veic (java-chain (java-static 'type) (java-enum 'veicolo))))))
-  ;;   (synthesize veic))
-  )
+                            (java-new t-id veic (java-chain (java-static 'type) (java-enum 'veicolo))))))
+      (synthesize (java-new t-id veic (java-chain (java-static 'type) (java-enum 'veicolo))))))
+
+(defproduction argomento 
+    (with-bindings ((sogg (match (terminal :sinistro t-id)))
+                    ((store sogg (java-new t-id sogg (java-chain (java-static 'type) (java-enum 'sinistro)))))
+                    ((store (java-new t-id (java-new t-word (java-const "input") (java-chain (java-static 'tag) (java-enum 'input))))
+                            (java-new t-id sogg (java-chain (java-static 'type) (java-enum 'sinistro))))))
+      (synthesize (java-new t-id sogg (java-chain (java-static 'type) (java-enum 'sinistro))))))
+
+;; (defproduction argomento 
+;;     (with-bindings ((veic (match (terminal :veicolo t-id)))
+;;                     ((store veic (java-new t-id veic (java-chain (java-static 'type) (java-enum 'veicolo)))))
+;;                     ((store (java-new t-id (java-new t-word (java-const "input") (java-chain (java-static 'tag) (java-enum 'input))))
+;;                             (java-new t-id veic (java-chain (java-static 'type) (java-enum 'veicolo))))))
+;;       (synthesize veic))
+;;   ;; (with-bindings ((veic (match (terminal :veicolo t-id)))
+;;   ;;                 ((store veic (java-new t-id veic (java-chain (java-static 'type) (java-enum 'veicolo))))))
+;;   ;;   (synthesize veic))
+;;   )
 
 ;; (defproduction argomento 
 ;;     (with-bindings ((id (match terminal-id))
