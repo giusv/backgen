@@ -38,71 +38,71 @@
        (app-ejbs (mapcar #'server:generate-ejb app-services))
        (app-ddls (apply #'doc:postpend (doc:semi) t (remove nil (synth-all :ddl app-entities))))
        (app-db *database*))
-  (pprint java-basedir)
-  (let ((filename (mkstr metainf-basedir "persistence.xml")))
-    (pprint filename)
-    (write-file filename
-                (synth :string (synth :doc (persistence nil)))))
-  (let ((filename (mkstr project-basedir "pom.xml"))) 
-    (pprint filename)
-    (write-file filename
-                (synth :string (synth :doc (pom group-id artifact-id)))))
-  (let ((filename (mkstr webinf-basedir "web.xml"))) 
-    (pprint filename)
-    (write-file filename
-                (synth :string (synth :doc (web group-id artifact-id app-services)))))
-  (let ((filename (mkstr webinf-basedir "beans.xml"))) 
-    (pprint filename)
-    (write-file filename
-                (synth :string (synth :doc (beans)))))
-  (mapcar (lambda (entity) 
-            (let ((filename (mkstr java-basedir "model/" (upper-camel (synth :name entity)) ".java"))) 
-              (pprint filename)
-              (write-file filename
-                          (synth :string (synth :doc (synth :java (synth :entity entity package-symb)))))))
-          app-entities)
-  (mapcar (lambda (dao) 
-            (let ((filename (mkstr java-basedir "dao/" (upper-camel (synth :name dao)) ".java"))) 
-              (pprint filename)
-              (write-file filename
-                          (synth :string (synth :doc (synth :java (synth :dao dao package-symb)))))))
-          app-daos)
-  (mapcar (lambda (dto) 
-            (let ((filename (mkstr java-basedir "dto/" (upper-camel (synth :name dto)) ".java"))) 
-              (pprint filename)
-              (write-file filename
-                          (synth :string (synth :doc (synth :java (synth :dto dto package-symb)))))))
-          app-dtos)
-  (mapcar (lambda (ejb) 
-            (let ((filename (mkstr java-basedir "ejb/" (upper-camel (synth :name ejb)) ".java"))) 
-              (pprint filename)
-              (write-file filename
-                          (synth :string (synth :doc (synth :java (synth :ejb ejb package-symb)))))))
-          app-ejbs)
-  (mapcar (lambda (error) 
-            (let ((filename (mkstr java-basedir "exception/" (upper-camel (synth :name error)) ".java"))) 
-              (pprint filename)
-              (write-file filename
-                          (synth :string (synth :doc (synth :java (synth :java-implementation error package-symb)))))))
-          app-exceptions) 
-  (mapcar (lambda (format) 
-            (let ((filename (mkstr java-basedir "vo/" (upper-camel (symb (synth :name (synth :format format)) '|-V-O|)) ".java"))) 
-              (pprint filename)
-              (write-file filename
-                          (synth :string (synth :doc (synth :java (synth :java-implementation format package-symb))))
-                          ;; (synth :string (synth :doc (synth :java (synth :req format))))
-                          )))
-          app-formats)
-  ;; (let ((filename (mkstr metainf-basedir "application.java")))
+  ;; (pprint java-basedir)
+  ;; (let ((filename (mkstr metainf-basedir "persistence.xml")))
   ;;   (pprint filename)
   ;;   (write-file filename
-  ;;               (synth :string (synth :doc (rest-application app-services)))))
-  (mapcar (lambda (service) 
-            (let ((filename (mkstr java-basedir "service/" (upper-camel (synth :name service)) ".java"))) 
-              (pprint filename)
-              (write-file filename
-                          (synth :string (synth :doc (synth :java (synth :java-implementation service package-symb)))))))
-          app-services)
+  ;;               (synth :string (synth :doc (persistence nil)))))
+  ;; (let ((filename (mkstr project-basedir "pom.xml"))) 
+  ;;   (pprint filename)
+  ;;   (write-file filename
+  ;;               (synth :string (synth :doc (pom group-id artifact-id)))))
+  ;; (let ((filename (mkstr webinf-basedir "web.xml"))) 
+  ;;   (pprint filename)
+  ;;   (write-file filename
+  ;;               (synth :string (synth :doc (web group-id artifact-id app-services)))))
+  ;; (let ((filename (mkstr webinf-basedir "beans.xml"))) 
+  ;;   (pprint filename)
+  ;;   (write-file filename
+  ;;               (synth :string (synth :doc (beans)))))
+  ;; (mapcar (lambda (entity) 
+  ;;           (let ((filename (mkstr java-basedir "model/" (upper-camel (synth :name entity)) ".java"))) 
+  ;;             (pprint filename)
+  ;;             (write-file filename
+  ;;                         (synth :string (synth :doc (synth :java (synth :entity entity package-symb)))))))
+  ;;         app-entities)
+  ;; (mapcar (lambda (dao) 
+  ;;           (let ((filename (mkstr java-basedir "dao/" (upper-camel (synth :name dao)) ".java"))) 
+  ;;             (pprint filename)
+  ;;             (write-file filename
+  ;;                         (synth :string (synth :doc (synth :java (synth :dao dao package-symb)))))))
+  ;;         app-daos)
+  ;; (mapcar (lambda (dto) 
+  ;;           (let ((filename (mkstr java-basedir "dto/" (upper-camel (synth :name dto)) ".java"))) 
+  ;;             (pprint filename)
+  ;;             (write-file filename
+  ;;                         (synth :string (synth :doc (synth :java (synth :dto dto package-symb)))))))
+  ;;         app-dtos)
+  ;; (mapcar (lambda (ejb) 
+  ;;           (let ((filename (mkstr java-basedir "ejb/" (upper-camel (synth :name ejb)) ".java"))) 
+  ;;             (pprint filename)
+  ;;             (write-file filename
+  ;;                         (synth :string (synth :doc (synth :java (synth :ejb ejb package-symb)))))))
+  ;;         app-ejbs)
+  ;; (mapcar (lambda (error) 
+  ;;           (let ((filename (mkstr java-basedir "exception/" (upper-camel (synth :name error)) ".java"))) 
+  ;;             (pprint filename)
+  ;;             (write-file filename
+  ;;                         (synth :string (synth :doc (synth :java (synth :java-implementation error package-symb)))))))
+  ;;         app-exceptions) 
+  ;; (mapcar (lambda (format) 
+  ;;           (let ((filename (mkstr java-basedir "vo/" (upper-camel (symb (synth :name (synth :format format)) '|-V-O|)) ".java"))) 
+  ;;             (pprint filename)
+  ;;             (write-file filename
+  ;;                         (synth :string (synth :doc (synth :java (synth :java-implementation format package-symb))))
+  ;;                         ;; (synth :string (synth :doc (synth :java (synth :req format))))
+  ;;                         )))
+  ;;         app-formats)
+  ;; ;; (let ((filename (mkstr metainf-basedir "application.java")))
+  ;; ;;   (pprint filename)
+  ;; ;;   (write-file filename
+  ;; ;;               (synth :string (synth :doc (rest-application app-services)))))
+  ;; (mapcar (lambda (service) 
+  ;;           (let ((filename (mkstr java-basedir "service/" (upper-camel (synth :name service)) ".java"))) 
+  ;;             (pprint filename)
+  ;;             (write-file filename
+  ;;                         (synth :string (synth :doc (synth :java (synth :java-implementation service package-symb)))))))
+  ;;         app-services)
   (let ((filename (mkstr resources-basedir "create.sql"))) 
     (pprint filename)
     (write-file filename
@@ -113,7 +113,7 @@
       (pprint filename)
       (write-file filename
                   ;; (synth :string (synth :sql (synth :sql-implementation app-db)))
-                 (tl-ddl app-db)))))
+                  (tl-ddl app-db)))))
 (defun common (package-symb app-tests) 
   (java-unit 'common 
              (java-package package-symb) 
