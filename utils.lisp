@@ -10,7 +10,8 @@
         ((atom list) (error "not a list"))
         ((keywordp (car list)) (rest-plain (cddr list)))
         (t (cons (car list) (rest-plain (cdr list))))))
-
+(defun random-unique () 
+  (parse-integer (symbol-name (gensym ""))))
 (defun random-number (start end)
      (+ start (random (+ 1 (- end start)))))
 (defun random-string (length)
@@ -24,12 +25,19 @@
 (defun random-boolean ()
   (elt (list t nil) (random 2)))
 
-(defun ppair-p (pair)
+
+(defun random-date (start end)
+  (random-number start end))
+
+(defun random-from (list)
+  (let ((n (length list)))
+    (elt list (random n))))(defun ppair-p (pair)
   (and (consp pair)
        (eql (length pair) 2)
        (typep (car pair) 'keyword)))
 (defun plist-p (lst)
   (every #'ppair-p (group lst 2)))
+
 
 
 (defun plist-keys (plst)

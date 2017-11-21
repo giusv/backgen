@@ -225,7 +225,7 @@
 (defun tl-timestamp (time)
   (multiple-value-bind
 	(second minute hour date month year day-of-week dst-p tz) (decode-universal-time time)
-    (list 'to_timestamp (format nil "~2,'0d/~2,'0d/~4,'0d ~2,'0d\:~2,'0d\:~2,'0d" date month year hour minute second) "DD/MM/YYYY HH24:MI:SS")))
+    (list time (list 'to_timestamp (format nil "~2,'0d/~2,'0d/~4,'0d ~2,'0d\:~2,'0d\:~2,'0d" date month year hour minute second) "DD/MM/YYYY HH24:MI:SS"))))
 
 
 
@@ -267,7 +267,7 @@
     (number value)
     (string (format nil "'~a'" value))
     (null (format nil "NULL"))
-    (list (format nil "~a(~{~a~^,~})" (car value) (mapcar #'sqlify (cdr value))))
+    (list (format nil "~a(~{~a~^,~})" (caadr value) (mapcar #'sqlify (cdadr value))))
     (t (error "value ~a not well typed" value))))
 (defun tl-ddl (db)
   (with-output-to-string (*standard-output*) 

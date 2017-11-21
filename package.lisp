@@ -8,7 +8,7 @@
            :pandoriclet :get-pandoric  :dlambda :flatten :group :mkstr :symb :keyw))
 (defpackage :utils
   (:use :cl :lol)
-  (:export :random-number :random-string :random-boolean
+  (:export :random-number :random-string :random-boolean :random-unique :random-date :random-from
            :rest-key :rest-plain
            :plist-keys :plist-values
            :plist-p

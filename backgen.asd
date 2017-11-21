@@ -63,13 +63,15 @@
 
                (:file "conf")
                (:file "test")
+
                (:module "aia"
                         :serial t
                         :components ((:file "entities")
-                                     (:file "queries")
+                                     ;; (:file "queries")
                                      (:file "errors")
                                      (:file "formats")
                                      (:file "services")
+                                     (:file "indicator")
                                      (:file "database")
                                      (:file "tests")))
                
@@ -83,5 +85,6 @@
                ;;                       (:file "database")))
                ;; (:file "pgen")
                (:file "backgen")
+               
                ;; (:file "guigen")
                ))
