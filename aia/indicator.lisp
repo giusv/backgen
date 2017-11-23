@@ -114,10 +114,15 @@
   (mapcar #'(lambda (row) (getf row field))
 	  table))
 
-(defmacro sinistri (sogg &optional (condition t))
+(defmacro sinistri-soggetto (sogg &optional (condition t))
   `(restrict (equijoin *soggetti-table* *sinistri-table* :id-sini)
 	    #'(lambda (row) 
 		(and (equal (getf row :id-sogg) ,sogg)
+		     ,condition))))
+(defmacro sinistri-veicolo (veic &optional (condition t))
+  `(restrict (equijoin *veicoli-table* *sinistri-table* :id-sini)
+	    #'(lambda (row) 
+		(and (equal (getf row :id-targa) ,veic)
 		     ,condition))))
 
 (defmacro indicatore (name args pars &body body)

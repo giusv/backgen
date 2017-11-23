@@ -109,11 +109,12 @@
                 (synth :string 
                        (vcat (synth :sql (sql-create-sequence 'hibernate-sequence 101 1)) 
                              app-ddls)))
-    (let ((filename (mkstr resources-basedir "data.sql"))) 
-      (pprint filename)
-      (write-file filename
-                  ;; (synth :string (synth :sql (synth :sql-implementation app-db)))
-                  (tl-ddl app-db)))))
+    ;; (let ((filename (mkstr resources-basedir "data.sql"))) 
+    ;;   (pprint filename)
+    ;;   (write-file filename
+    ;;               ;; (synth :string (synth :sql (synth :sql-implementation app-db)))
+    ;;               (tl-ddl app-db)))
+    ))
 (defun common (package-symb app-tests) 
   (java-unit 'common 
              (java-package package-symb) 
