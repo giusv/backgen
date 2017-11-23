@@ -119,6 +119,19 @@
 	    #'(lambda (row) 
 		(and (equal (getf row :id-sogg) ,sogg)
 		     ,condition))))
+
+(defmacro soggetti (sogg &optional (condition t))
+  `(restrict *soggetti-table*
+	    #'(lambda (row) 
+		(and (equal (getf row :id-sogg) ,sogg)
+		     ,condition))))
+
+(defmacro veicoli (sogg &optional (condition t))
+  `(restrict *veicoli-table*
+	    #'(lambda (row) 
+		(and (equal (getf row :id-sogg) ,sogg)
+		     ,condition))))
+
 (defmacro sinistri-veicolo (veic &optional (condition t))
   `(restrict (equijoin *veicoli-table* *sinistri-table* :id-sini)
 	    #'(lambda (row) 
@@ -135,12 +148,6 @@
 (defun esiste (cluster occorrenze)
   (some #'(lambda (cl) (>= (length cl) occorrenze))
 	cluster))
-
-(defmacro numero-lesi (strict)
-  (if strict
-      `(getf row :m-num-lesi)
-      `(getf row :m-num-lesi)))
-
 
 (defmacro deflags (&body bindings)
   `(progn
@@ -163,7 +170,9 @@
   (proprietario ':d-flg-proprietario)
   (contraente ':d-flg-contraente)
   (deceduto ':d-flg-deceduto)
-  (testimone ':d-flg-testimone))
+  (testimone ':d-flg-testimone)
+  (targainesistente ':d-flg-targa-inesistente)
+  (targaincoerente ':d-flg-targa-incoerente))
 
 (defmacro defmeas (&body bindings)
   `(progn
@@ -177,4 +186,5 @@
 (defmeas 
     (numerolesi ':m-num-lesi)
     (dataaccadimento ':d-data-accad)
-    (datadenuncia ':d-data-denun))
+    (datadenuncia ':d-data-denun)
+    (numerofgvs ':m-num-fgvs))
