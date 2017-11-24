@@ -36,6 +36,7 @@
         (ind-le <=)
         (ind-lt <)
         (ind-eq =)
+        (ind-match equalp)
         (ind-plus +)
         (ind-minus -)
         (ind-times *)
@@ -114,29 +115,35 @@
   (mapcar #'(lambda (row) (getf row field))
 	  table))
 
-(defmacro sinistri-soggetto (sogg &optional (condition t))
+(defmacro sinistri-soggetto (sini sogg &optional (condition t))
   `(restrict (equijoin *soggetti-table* *sinistri-table* :id-sini)
-	    #'(lambda (row) 
-		(and (equal (getf row :id-sogg) ,sogg)
-		     ,condition))))
+             #'(lambda (row) 
+                 (and (ind-eq (getf row :id-sogg) ,sogg)
+                      (ind-lt (getf row :d-data-accad) (car (field-values (restrict *sinistri-table* (lambda (s) 
+                                                                                                       (ind-eq (getf s :id-sini) ,sini))) :d-data-accad)) )
+                      ,condition))))
 
-(defmacro soggetti (sogg &optional (condition t))
+(defmacro soggetti (sini sogg &optional (condition t))
   `(restrict *soggetti-table*
-	    #'(lambda (row) 
-		(and (equal (getf row :id-sogg) ,sogg)
-		     ,condition))))
+             #'(lambda (row) 
+                 (and (ind-eq (getf row :id-sogg) ,sogg)
+                      (ind-eq (getf row :id-sini) ,sini) 
+                      ,condition))))
 
-(defmacro veicoli (sogg &optional (condition t))
+(defmacro veicoli (sini veic &optional (condition t))
   `(restrict *veicoli-table*
-	    #'(lambda (row) 
-		(and (equal (getf row :id-sogg) ,sogg)
-		     ,condition))))
+             #'(lambda (row) 
+                 (and (ind-eq (getf row :id-targa) ,veic)
+                      (ind-eq (getf row :id-sini) ,sini)
+                      ,condition))))
 
-(defmacro sinistri-veicolo (veic &optional (condition t))
+(defmacro sinistri-veicolo (sini veic &optional (condition t))
   `(restrict (equijoin *veicoli-table* *sinistri-table* :id-sini)
-	    #'(lambda (row) 
-		(and (equal (getf row :id-targa) ,veic)
-		     ,condition))))
+             #'(lambda (row) 
+                 (and (ind-eq (getf row :id-targa) ,veic)
+                      (ind-lt (getf row :d-data-accad) (car (field-values (restrict *sinistri-table* (lambda (s) 
+                                                                                                       (ind-eq (getf s :id-sini) ,sini))) :d-data-accad)) )
+                      ,condition))))
 
 (defmacro indicatore (name args pars &body body)
   `(defun ,name (,@args ,@pars)
@@ -155,9 +162,9 @@
                    (destructuring-bind (name flag) binding
                      `(defmacro ,name (strict)
                         (if strict 
-                            `(eql (getf row ,,flag) t)
+                            `(equalp (getf row ,,flag) "1")
                             `(let ((flg (getf row ,,flag)))
-                               (or (eql flg t) (null flg)))))))
+                               (or (equalp flg "1") (null flg)))))))
 	       bindings)))
 
 (deflags 
@@ -187,4 +194,5 @@
     (numerolesi ':m-num-lesi)
     (dataaccadimento ':d-data-accad)
     (datadenuncia ':d-data-denun)
-    (numerofgvs ':m-num-fgvs))
+    (numerofgvs ':m-num-fgvs)
+    (numeroincoerenzeveicolo ':m-num-incoerenze))
