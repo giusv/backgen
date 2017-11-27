@@ -12,8 +12,8 @@
 				   duration
 				   (cons (list head)
 					 (mapcar #'(lambda (cluster) 
-						     (if (< (- (getf head accessor) 
-							       (getf (car (last cluster)) accessor))
+						     (if (< (- (floor (getf head accessor) 86400) 
+							       (floor (getf (car (last cluster)) accessor) 86400))
 							    duration)
 							 (cons head cluster)
 							 cluster))
@@ -21,6 +21,7 @@
     (aif (mapcar #'length (cluster-helper series duration nil))
          (apply #'max it)
          0)))
+
 (defmacro defops (&body bindings)
   `(progn
      ,@(mapcar #'(lambda (binding)
@@ -185,10 +186,10 @@
   `(progn
      ,@(mapcar #'(lambda (binding)
                    (destructuring-bind (name flag) binding
-                     `(defmacro ,name (strict)
+                     `(defmacro ,name (strict &optional (divisor 1))
                         (if strict
-                            `(getf row ,,flag)
-                            `(getf row ,,flag)))))
+                            `(aif (getf row ,,flag) (floor it ,divisor))
+                            `(aif (getf row ,,flag) (floor it ,divisor))))))
 	       bindings)))
 (defmeas 
     (numerolesi ':m-num-lesi)
