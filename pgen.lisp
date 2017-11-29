@@ -127,6 +127,7 @@
                                                                         (java-chain (java-static 'lexer) (java-dynamic 'line))
                                                                         (java-const ", colonna ")
                                                                         (java-chain (java-static 'lexer) (java-dynamic 'col))
+                                                                        (java-const ": ")
                                                                         (java-const (reduce #'mkstr
                                                                                           (mapcar (lambda (case)
                                                                                                     ;; (mkstr case ", ")
@@ -376,6 +377,7 @@
                                                                              (java-chain (java-static 'lexer) (java-dynamic 'line))
                                                                              (java-const ", colonna ")
                                                                              (java-chain (java-static 'lexer) (java-dynamic 'col))
+                                                                             (java-const ": ")
                                                                              (java-chain (java-dynamic 'look)
                                                                                          (java-call 'to-string))
                                                                              (java-const " non dichiarato")))))) 
