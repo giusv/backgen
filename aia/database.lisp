@@ -396,19 +396,30 @@
 ;; (let ((db (random-sogg :id 1 :days 180 :occurr2ences (1+ (random 4))))) 
 ;;   (pprint db)
 ;;   (pprint (multiple-value-list (flatten-db db))))
+;; (defmacro test-ind-sogg (id-ind id-sini id-sogg name &rest args)
+;;   `(tl-exists (out test-results) 
+;;               (:id-sogg ,id-sogg :id-sini ,id-sini :id-ind ,id-ind :expected 
+;;                         (multiple-value-bind (res found) 
+;;                             (,name ,id-sini ,id-sogg ,@args) 
+;;                           (if found (if res "1" "0"))))))
+
 (defmacro test-ind-sogg (id-ind id-sini id-sogg name &rest args)
-  `(tl-exists (out test-results) 
-       (:id-sogg ,id-sogg :id-sini ,id-sini :id-ind ,id-ind :expected 
-                 (multiple-value-bind (res found) 
-                     (,name ,id-sini ,id-sogg ,@args) 
-                   (if found (if res "1" "0"))))))
+  (let ((result (gensym)))
+    `(let ((,result (multiple-value-bind (res found) 
+                        (,name ,id-sini ,id-sogg ,@args) 
+                      (if found (if res "1" "0")))))
+       (values (tl-exists (out test-results) 
+                                  (:id-sogg ,id-sogg :id-sini ,id-sini :id-ind ,id-ind :expected 
+                                            ,result)) ,result))))
 
 (defmacro test-ind-veic (id-ind id-sini id-veic name &rest args)
-  `(tl-exists (out test-results) 
-       (:id-targa ,id-veic :id-sini ,id-sini :id-ind ,id-ind :expected 
-                 (multiple-value-bind (res found) 
-                     (,name ,id-sini ,id-veic ,@args) 
-                   (if found (if res "1" "0"))))))
+  (let ((result (gensym)))
+    `(let ((,result (multiple-value-bind (res found) 
+                        (,name ,id-sini ,id-veic ,@args) 
+                      (if found (if res "1" "0")))))
+       (values (tl-exists (out test-results) 
+                          (:id-targa ,id-veic :id-sini ,id-sini :id-ind ,id-ind :expected 
+                                     ,result)) ,result))))
 
 (defun split (lst)
   (loop for elem in lst
@@ -422,23 +433,26 @@
 (let* ((*random-state* (make-random-state (my-random-state)))
        (len 13)
        (filename "D:/Dati/Profili/m026980/workspace/app/src/main/resources/data.sql")
-       (sogg-res (apply #'append (loop for i from 1001 to (+ 1000 len) collect
-                                      (let ((db (random-sogg :id i :days 180 :occurrences (1+ (random 6)) :lesi 5 :delay 20 :decorr 20 :scad 20)))
-                                        (multiple-value-bind (*sinistri-table* *soggetti-table*) 
-                                            (flatten-db db) 
-                                          (tl-and db
-                                                  (test-ind-sogg 1 i i test-sco1 180 3)
-                                                  (test-ind-sogg 2 i i test-sco2 180 3)
-                                                  (test-ind-sogg 3 i i test-sco3 180 3 3)
-                                                  (test-ind-sogg 4 i i test-sco4 180 10 3)
-                                                  (test-ind-sogg 5 i i test-sco5 180 10 3)
-                                                  (test-ind-sogg 6 i i test-sco6 180 3)
-                                                  (test-ind-sogg 7 i i test-sco7)
-                                                  (test-ind-sogg 8 i i test-sco8 180 3)
-                                                  (test-ind-sogg 9 i i test-sco9 180 3)
-                                                  (test-ind-sogg 10 i i test-sco10 2)
-                                                  (test-ind-sogg 21 i i test-con1 180 10 10 3)
-                                                  (test-ind-sogg 22 i i test-sin1)))))))
+       (sogg-res (apply #'append 
+                        (loop for i from 1001 to (+ 1000 len) collect
+                             (let ((db (random-sogg :id i :days 180 :occurrences (1+ (random 6)) :lesi 5 :delay 20 :decorr 20 :scad 20)))
+                               (with-multiple-value-bindings
+                                   (((*sinistri-table* *soggetti-table*) (flatten-db db))
+                                    ((sco1-val sco1-exp) (test-ind-sogg 1 i i test-sco1 180 3))
+                                    ((sco2-val sco2-exp) (test-ind-sogg 2 i i test-sco2 180 3))
+                                    ((sco3-val sco3-exp) (test-ind-sogg 3 i i test-sco3 180 3 3))
+                                    ((sco4-val sco4-exp) (test-ind-sogg 4 i i test-sco4 180 10 3))
+                                    ((sco5-val sco5-exp) (test-ind-sogg 5 i i test-sco5 180 10 3))
+                                    ((sco6-val sco6-exp) (test-ind-sogg 6 i i test-sco6 180 3))
+                                    ((sco7-val sco7-exp) (test-ind-sogg 7 i i test-sco7))
+                                    ((sco8-val sco8-exp) (test-ind-sogg 8 i i test-sco8 180 3))
+                                    ((sco9-val sco9-exp) (test-ind-sogg 9 i i test-sco9 180 3))
+                                    ((sco10-val sco10-exp) (test-ind-sogg 10 i i test-sco10 2))
+                                    ((con1-val con1-exp) (test-ind-sogg 21 i i test-con1 180 10 10 3))
+                                    ((sin1-val sin1-exp) (test-ind-sogg 22 i i test-sin1)))
+                                 (pprint sco1-exp)
+                                 (tl-and db sco1-val sco2-val sco3-val sco4-val sco5-val sco6-val sco7-val sco8-val sco9-val sco1-val con1-val sin1-val)
+                                 )))))
        (veic-res (apply #'append (loop for i from 1000001 to (+ 1000000 len) collect
                                       (let ((db (random-veic :id i :days 180 :occurrences (1+ (random 6)) :lesi 50 :delay 20 :fgvs 3 :immatr 10 :incoer 1)))
                                         (multiple-value-bind (*sinistri-table* *veicoli-table*) 
@@ -463,4 +477,13 @@
   (write-file filename (tl-ddl (tl-and sogg-res veic-res))))
 
 
-
+(pprint (tl-ddl (tl-and 
+                  (tl-forall i (tl-range 1 1)
+                    (tl-forall j (list 1 2 3 4 5 6 7 8 9 10 21 22)
+                      (tl-exists (rs ind-risc-sogg-sini)
+                          (:id-sini i :id-sogg i :id-ind j :val-ind (tl-oneof 0 1 nil))))
+                    (tl-forall j (tl-range 11 20)
+                      (tl-exists (rs ind-risc-trg-veic-sini)
+                          (:id-sini i :id-veic i :id-ind j :val-ind (tl-oneof 0 1 nil))))
+                    )
+                  )))

@@ -138,13 +138,13 @@
       (cons (list (car lst) (cadr lst))
             (overlaps (cdr lst)))))
 
-(defmacro with-multiple-value-bindings (bindings form)
+(defmacro with-multiple-value-bindings (bindings &body body)
   (if (null bindings)
-      form
+      `(progn ,@body)
       (aif (caar bindings)
            `(multiple-value-bind ,it ,(cadar bindings)
-              (with-multiple-value-bindings ,(cdr bindings) ,form))
-           `(with-multiple-value-bindings ,(cdr bindings) ,form))))
+              (with-multiple-value-bindings ,(cdr bindings) ,@body))
+           `(with-multiple-value-bindings ,(cdr bindings) ,@body))))
 
 ;; (with-multiple-value-bindings ((nil (values 1 2))
 ;;                                ((c d) (values 3 4)))
