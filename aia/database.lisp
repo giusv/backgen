@@ -428,7 +428,7 @@
 ;; (let ((db (tl-))))
 
 (let* ((*random-state* (make-random-state (my-random-state)))
-       (len 1000)
+       (len 10)
        (filename "D:/Dati/Profili/m026980/workspace/app/src/main/resources/data.sql")
        (sogg-res (apply #'append 
                         (loop for i from 1001 to (+ 1000 len) collect
@@ -472,18 +472,84 @@
   (pprint filename)
   (write-file filename (tl-ddl (tl-and sogg-res veic-res))))
 
+(defun column (n matrix)
+  (loop for i from 0 to (- (length matrix) 1) collect (nth n (coerce (nth i matrix) 'list))))
 
-(pprint (tl-ddl (tl-and 
-                  (tl-forall i (tl-range 1 1)
-                    (let ((ind-sogg (loop repeat 12 collect (tl-oneof 0 1 nil)))
-                          (ind-veic (loop repeat 10 collect (tl-oneof 0 1 nil)))) 
-                      (tl-forall j (mapcar #'list (list 1 2 3 4 5 6 7 8 9 10 21 22) ind-sogg)
-                        (tl-exists (rsogg ind-risc-sogg-sini)
-                            (:id-sini i :id-sogg i :id-ind (car j) :val-ind (cadr j)))
-                        (tl-exists (rsini ind-risc-sini)
-                            (:id-sini i :id-ind (car j) :val-ind (cadr j)))
-                        (tl-forall j (mapcar #'list (tl-range 11 20) ind-veic)
-                          (tl-exists (rveic ind-risc-trg-veic-sini)
-                              (:id-sini i :id-veic i :id-ind (car j) :val-ind (cadr j))))
-                        (tl-exists (rsini ind-risc-sini)
-                            (:id-sini i :id-ind (car j) :val-ind (cadr j)))))))))
+(defun maxnil (&rest args)
+  (reduce (lambda (acc val) (if acc
+                                (if val (max acc val)
+                                    acc)
+                                val))
+          args))
+(pprint (maxnil nil 0 1 nil))
+
+(defun score (vals weights)
+  (reduce (lambda (acc pair) (+ acc (* (if (null (car pair))
+                                           0 
+                                           (car pair))
+                                       (cadr pair)))) 
+          (mapcar #'list vals weights)
+          :initial-value 0))
+
+(pprint (score (list 1 2 nil) (list 1 2 3)))
+
+(let ((test (loop repeat 5 collect (loop repeat 12 collect (tl-oneof 0 1 nil))))) (pprint test) (pprint (column 1 test)))
+
+(let* ((*random-state* (make-random-state (my-random-state)))
+       (filename "D:/Dati/Profili/m026980/workspace/app/src/main/resources/data2.sql")
+       (db (let* ((nsogg 10)
+                  (nveic 10)
+                  (id-sogg-ind (list 1 2 3 4 5 6 7 8 9 10 21 22))
+                  (id-veic-ind (list 11 12 13 14 15 16 17 18 19 20))
+                  ;; (ind-sogg-sini-vals (loop for i from 0 to (- (length id-sogg-ind) 1)
+                  ;;                          (apply #'maxnil (column i ind-sogg))))
+                  ;; (ind-veic-sini-vals (loop for i from 0 to (- (length id-veic-ind) 1)
+                  ;;                          (apply #'maxnil (column i ind-veic))))
+                  )
+             (tl-forall sini (tl-range 1 10)
+               (let ((ind-sogg (loop repeat nsogg collect (loop repeat 12 collect (tl-oneof 0 1 nil))))
+                     (ind-veic (loop repeat nveic collect (loop repeat 10 collect (tl-oneof 0 1 nil))))) 
+                 ;; (terpri)
+                 ;; (format t "~{~4a~^ ~}~%" id-sogg-ind)                 ;; (format t "~{~4a~^ ~}~%" (nth 0 ind-sogg))
+                 ;; (format t "~{~4a~^ ~}~%" (nth 1 ind-sogg))
+                                        ;soggetti
+                 (tl-and
+                   (tl-forall sini-sogg (tl-range 0 (- nsogg 1))
+                     (tl-forall sini-sogg-ind (mapcar #'list id-sogg-ind (nth sini-sogg ind-sogg)) 
+                       (tl-exists (rsogg dwh-ind-risc-sogg)
+                           (:id (uniq sini sini-sogg (car sini-sogg-ind)) :id-sini sini :id-sogg (uniq sini sini-sogg) :id-indicatore (car sini-sogg-ind) :val-indicatore (cadr sini-sogg-ind) :ultimo-agg (tl-timestamp (random-date 0 0)) :id-process 201710241528 )))
+                          
+                     (tl-exists (ssogg gv-score-sogg)
+                         (:id-sini sini :id-sogg (uniq sini sini-sogg) :score (score (nth sini-sogg ind-sogg) 
+                                                                                     (mapcar (lambda (v) (expt 2 v))
+                                                                                             (mapcar (lambda (v) (- v 1))
+                                                                                                     id-sogg-ind))))))
+                        
+                   (tl-forall sini-ind (mapcar #'list id-sogg-ind (tl-range 0 (- (length id-sogg-ind) 1))) 
+                     (tl-exists (rsini gv-ind-risc-sini)
+                         (:id-sini sini :id-indicatore (car sini-ind) :val-indicatore (apply #'maxnil (column (cadr sini-ind) ind-sogg)))))
+                        
+                                        ;veicoli
+                   (tl-forall sini-veic (tl-range 0 (- nveic 1))
+                     (tl-forall sini-veic-ind (mapcar #'list id-veic-ind (nth sini-veic ind-veic)) 
+                       (tl-exists (rveic dwh-ind-risc-trg-veic)
+                           (:id (uniq sini sini-veic (car sini-veic-ind)) :id-sini sini :id-veic (uniq sini sini-veic) :id-indicatore (car sini-veic-ind) :val-indicatore (cadr sini-veic-ind) :ultimo-agg (tl-timestamp (random-date 0 0)))))
+                     (tl-exists (sveic gv-score-trg-veic)
+                         (:id-sini sini :id-veic (uniq sini sini-veic) :score (score (nth sini-veic ind-veic) 
+                                                                                     (mapcar (lambda (v) (expt 2 v))
+                                                                                             (mapcar (lambda (v) (- v 1))
+                                                                                                     id-veic-ind))))))
+                   (tl-forall sini-ind (mapcar #'list id-veic-ind (tl-range 0 (- (length id-veic-ind) 1))) 
+                     (tl-exists (rsini gv-ind-risc-sini)
+                         (:id-sini sini :id-indicatore (car sini-ind) :val-indicatore (apply #'maxnil (column (cadr sini-ind) ind-veic)))))
+
+                   ;; (tl-exists (ssini gv-score-sini)
+                   ;;     (:id-sini sini :score (format nil "~b" 
+                   ;;                                   (score (nth sini-sogg ind-sogg) 
+                   ;;                                          (mapcar (lambda (v) (expt 2 v))
+                   ;;                                                  (mapcar (lambda (v) (- v 1))
+                   ;;                                                          id-sogg-ind))))))
+                   ))))))
+  (pprint filename)
+  (write-file filename (tl-ddl db)))
+
