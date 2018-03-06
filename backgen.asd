@@ -83,8 +83,8 @@
                ;;                       (:file "formats")
                ;;                       (:file "services")
                ;;                       (:file "database")))
-               ;; (:file "pgen")
-               (:file "backgen")
+               (:file "pgen")
+               ;; (:file "backgen")
                
                ;; (:file "guigen")
                ))

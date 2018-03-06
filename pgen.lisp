@@ -54,6 +54,7 @@
       '(:veicolo . "veicolo")
       '(:sinistro . "sinistro")
       '(:colon . ":")
+      '(:bar . "|")
       '(:assign . "=")
       '(:comma . ",")
       '(:sinistri . "sinistri")
@@ -481,8 +482,10 @@
 ;; (defnonterminal resto-parametri nil)
 ;; (defnonterminal parametro nil)
 (defnonterminal argomento (synth-attr t-id))
-;; (defnonterminal resto-argomento (synth-attr t-id
-;;                                             :name (inher-attr t-id)))
+(defnonterminal filtro (synth-attr t-expr))
+;; (defnonterminal resto-argomento (synth-attr t-expr
+;;                                             ;; :name (inher-attr t-id)
+;;                                             ))
 (defnonterminal espressione-booleana (synth-attr t-expr))
 (defnonterminal resto-espressione-booleana (synth-attr t-expr
                                                        :expr (inher-attr t-expr)))
@@ -517,12 +520,19 @@
                             (java-new t-id veic (java-chain (java-static 'type) (java-enum 'veicolo))))))
       (synthesize (java-new t-id veic (java-chain (java-static 'type) (java-enum 'veicolo))))))
 
-(defproduction argomento 
-    (with-bindings ((sogg (match (terminal :sinistro t-id)))
-                    ((store sogg (java-new t-id sogg (java-chain (java-static 'type) (java-enum 'sinistro)))))
-                    ((store (java-new t-id (java-new t-word (java-const "input") (java-chain (java-static 'tag) (java-enum 'input))))
-                            (java-new t-id sogg (java-chain (java-static 'type) (java-enum 'sinistro))))))
-      (synthesize (java-new t-id sogg (java-chain (java-static 'type) (java-enum 'sinistro))))))
+(defproduction filtro 
+    (with-bindings (((match (terminal :bar)))
+                    (filt (invoke espressione-booleana))) 
+      (synthesize filt)))
+(defproduction filtro
+    (synthesize (java-nil)))
+
+;; (defproduction argomento 
+;;     (with-bindings ((sogg (match (terminal :sinistro t-id)))
+;;                     ((store sogg (java-new t-id sogg (java-chain (java-static 'type) (java-enum 'sinistro)))))
+;;                     ((store (java-new t-id (java-new t-word (java-const "input") (java-chain (java-static 'tag) (java-enum 'input))))
+;;                             (java-new t-id sogg (java-chain (java-static 'type) (java-enum 'sinistro))))))
+;;       (synthesize (java-new t-id sogg (java-chain (java-static 'type) (java-enum 'sinistro))))))
 
 ;; (defproduction argomento 
 ;;     (with-bindings ((veic (match (terminal :veicolo t-id)))
@@ -710,13 +720,14 @@
                     (id (match terminal-id))
                     ((match (terminal :left)))
                     (arg (invoke argomento))
+                    (filt (invoke filtro))
                     ((match (terminal :right)))
                     ((match (terminal :left)))
                     (params (invoke legami))
                     ((match (terminal :right)))
                     (expr (invoke espressione-booleana))
                     ((pop-environment)))
-      (synthesize (java-new t-ind id arg params expr))))
+      (synthesize (java-new t-ind id arg filt params expr))))
 
 (defproduction sia 
     (with-bindings (((match (terminal :let)))
